@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Navigation from '@/components/Navigation'
+import PlanTabs from '@/components/PlanTabs'
 import SuggestionCard from '@/components/SuggestionCard'
 import { Suggestion } from '@/types'
 import { getCurrentWeekNumber } from '@/lib/training-plan'
@@ -58,6 +59,7 @@ export default function SuggestionsPage() {
       <Navigation userName={userName} />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
+        <PlanTabs />
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>

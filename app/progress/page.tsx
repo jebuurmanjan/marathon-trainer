@@ -1,4 +1,5 @@
 import Navigation from '@/components/Navigation'
+import PlanTabs from '@/components/PlanTabs'
 import { getSession } from '@/lib/session'
 import { getActualRuns } from '@/lib/strava'
 import { trainingPlan, getCurrentWeekNumber, PLAN_START_DATE, RACE_DATE, formatPaceDisplay } from '@/lib/training-plan'
@@ -56,6 +57,7 @@ export default async function ProgressPage() {
       <Navigation userName={session.name} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        <PlanTabs />
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {topStats.map((stat) => (

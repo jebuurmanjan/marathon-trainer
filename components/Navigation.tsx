@@ -5,26 +5,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import SideMenu from './SideMenu'
 
-const links = [
-  { href: '/plan', label: 'Plan' },
-  { href: '/progress', label: 'Progress' },
-  { href: '/suggestions', label: 'AI Coach' },
-]
+function pageTitle(pathname: string): string {
+  if (pathname.startsWith('/statistics')) return 'Statistics'
+  return 'Marathon Plan'
+}
 
 interface NavigationProps {
   userName: string
 }
 
 export default function Navigation({ userName }: NavigationProps) {
-  const pathname = usePathname()
+  const pathname  = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const initials = userName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase() || 'JB'
+    .split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'JB'
 
   return (
     <>
@@ -38,10 +33,12 @@ export default function Navigation({ userName }: NavigationProps) {
           borderColor: 'rgba(43,49,23,0.08)',
         }}
       >
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14 gap-4">
+        {/* Use relative + absolute centering so the title is always truly centred
+            regardless of how wide the left/right elements are */}
+        <div className="max-w-5xl mx-auto px-4 relative flex items-center" style={{ height: '72px' }}>
 
-          {/* Left: hamburger + logo */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Left: hamburger + active page label */}
+          <div className="flex items-center gap-2.5 shrink-0 z-10">
             <button
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
@@ -55,50 +52,49 @@ export default function Navigation({ userName }: NavigationProps) {
               </svg>
             </button>
 
-            <Link href="/plan" className="flex items-center gap-2.5">
+            <span
+              className="text-sm font-semibold"
+              style={{ color: '#4A5427', letterSpacing: '-0.01em' }}
+            >
+              {pageTitle(pathname)}
+            </span>
+          </div>
+
+          {/* Centre: big brand title — absolutely centred in the bar */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <Link
+              href="/plan"
+              className="flex items-center gap-3 pointer-events-auto"
+              aria-label="Go to plan"
+            >
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm"
                 style={{ background: '#EE6B17' }}
               >
                 ⏱
               </div>
               <span
-                className="text-base font-semibold"
-                style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.025em', color: '#1E1611' }}
+                style={{
+                  fontFamily: 'Nohemi, Inter, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '28px',
+                  letterSpacing: '-0.045em',
+                  color: '#1E1611',
+                  lineHeight: 1,
+                }}
               >
                 Sub <span style={{ color: '#EE6B17' }}>3:30</span>
               </span>
             </Link>
           </div>
 
-          {/* Nav tabs */}
-          <nav
-            className="flex gap-0.5 rounded-xl p-1"
-            style={{ background: '#F5F4F2', border: '1px solid rgba(43,49,23,0.08)' }}
-          >
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                style={
-                  pathname === link.href
-                    ? { background: '#E3D2B4', color: '#1E1611', boxShadow: '0 1px 3px rgba(43,49,23,0.12)' }
-                    : { color: '#4A5427' }
-                }
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Right: avatar */}
-          <div className="shrink-0">
+          {/* Right: avatar (also opens side menu) */}
+          <div className="ml-auto shrink-0 z-10">
             <button
               onClick={() => setMenuOpen(true)}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: '#EE6B17' }}
               aria-label="Open menu"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm"
+              style={{ background: '#EE6B17' }}
             >
               {initials}
             </button>

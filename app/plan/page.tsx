@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Navigation from '@/components/Navigation'
+import PlanTabs from '@/components/PlanTabs'
 import WeekCard from '@/components/WeekCard'
 import { trainingPlan, getCurrentWeekNumber, PLAN_START_DATE, RACE_DATE } from '@/lib/training-plan'
 import { ActualRun } from '@/types'
@@ -104,6 +105,7 @@ export default function PlanPage() {
       <Navigation userName={userName} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        <PlanTabs />
         {/* Hero stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {stats.map((stat) => (
