@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Navigation from '@/components/Navigation'
+import SyncButton from '@/components/SyncButton'
 import { getSession } from '@/lib/session'
 import { getActualRuns } from '@/lib/strava'
 
@@ -113,16 +114,19 @@ export default async function StatisticsPage() {
       <main className="max-w-3xl mx-auto px-4 py-6">
 
         {/* Page title */}
-        <div className="mb-6">
-          <h1
-            className="text-2xl"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
-          >
-            Statistics
-          </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>
-            {YEAR} · Running distance goal
-          </p>
+        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+          <div>
+            <h1
+              className="text-2xl"
+              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+            >
+              Statistics
+            </h1>
+            <p className="text-sm mt-1" style={{ color: '#4A5427' }}>
+              {YEAR} · Running distance goal
+            </p>
+          </div>
+          <SyncButton />
         </div>
 
         {/* ── Stat cards ── */}
