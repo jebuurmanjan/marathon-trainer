@@ -164,7 +164,7 @@ export default function PlanPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {syncMessage && (
               <span
                 className="text-sm font-medium"
@@ -173,6 +173,30 @@ export default function PlanPage() {
                 {syncMessage}
               </span>
             )}
+
+            {/* Add to Calendar */}
+            <a
+              href="/api/ical"
+              download="sub330-training-plan.ics"
+              className="flex items-center gap-2 font-semibold px-4 py-2 rounded-xl text-sm transition-all border"
+              style={{
+                color: '#4A5427',
+                background: '#EDE9DE',
+                borderColor: 'rgba(43,49,23,0.14)',
+              }}
+              title="Download all 27 weeks as a calendar file (.ics) — works with Apple Calendar, Google Calendar, Outlook"
+            >
+              {/* Calendar icon */}
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Add to Calendar
+            </a>
+
+            {/* Sync Strava */}
             <button
               onClick={handleSync}
               disabled={syncing}
