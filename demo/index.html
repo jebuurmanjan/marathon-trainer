@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sub 3:30 — Marathon Trainer Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brand: '#FC4C02' } } }
+    }
+  </script>
+  <style>
+    body { background: #030712; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 9999px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .tab-btn { transition: all 0.15s; }
+    .run-card { transition: all 0.15s; }
+    .bar-fill { transition: width 0.6s ease; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ═══════════════════════════════════════════════ NAV ══ -->
+<header class="border-b border-gray-800 bg-gray-950 sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
+    <div class="flex items-center gap-2 font-bold text-lg">
+      <span style="color:#FC4C02">⏱</span>
+      <span>Sub 3:30</span>
+    </div>
+    <nav class="flex items-center gap-1">
+      <button onclick="showPage('plan')" id="tab-plan"
+        class="tab-btn px-3 py-1.5 rounded-md text-sm font-medium text-white"
+        style="background:#FC4C02">Training Plan</button>
+      <button onclick="showPage('progress')" id="tab-progress"
+        class="tab-btn px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800">Progress</button>
+      <button onclick="showPage('coach')" id="tab-coach"
+        class="tab-btn px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800">AI Coach</button>
+    </nav>
+    <div class="flex items-center gap-3">
+      <img src="https://api.dicebear.com/7.x/initials/svg?seed=JT&backgroundColor=FC4C02&textColor=ffffff&radius=50" class="w-7 h-7 rounded-full" />
+      <span class="text-gray-400 text-sm hidden sm:block">Joris T.</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════ PAGE: PLAN ══ -->
+<div id="page-plan" class="page active max-w-5xl mx-auto px-4 py-6">
+
+  <!-- Hero stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="text-2xl font-bold">185</div>
+      <div class="text-gray-400 text-xs font-medium mt-0.5">Days to race</div>
+      <div class="text-gray-600 text-xs mt-0.5">25 October 2026</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="text-2xl font-bold">3 / 26</div>
+      <div class="text-gray-400 text-xs font-medium mt-0.5">Current week</div>
+      <div class="text-gray-600 text-xs mt-0.5">BASE</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="text-2xl font-bold">84</div>
+      <div class="text-gray-400 text-xs font-medium mt-0.5">Km logged</div>
+      <div class="text-gray-600 text-xs mt-0.5">of ~79 km planned</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="text-2xl font-bold">4:58/km</div>
+      <div class="text-gray-400 text-xs font-medium mt-0.5">Target pace</div>
+      <div class="text-gray-600 text-xs mt-0.5">sub 3:30 marathon</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+    <div class="flex gap-1 bg-gray-900 border border-gray-800 rounded-lg p-1">
+      <button class="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-700 text-white">Upcoming</button>
+      <button class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-300">All</button>
+      <button class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-300">Past</button>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="sync-msg" class="text-sm text-emerald-400 hidden">✓ Synced 3 runs from Strava</span>
+      <button onclick="fakeSync()" class="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors" style="background:#FC4C02" onmouseover="this.style.background='#e04400'" onmouseout="this.style.background='#FC4C02'">
+        <svg viewBox="0 0 24 24" class="w-4 h-4 fill-none stroke-current" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+        Sync Strava
+      </button>
+    </div>
+  </div>
+
+  <!-- ── WEEK 1 (past, fully completed) -->
+  <div class="rounded-xl border border-gray-800 bg-gray-950 p-4 mb-4">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-white font-bold text-base">Week 1</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-300">Base</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-500">28 Apr – 4 May</div>
+        <div class="text-xs text-gray-400"><span class="text-white font-semibold">39</span> km planned</div>
+      </div>
+    </div>
+    <!-- Progress bar -->
+    <div class="mb-3">
+      <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">4/4 runs completed</span><span class="text-gray-400">42 / 39 km</span></div>
+      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full rounded-full bg-emerald-500" style="width:100%"></div></div>
+    </div>
+    <p class="text-gray-500 text-xs mb-3 italic border-l-2 border-gray-700 pl-2">First week back to structure. Run everything easy. Establish the rhythm of 4 days/week.</p>
+    <div class="grid gap-2 sm:grid-cols-2">
+      <!-- Run: completed easy -->
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">TUE</div><div class="text-xs text-gray-600">28 Apr</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-blue-400 bg-blue-400/10">Easy</span></div>
+          <span class="text-emerald-400">✓</span>
+        </div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">7 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy 7 km. No pace target — fully conversational.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3">
+          <span class="text-emerald-400 text-xs font-medium">✓ 7.51 km</span>
+          <span class="text-emerald-400 text-xs font-medium">4:53/km</span>
+          <span class="text-gray-500 text-xs">♥ 157 bpm</span>
+          <span class="text-gray-600 text-xs">36:42</span>
+        </div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Terug naar de reguliere programmering"</span></div>
+      </div>
+      <!-- Run: completed quality -->
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">THU</div><div class="text-xs text-gray-600">30 Apr</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-purple-400 bg-purple-400/10">Quality</span></div>
+          <span class="text-emerald-400">✓</span>
+        </div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">9 km</span><span class="text-gray-400 text-xs">@ 4:58/km</span></div>
+        <p class="text-gray-500 text-xs mt-1">Progression: 5 km easy warm-up, then 4 km at marathon pace (4:58/km).</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3">
+          <span class="text-emerald-400 text-xs font-medium">✓ 9.03 km</span>
+          <span class="text-emerald-400 text-xs font-medium">5:21/km ↑ fast</span>
+          <span class="text-gray-500 text-xs">♥ 144 bpm</span>
+        </div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Evening Run"</span></div>
+      </div>
+      <!-- Run: completed medium long -->
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SAT</div><div class="text-xs text-gray-600">2 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-teal-400 bg-teal-400/10">Medium Long</span></div>
+          <span class="text-emerald-400">✓</span>
+        </div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">11 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy 11 km. Keep HR under 150. Flat route.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3">
+          <span class="text-emerald-400 text-xs font-medium">✓ 11.2 km</span>
+          <span class="text-emerald-400 text-xs font-medium">6:05/km</span>
+          <span class="text-gray-500 text-xs">♥ 137 bpm</span>
+        </div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Ballenweekend run 🎱"</span></div>
+      </div>
+      <!-- Run: completed long -->
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SUN</div><div class="text-xs text-gray-600">3 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-orange-400 bg-orange-400/10">Long Run</span></div>
+          <span class="text-emerald-400">✓</span>
+        </div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">15 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy long run 15 km. Eat and drink every 40 min — practice race nutrition.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3">
+          <span class="text-emerald-400 text-xs font-medium">✓ 18.0 km</span>
+          <span class="text-emerald-400 text-xs font-medium">5:44/km</span>
+          <span class="text-gray-500 text-xs">♥ 145 bpm</span>
+          <span class="text-gray-600 text-xs">1:43:11</span>
+        </div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Duur 🏃🏼‍♂️"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WEEK 2 (past, partial) -->
+  <div class="rounded-xl border border-gray-800 bg-gray-950 p-4 mb-4">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-white font-bold text-base">Week 2</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-300">Base</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-500">5 – 11 May</div>
+        <div class="text-xs text-gray-400"><span class="text-white font-semibold">45</span> km planned</div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">3/4 runs completed</span><span class="text-gray-400">33.5 / 45 km</span></div>
+      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full rounded-full bg-orange-500" style="width:74%"></div></div>
+    </div>
+    <p class="text-gray-500 text-xs mb-3 italic border-l-2 border-gray-700 pl-2">Build to 42 km. Introduce first proper tempo session.</p>
+    <div class="grid gap-2 sm:grid-cols-2">
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">TUE</div><div class="text-xs text-gray-600">5 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-blue-400 bg-blue-400/10">Easy</span></div><span class="text-emerald-400">✓</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">7 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy 7 km recovery run.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3"><span class="text-emerald-400 text-xs font-medium">✓ 5.71 km</span><span class="text-orange-400 text-xs font-medium">5:42/km</span><span class="text-gray-500 text-xs">♥ 142 bpm</span></div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Evening Run"</span></div>
+      </div>
+      <div class="rounded-lg border border-red-900/50 bg-red-950/20 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">THU</div><div class="text-xs text-gray-600">7 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-purple-400 bg-purple-400/10">Quality</span></div><span class="text-red-500">✗</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">10 km</span><span class="text-gray-400 text-xs">@ 4:35/km</span></div>
+        <p class="text-gray-500 text-xs mt-1">Tempo: 2 km warm-up + 6 km continuous at threshold (4:35/km) + 2 km cool-down.</p>
+      </div>
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SAT</div><div class="text-xs text-gray-600">9 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-teal-400 bg-teal-400/10">Medium Long</span></div><span class="text-emerald-400">✓</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">12 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy 12 km at comfortable effort. HR 135–148.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3"><span class="text-emerald-400 text-xs font-medium">✓ 12.22 km</span><span class="text-emerald-400 text-xs font-medium">5:53/km</span><span class="text-gray-500 text-xs">♥ 139 bpm</span></div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Poldersafari"</span></div>
+      </div>
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SUN</div><div class="text-xs text-gray-600">10 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-orange-400 bg-orange-400/10">Long Run</span></div><span class="text-emerald-400">✓</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">17 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy long run 17 km. Last 2 km at marathon pace to finish strong.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3"><span class="text-emerald-400 text-xs font-medium">✓ 15.6 km</span><span class="text-orange-400 text-xs font-medium">5:55/km ↓ slow</span><span class="text-gray-500 text-xs">♥ 144 bpm</span><span class="text-yellow-600 text-xs ml-auto">short</span></div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Sop until you drop 🫧🧽"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WEEK 3 (CURRENT) -->
+  <div id="week-3" class="rounded-xl border p-4 mb-4 shadow-lg" style="border-color:rgba(249,115,22,0.6);background:#111827;box-shadow:0 10px 40px rgba(249,115,22,0.08)">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-white font-bold text-base">Week 3 <span style="color:#fb923c;font-size:0.7rem;font-weight:600" class="animate-pulse">← NOW</span></span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-300">Base</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-500">12 – 18 May</div>
+        <div class="text-xs text-gray-400"><span class="text-white font-semibold">47</span> km planned</div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">1/4 runs completed</span><span class="text-gray-400">9.0 / 47 km</span></div>
+      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full rounded-full bg-orange-500" style="width:19%"></div></div>
+    </div>
+    <p class="text-gray-500 text-xs mb-3 italic border-l-2 border-gray-700 pl-2">First intervals week. Keep recovery days truly easy.</p>
+    <div class="grid gap-2 sm:grid-cols-2">
+      <div class="rounded-lg border border-emerald-800/60 bg-emerald-950/30 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">TUE</div><div class="text-xs text-gray-600">12 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-blue-400 bg-blue-400/10">Easy</span></div><span class="text-emerald-400">✓</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">7 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy 7 km. Recovery from long run.</p>
+        <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-3"><span class="text-emerald-400 text-xs font-medium">✓ 9.03 km</span><span class="text-yellow-400 text-xs font-medium">5:21/km ↑ fast</span><span class="text-gray-500 text-xs">♥ 144 bpm</span></div>
+        <div class="mt-1"><span class="text-gray-600 text-xs italic">"Evening Run"</span></div>
+      </div>
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">THU</div><div class="text-xs text-gray-600">14 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-purple-400 bg-purple-400/10">Quality</span></div><span class="text-gray-700">○</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">10 km</span><span class="text-gray-400 text-xs">@ 4:20/km</span></div>
+        <p class="text-gray-500 text-xs mt-1">Intervals: 2 km warm-up + 3×2 km at interval pace (4:20/km) with 90 s rest + 2 km cool-down.</p>
+      </div>
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SAT</div><div class="text-xs text-gray-600">16 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-teal-400 bg-teal-400/10">Medium Long</span></div><span class="text-gray-700">○</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">13 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy-moderate 13 km. Comfortable effort throughout.</p>
+      </div>
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+        <div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SUN</div><div class="text-xs text-gray-600">17 May</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-orange-400 bg-orange-400/10">Long Run</span></div><span class="text-gray-700">○</span></div>
+        <div class="mt-2 flex items-center gap-3"><span class="text-white font-semibold text-sm">18 km</span><span class="text-gray-500 text-xs">easy pace</span></div>
+        <p class="text-gray-500 text-xs mt-1">Easy long run 18 km. New longest run of this block — take it easy.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WEEK 4 (future, collapsed preview) -->
+  <div class="rounded-xl border border-gray-800 bg-gray-950 p-4 mb-4 opacity-80">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-white font-bold text-base">Week 4</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-300">Base</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-500">19 – 25 May</div>
+        <div class="text-xs text-gray-400"><span class="text-white font-semibold">50</span> km planned</div>
+      </div>
+    </div>
+    <p class="text-gray-500 text-xs mb-3 italic border-l-2 border-gray-700 pl-2">Biggest base week. Marathon pace starts to feel natural.</p>
+    <div class="grid gap-2 sm:grid-cols-2">
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3"><div class="flex items-center gap-2 mb-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">TUE</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-blue-400 bg-blue-400/10">Easy</span></div><div class="flex items-center gap-2"><span class="text-white font-semibold text-sm">8 km</span><span class="text-gray-500 text-xs">easy pace</span></div></div>
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3"><div class="flex items-center gap-2 mb-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">THU</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-purple-400 bg-purple-400/10">Quality</span></div><div class="flex items-center gap-2"><span class="text-white font-semibold text-sm">11 km</span><span class="text-gray-400 text-xs">@ 4:58/km</span></div></div>
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3"><div class="flex items-center gap-2 mb-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SAT</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-teal-400 bg-teal-400/10">Medium Long</span></div><div class="flex items-center gap-2"><span class="text-white font-semibold text-sm">13 km</span><span class="text-gray-500 text-xs">easy pace</span></div></div>
+      <div class="rounded-lg border border-gray-800 bg-gray-900/60 p-3"><div class="flex items-center gap-2 mb-2"><div class="text-center min-w-[40px]"><div class="text-xs text-gray-500">SUN</div></div><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-orange-400 bg-orange-400/10">Long Run</span></div><div class="flex items-center gap-2"><span class="text-white font-semibold text-sm">20 km</span><span class="text-gray-500 text-xs">easy pace</span></div></div>
+    </div>
+  </div>
+
+  <div class="text-center text-gray-700 text-sm py-2">↓ Weeks 5–26 continue below (Build → Peak → Sharpen → Taper)</div>
+</div>
+
+<!-- ══════════════════════════════════════ PAGE: PROGRESS ══ -->
+<div id="page-progress" class="page max-w-5xl mx-auto px-4 py-6">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">Progress</h1>
+    <p class="text-gray-500 text-sm mt-1">Weeks 1–3 completed · 23 weeks remaining</p>
+  </div>
+
+  <!-- Top stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4"><div class="text-2xl font-bold">84 km</div><div class="text-gray-400 text-xs font-medium mt-0.5">Km logged</div><div class="text-gray-600 text-xs mt-0.5">of 84 km planned</div></div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4"><div class="text-2xl font-bold">100%</div><div class="text-gray-400 text-xs font-medium mt-0.5">Volume %</div><div class="text-gray-600 text-xs mt-0.5">slight over-delivery</div></div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4"><div class="text-2xl font-bold">82%</div><div class="text-gray-400 text-xs font-medium mt-0.5">Run compliance</div><div class="text-gray-600 text-xs mt-0.5">9/11 sessions</div></div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4"><div class="text-2xl font-bold">18.0 km</div><div class="text-gray-400 text-xs font-medium mt-0.5">Longest run</div><div class="text-gray-600 text-xs mt-0.5">Best pace 4:53/km</div></div>
+  </div>
+
+  <!-- Bar chart -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
+    <h2 class="text-white font-semibold mb-4">Weekly km — Planned vs Actual</h2>
+    <div class="space-y-3">
+      <!-- Week 1 -->
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-600 w-12 shrink-0">W1</div>
+        <div class="flex-1 relative h-8 bg-gray-800 rounded overflow-hidden">
+          <div class="absolute inset-0 bg-gray-700/40 rounded"></div>
+          <div class="absolute inset-y-0 left-0 rounded bg-emerald-600 flex items-center" style="width:100%">
+            <span class="text-xs text-white font-medium px-2 drop-shadow">42.0 km ✓</span>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500 w-28 shrink-0 text-right">39 km · 4/4 runs</div>
+        <div class="text-xs text-gray-600 w-16 shrink-0 text-right">5:40/km</div>
+      </div>
+      <!-- Week 2 -->
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-600 w-12 shrink-0">W2</div>
+        <div class="flex-1 relative h-8 bg-gray-800 rounded overflow-hidden">
+          <div class="absolute inset-0 bg-gray-700/40 rounded"></div>
+          <div class="absolute inset-y-0 left-0 rounded bg-orange-500 flex items-center" style="width:74%">
+            <span class="text-xs text-white font-medium px-2 drop-shadow">33.5 km</span>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500 w-28 shrink-0 text-right">45 km · 3/4 runs</div>
+        <div class="text-xs text-gray-600 w-16 shrink-0 text-right">5:49/km</div>
+      </div>
+      <!-- Week 3 (in progress) -->
+      <div class="flex items-center gap-3">
+        <div class="text-xs text-gray-600 w-12 shrink-0">W3 <span class="text-orange-500">▶</span></div>
+        <div class="flex-1 relative h-8 bg-gray-800 rounded overflow-hidden">
+          <div class="absolute inset-0 bg-gray-700/40 rounded"></div>
+          <div class="absolute inset-y-0 left-0 rounded bg-orange-500/70 flex items-center" style="width:19%">
+          </div>
+          <div class="absolute inset-0 flex items-center px-2"><span class="text-xs text-gray-400">9.0 km so far…</span></div>
+        </div>
+        <div class="text-xs text-gray-500 w-28 shrink-0 text-right">47 km · 1/4 runs</div>
+        <div class="text-xs text-gray-600 w-16 shrink-0 text-right">5:21/km</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="flex items-center gap-4 mb-6 text-xs text-gray-500 px-1">
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-600 inline-block"></span>≥90% planned</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-orange-500 inline-block"></span>60–89%</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-600 inline-block"></span>&lt;60%</span>
+  </div>
+
+  <!-- Runs table -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+    <h2 class="text-white font-semibold mb-4">All Runs (9)</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-gray-500 text-xs border-b border-gray-800">
+            <th class="text-left pb-2 font-medium">Date</th>
+            <th class="text-left pb-2 font-medium">Name</th>
+            <th class="text-right pb-2 font-medium">km</th>
+            <th class="text-right pb-2 font-medium">Pace</th>
+            <th class="text-right pb-2 font-medium">Avg HR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">12 May</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Evening Run</td><td class="py-2 text-right text-white font-medium">9.03</td><td class="py-2 text-right text-gray-300">5:21/km</td><td class="py-2 text-right text-gray-400">144</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">10 May</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Sop until you drop 🫧🧽</td><td class="py-2 text-right text-white font-medium">15.6</td><td class="py-2 text-right text-gray-300">5:55/km</td><td class="py-2 text-right text-gray-400">145</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">9 May</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Poldersafari</td><td class="py-2 text-right text-white font-medium">12.22</td><td class="py-2 text-right text-gray-300">5:53/km</td><td class="py-2 text-right text-gray-400">139</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">5 May</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Evening Run</td><td class="py-2 text-right text-white font-medium">5.71</td><td class="py-2 text-right text-gray-300">5:42/km</td><td class="py-2 text-right text-gray-400">142</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">3 May</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Duur 🏃🏼‍♂️</td><td class="py-2 text-right text-white font-medium">18.0</td><td class="py-2 text-right text-gray-300">5:44/km</td><td class="py-2 text-right text-gray-400">145</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">2 May</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Ballenweekend run 🎱</td><td class="py-2 text-right text-white font-medium">11.2</td><td class="py-2 text-right text-gray-300">6:05/km</td><td class="py-2 text-right text-gray-400">137</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">30 Apr</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Evening Run</td><td class="py-2 text-right text-white font-medium">9.03</td><td class="py-2 text-right text-gray-300">5:21/km</td><td class="py-2 text-right text-gray-400">144</td></tr>
+          <tr class="border-b border-gray-800/50 hover:bg-gray-800/30"><td class="py-2 text-gray-400">28 Apr</td><td class="py-2 text-gray-300 max-w-[180px] truncate">Terug naar de reguliere programmering</td><td class="py-2 text-right text-white font-medium">7.51</td><td class="py-2 text-right text-gray-300">4:53/km</td><td class="py-2 text-right text-gray-400">158</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PAGE: AI COACH ══ -->
+<div id="page-coach" class="page max-w-3xl mx-auto px-4 py-6">
+  <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-bold">AI Coach</h1>
+      <p class="text-gray-500 text-sm mt-1">Claude analyses your training and suggests adjustments. Currently on week 3.</p>
+    </div>
+    <button onclick="generateSuggestion()" id="gen-btn" class="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shrink-0" style="background:#FC4C02" onmouseover="this.style.background='#e04400'" onmouseout="this.style.background='#FC4C02'">
+      ✦ Get coaching advice
+    </button>
+  </div>
+
+  <div id="generating-msg" class="hidden mb-4 bg-gray-900 border border-gray-800 rounded-xl p-5 text-center">
+    <div class="text-2xl mb-2 animate-spin inline-block">⟳</div>
+    <p class="text-gray-400 text-sm">Claude is reading your training data…</p>
+  </div>
+
+  <!-- Latest suggestion -->
+  <div id="suggestion-block">
+    <div class="rounded-xl border p-5 mb-4" style="border-color:rgba(249,115,22,0.5);background:#111827;box-shadow:0 10px 40px rgba(249,115,22,0.08)">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400">Latest</span>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">Week 3</span>
+        </div>
+        <span class="text-xs text-gray-600 shrink-0">Wednesday, 13 May 2026</span>
+      </div>
+      <div class="text-gray-200 text-sm leading-relaxed space-y-3">
+        <p>Good start to the plan — you've completed 9 of 11 planned sessions in the first two weeks, which gives a solid 82% compliance. The missed Thursday tempo in week 2 is worth noting because that's your primary aerobic development session, not just extra volume. Try to protect that Thursday slot going forward.</p>
+        <p>Your pacing on easy runs is still a little fast. Tuesday's "easy" 9 km came in at 5:21/km with a 144 bpm average — that's comfortably in threshold territory, not zone 2. For the remainder of this week's runs, aim to keep easy efforts above 5:45/km and let your heart rate be the guide rather than pace. This matters more in the base phase than it will later.</p>
+        <p>This Thursday's interval session (3×2 km at 4:20/km) is the most important session of the week. After that, Saturday and Sunday should be fully easy — resist the urge to push. Your aerobic base is building well and the 18 km long run on Sunday is a meaningful step up. Eat something 90 minutes before and take a gel at the 45-minute mark.</p>
+      </div>
+    </div>
+
+    <h2 class="text-gray-500 text-sm font-medium pt-2 mb-3">Previous advice</h2>
+    <div class="rounded-xl border border-gray-800 bg-gray-950 p-5">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">Week 2</span>
+        </div>
+        <span class="text-xs text-gray-600 shrink-0">Wednesday, 6 May 2026</span>
+      </div>
+      <div class="text-gray-400 text-sm leading-relaxed space-y-3">
+        <p>Week 1 delivered 108% of the planned volume — the long run came in at 18 km vs the planned 15 km, which shows your aerobic base is in great shape from the recent NZ trail running and the half marathon in January.</p>
+        <p>This week's priority is the Thursday tempo (6 km at 4:35/km). It will feel uncomfortable — that's the point. If you can hold that for 6 km on Thursday, you're firmly on track for sub-3:30. Keep Saturday and Sunday purely aerobic and don't let the natural excitement of early-plan momentum push paces too hard.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="mt-8 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+    <h3 class="text-gray-300 font-semibold text-sm mb-3">How it works</h3>
+    <ul class="text-gray-500 text-sm space-y-1.5">
+      <li>• Claude looks at your planned runs for the last 2 weeks</li>
+      <li>• It compares them against what you actually ran (distance, pace, HR)</li>
+      <li>• It suggests 1–2 concrete adjustments for the coming week</li>
+      <li>• Sync Strava first for the most accurate advice</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    const tabs = { plan: 'tab-plan', progress: 'tab-progress', coach: 'tab-coach' };
+    Object.entries(tabs).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (key === name) {
+        el.style.background = '#FC4C02';
+        el.style.color = 'white';
+        el.className = el.className.replace('text-gray-400', 'text-white');
+      } else {
+        el.style.background = '';
+        el.style.color = '';
+        el.className = el.className.includes('text-white')
+          ? el.className.replace('text-white', 'text-gray-400')
+          : el.className;
+      }
+    });
+  }
+
+  function fakeSync() {
+    const btn = document.querySelector('[onclick="fakeSync()"]');
+    const msg = document.getElementById('sync-msg');
+    btn.disabled = true;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" class="w-4 h-4 fill-none stroke-current animate-spin" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg> Syncing…`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" class="w-4 h-4 fill-none stroke-current" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg> Sync Strava`;
+      msg.classList.remove('hidden');
+      setTimeout(() => msg.classList.add('hidden'), 3500);
+    }, 1800);
+  }
+
+  function generateSuggestion() {
+    const btn = document.getElementById('gen-btn');
+    const genMsg = document.getElementById('generating-msg');
+    const block = document.getElementById('suggestion-block');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-spin inline-block">⟳</span> Thinking…';
+    genMsg.classList.remove('hidden');
+    block.style.opacity = '0.3';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '✦ Get coaching advice';
+      genMsg.classList.add('hidden');
+      block.style.opacity = '1';
+    }, 2800);
+  }
+</script>
+</body>
+</html>
