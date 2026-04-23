@@ -17,7 +17,6 @@ export default function PlanPage() {
 
   const currentWeek = getCurrentWeekNumber()
 
-  // Fetch actual runs from the DB via a simple API route
   const fetchRuns = useCallback(async () => {
     try {
       const res = await fetch('/api/runs')
@@ -26,16 +25,11 @@ export default function PlanPage() {
         setActualRuns(data.runs ?? [])
         setUserName(data.userName ?? '')
       }
-    } catch {
-      // silently fail — plan still shows
-    }
+    } catch { /* silently fail */ }
   }, [])
 
-  useEffect(() => {
-    fetchRuns()
-  }, [fetchRuns])
+  useEffect(() => { fetchRuns() }, [fetchRuns])
 
-  // Jump to current week on mount
   useEffect(() => {
     if (currentWeek > 0) {
       const el = document.getElementById(`week-${currentWeek}`)
@@ -63,15 +57,12 @@ export default function PlanPage() {
     }
   }
 
-  // Filter weeks based on selection
   const visibleWeeks = trainingPlan.filter((week) => {
     if (filter === 'all') return true
     if (filter === 'past') return week.weekNumber < currentWeek
-    // 'upcoming' = current week + future
     return week.weekNumber >= currentWeek
   })
 
-  // Days until race
   const today = new Date()
   const raceDay = new Date(RACE_DATE)
   const daysToRace = Math.max(0, Math.ceil((raceDay.getTime() - today.getTime()) / 86400000))
@@ -81,55 +72,92 @@ export default function PlanPage() {
     .filter((w) => w.weekNumber < currentWeek)
     .reduce((sum, w) => sum + w.targetKm, 0)
 
+  const stats = [
+    {
+      label: 'Days to race',
+      value: daysToRace > 0 ? String(daysToRace) : '🏁',
+      sub: new Date(RACE_DATE + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }),
+      accent: true,
+    },
+    {
+      label: 'Current week',
+      value: currentWeek > 0 && currentWeek <= 27 ? `${currentWeek}/27` : '—',
+      sub: currentWeek > 0 ? trainingPlan[currentWeek - 1]?.phase.toUpperCase() : '',
+      accent: false,
+    },
+    {
+      label: 'Km logged',
+      value: String(Math.round(totalActualKm)),
+      sub: `of ~${totalPlannedKm} km planned`,
+      accent: false,
+    },
+    {
+      label: 'Target pace',
+      value: '4:58',
+      sub: 'sub 3:30 marathon',
+      accent: false,
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
       <Navigation userName={userName} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Hero stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          {[
-            {
-              label: 'Days to race',
-              value: daysToRace > 0 ? daysToRace : '🏁',
-              sub: new Date(RACE_DATE + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }),
-            },
-            {
-              label: 'Current week',
-              value: currentWeek > 0 && currentWeek <= 26 ? `${currentWeek}/26` : '—',
-              sub: currentWeek > 0 ? trainingPlan[currentWeek - 1]?.phase.toUpperCase() : '',
-            },
-            {
-              label: 'Km logged',
-              value: `${Math.round(totalActualKm)}`,
-              sub: `of ~${totalPlannedKm} km planned`,
-            },
-            {
-              label: 'Target pace',
-              value: '4:58/km',
-              sub: 'sub 3:30 marathon',
-            },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-              <div className="text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-gray-400 text-xs font-medium mt-0.5">{stat.label}</div>
-              <div className="text-gray-600 text-xs mt-0.5">{stat.sub}</div>
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-2xl p-4 relative overflow-hidden"
+              style={{
+                background: '#EDE9DE',
+                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(43,49,23,0.08)',
+              }}
+            >
+              {stat.accent && (
+                <div
+                  className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(circle at top right, rgba(238,107,23,0.06) 0%, transparent 70%)',
+                  }}
+                />
+              )}
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>
+                {stat.label}
+              </div>
+              <div
+                className="text-3xl leading-none mb-1"
+                style={{
+                  fontFamily: 'Nohemi, Inter, sans-serif',
+                  fontWeight: 600,
+                  letterSpacing: '-0.04em',
+                  color: stat.accent ? '#EE6B17' : '#1E1611',
+                }}
+              >
+                {stat.value}
+              </div>
+              <div className="text-[11px]" style={{ color: '#736554' }}>{stat.sub}</div>
             </div>
           ))}
         </div>
 
         {/* Controls */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-lg p-1">
+          <div
+            className="flex gap-0.5 p-1 rounded-xl"
+            style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+          >
             {(['upcoming', 'all', 'past'] as Filter[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
+                className="px-3.5 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors"
+                style={
                   filter === f
-                    ? 'bg-gray-700 text-white'
-                    : 'text-gray-500 hover:text-gray-300'
-                }`}
+                    ? { background: '#E3D2B4', color: '#1E1611', boxShadow: '0 1px 3px rgba(43,49,23,0.10)' }
+                    : { color: '#4A5427', background: 'transparent' }
+                }
               >
                 {f}
               </button>
@@ -138,14 +166,18 @@ export default function PlanPage() {
 
           <div className="flex items-center gap-3">
             {syncMessage && (
-              <span className={`text-sm ${syncMessage.startsWith('✓') ? 'text-emerald-400' : 'text-red-400'}`}>
+              <span
+                className="text-sm font-medium"
+                style={{ color: syncMessage.startsWith('✓') ? '#4A5427' : '#EE6B17' }}
+              >
                 {syncMessage}
               </span>
             )}
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+              className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+              style={{ background: '#EE6B17' }}
             >
               <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-none stroke-current stroke-2 ${syncing ? 'animate-spin' : ''}`}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -155,13 +187,29 @@ export default function PlanPage() {
           </div>
         </div>
 
+        {/* Current week banner */}
+        {currentWeek > 0 && currentWeek <= 27 && filter !== 'past' && (
+          <div
+            className="flex items-center gap-2.5 rounded-xl px-4 py-3 mb-4 text-sm font-medium"
+            style={{
+              background: 'rgba(238,107,23,0.10)',
+              border: '1px solid rgba(238,107,23,0.25)',
+              color: '#EE6B17',
+            }}
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            Week {currentWeek} — {trainingPlan[currentWeek - 1]?.phase.charAt(0).toUpperCase() + trainingPlan[currentWeek - 1]?.phase.slice(1)} phase. Stay consistent and keep easy runs genuinely easy.
+          </div>
+        )}
+
         {/* Week cards */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           {visibleWeeks.map((week) => {
-            // Get actual runs for this week's date range
-            const weekActual = actualRuns.filter((r) => {
-              return r.runDate >= week.startDate && r.runDate <= week.endDate
-            })
+            const weekActual = actualRuns.filter(
+              (r) => r.runDate >= week.startDate && r.runDate <= week.endDate
+            )
             return (
               <WeekCard
                 key={week.weekNumber}
@@ -175,7 +223,7 @@ export default function PlanPage() {
         </div>
 
         {visibleWeeks.length === 0 && (
-          <div className="text-center py-20 text-gray-600">
+          <div className="text-center py-20 text-sm" style={{ color: '#736554' }}>
             No weeks to show.
           </div>
         )}

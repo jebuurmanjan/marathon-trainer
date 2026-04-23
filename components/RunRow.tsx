@@ -2,12 +2,12 @@ import { PlannedRun, ActualRun } from '@/types'
 import { formatPaceDisplay, RUN_TYPE_LABELS } from '@/lib/training-plan'
 import { formatPace, formatTime } from '@/lib/strava'
 
-const TYPE_COLORS: Record<string, string> = {
-  easy: 'text-blue-400 bg-blue-400/10',
-  quality: 'text-purple-400 bg-purple-400/10',
-  medium_long: 'text-teal-400 bg-teal-400/10',
-  long: 'text-orange-400 bg-orange-400/10',
-  race: 'text-yellow-400 bg-yellow-400/10',
+const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
+  easy:        { bg: 'rgba(74,84,39,0.10)',    color: '#4A5427', dot: '#4A5427' },
+  quality:     { bg: 'rgba(238,107,23,0.12)',   color: '#EE6B17', dot: '#EE6B17' },
+  medium_long: { bg: 'rgba(136,121,225,0.12)',  color: '#8879E1', dot: '#8879E1' },
+  long:        { bg: 'rgba(136,121,225,0.12)',  color: '#8879E1', dot: '#8879E1' },
+  race:        { bg: 'rgba(238,107,23,0.12)',   color: '#EE6B17', dot: '#EE6B17' },
 }
 
 interface RunRowProps {
@@ -17,9 +17,8 @@ interface RunRowProps {
 }
 
 export default function RunRow({ run, actual, isPast }: RunRowProps) {
-  const typeColor = TYPE_COLORS[run.type] ?? 'text-gray-400 bg-gray-400/10'
+  const style = TYPE_STYLE[run.type] ?? { bg: 'rgba(43,49,23,0.06)', color: '#736554', dot: '#736554' }
 
-  // Pace comparison
   let paceStatus: 'on-target' | 'fast' | 'slow' | null = null
   if (actual && run.targetPaceMinPerKm) {
     const diff = actual.paceMinPerKm - run.targetPaceMinPerKm
@@ -28,95 +27,100 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
     else paceStatus = 'slow'
   }
 
-  // Distance completion
   const distanceOk = actual ? actual.distanceKm >= run.targetDistanceKm * 0.9 : false
 
   return (
     <div
-      className={`rounded-lg border p-3 transition-all ${
-        actual
-          ? 'border-emerald-800/60 bg-emerald-950/30'
+      className="rounded-xl px-3 py-2.5 transition-all"
+      style={{
+        background: actual
+          ? 'rgba(74,84,39,0.08)'
           : isPast
-          ? 'border-red-900/50 bg-red-950/20'
-          : 'border-gray-800 bg-gray-900/60'
-      }`}
+          ? 'rgba(238,107,23,0.06)'
+          : '#F5F4F2',
+        border: actual
+          ? '1px solid rgba(74,84,39,0.20)'
+          : isPast
+          ? '1px solid rgba(238,107,23,0.15)'
+          : '1px solid rgba(43,49,23,0.08)',
+      }}
     >
-      <div className="flex items-start justify-between gap-3">
-        {/* Left: day + type badge */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="text-center min-w-[40px]">
-            <div className="text-xs text-gray-500">{run.dayOfWeek.slice(0, 3).toUpperCase()}</div>
-            <div className="text-xs text-gray-600">
-              {new Date(run.date + 'T00:00:00').toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'short',
-              })}
-            </div>
-          </div>
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${typeColor}`}>
-            {RUN_TYPE_LABELS[run.type]}
-          </span>
-        </div>
+      <div className="flex items-center gap-2.5">
+        {/* Colour dot */}
+        <span
+          className="w-2 h-2 rounded-full shrink-0"
+          style={{ background: style.dot }}
+        />
 
-        {/* Right: status icon */}
-        <div className="shrink-0 mt-0.5">
+        {/* Day */}
+        <span className="text-[10px] font-semibold min-w-[24px]" style={{ color: '#4A5427' }}>
+          {run.dayOfWeek.slice(0, 3).toUpperCase()}
+        </span>
+
+        {/* Type badge */}
+        <span
+          className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
+          style={{ background: style.bg, color: style.color }}
+        >
+          {RUN_TYPE_LABELS[run.type]}
+        </span>
+
+        {/* Description */}
+        <span className="flex-1 text-xs truncate" style={{ color: '#1E1611' }}>
+          {run.description}
+        </span>
+
+        {/* Distance */}
+        <span
+          className="text-sm font-semibold shrink-0"
+          style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#736554' }}
+        >
+          {run.targetDistanceKm} km
+        </span>
+
+        {/* Status icon */}
+        <span className="text-sm shrink-0">
           {actual ? (
-            <span className="text-emerald-400 text-base">✓</span>
+            <span style={{ color: '#4A5427' }}>✓</span>
           ) : isPast ? (
-            <span className="text-red-500 text-base">✗</span>
+            <span style={{ color: '#EE6B17' }}>✗</span>
           ) : (
-            <span className="text-gray-700 text-base">○</span>
+            <span style={{ color: '#E3D2B4' }}>○</span>
           )}
-        </div>
+        </span>
       </div>
 
-      {/* Planned details */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="text-white font-semibold text-sm">{run.targetDistanceKm} km</span>
-        {run.targetPaceMinPerKm && (
-          <span className="text-gray-400 text-xs">
-            @ {formatPaceDisplay(run.targetPaceMinPerKm)}
-          </span>
-        )}
-        {!run.targetPaceMinPerKm && (
-          <span className="text-gray-500 text-xs">easy pace</span>
-        )}
-      </div>
-
-      <p className="text-gray-500 text-xs mt-1 leading-relaxed">{run.description}</p>
-
-      {/* Actual run result */}
+      {/* Actual result */}
       {actual && (
-        <div className="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="text-emerald-400 text-xs font-medium">
-            ✓ {actual.distanceKm} km
+        <div
+          className="mt-2 pt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+          style={{ borderTop: '1px solid rgba(43,49,23,0.08)' }}
+        >
+          <span className="font-semibold" style={{ color: '#4A5427' }}>
+            {actual.distanceKm} km
           </span>
           <span
-            className={`text-xs font-medium ${
-              paceStatus === 'on-target'
-                ? 'text-emerald-400'
-                : paceStatus === 'fast'
-                ? 'text-yellow-400'
-                : 'text-orange-400'
-            }`}
+            className="font-medium"
+            style={{
+              color: paceStatus === 'on-target' ? '#4A5427'
+                : paceStatus === 'fast' ? '#8879E1'
+                : '#EE6B17',
+            }}
           >
             {formatPace(actual.paceMinPerKm)}
-            {paceStatus === 'fast' && ' ↑ fast'}
-            {paceStatus === 'slow' && ' ↓ slow'}
+            {paceStatus === 'fast' && ' ↑'}
+            {paceStatus === 'slow' && ' ↓'}
           </span>
           {actual.averageHeartrate && (
-            <span className="text-gray-500 text-xs">♥ {Math.round(actual.averageHeartrate)} bpm</span>
+            <span style={{ color: '#736554' }}>♥ {Math.round(actual.averageHeartrate)} bpm</span>
           )}
-          <span className="text-gray-600 text-xs">{formatTime(actual.movingTimeSeconds)}</span>
+          <span style={{ color: '#736554' }}>{formatTime(actual.movingTimeSeconds)}</span>
           {!distanceOk && (
-            <span className="text-yellow-600 text-xs ml-auto">short</span>
+            <span className="ml-auto" style={{ color: '#EE6B17' }}>short</span>
           )}
-        </div>
-      )}
-
-      {actual && actual.name && (
-        <div className="mt-1">
-          <span className="text-gray-600 text-xs italic">"{actual.name}"</span>
+          {actual.name && (
+            <span className="w-full truncate italic" style={{ color: '#736554' }}>"{actual.name}"</span>
+          )}
         </div>
       )}
     </div>

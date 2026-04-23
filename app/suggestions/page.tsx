@@ -29,16 +29,11 @@ export default function SuggestionsPage() {
         const data = await runsRes.json()
         setUserName(data.userName ?? '')
       }
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false)
-    }
+    } catch { /* ignore */ }
+    finally { setLoading(false) }
   }, [])
 
-  useEffect(() => {
-    fetchSuggestions()
-  }, [fetchSuggestions])
+  useEffect(() => { fetchSuggestions() }, [fetchSuggestions])
 
   async function handleGenerate() {
     setGenerating(true)
@@ -59,67 +54,66 @@ export default function SuggestionsPage() {
   const olderSuggestions = suggestions.slice(1)
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
       <Navigation userName={userName} />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
+        {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-white">AI Coach</h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <h1
+              className="text-2xl"
+              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+            >
+              AI Coaching
+            </h1>
+            <p className="text-sm mt-1" style={{ color: '#4A5427' }}>
               Claude analyses your training data and suggests adjustments.
-              {currentWeek > 0 && ` Currently on week ${currentWeek}.`}
+              {currentWeek > 0 && ` Week ${currentWeek} of 27.`}
             </p>
           </div>
 
           <button
             onClick={handleGenerate}
-            disabled={generating || currentWeek < 1 || currentWeek > 26}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shrink-0"
+            disabled={generating || currentWeek < 1 || currentWeek > 27}
+            className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all disabled:opacity-50 shrink-0"
+            style={{ background: '#EE6B17' }}
           >
             {generating ? (
-              <>
-                <span className="animate-spin">⟳</span>
-                Thinking…
-              </>
+              <><span className="animate-spin">⟳</span> Thinking…</>
             ) : (
-              <>
-                ✦ Get coaching advice
-              </>
+              <>✦ Get coaching advice</>
             )}
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 bg-red-950/60 border border-red-800 rounded-lg px-4 py-3 text-red-300 text-sm">
+          <div
+            className="mb-4 rounded-xl px-4 py-3 text-sm"
+            style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: '#EE6B17' }}
+          >
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-20 text-gray-600 text-sm">Loading…</div>
+          <div className="text-center py-20 text-sm" style={{ color: '#736554' }}>Loading…</div>
         ) : suggestions.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🤖</div>
-            <p className="text-gray-400 font-medium mb-2">No coaching advice yet</p>
-            <p className="text-gray-600 text-sm max-w-sm mx-auto mb-6">
-              Click the button above to get your first AI coaching suggestion based on your
-              training data. Make sure you have synced your Strava runs first.
-            </p>
-            <p className="text-gray-700 text-xs">
-              Powered by Claude — advice is generated based on your planned vs actual runs,
-              pace data, and heart rate trends.
+            <p className="font-semibold mb-2" style={{ color: '#1E1611' }}>No coaching advice yet</p>
+            <p className="text-sm max-w-sm mx-auto mb-6" style={{ color: '#736554' }}>
+              Click the button above to get your first AI coaching suggestion. Sync your Strava runs first for the most accurate advice.
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {latestSuggestion && (
-              <SuggestionCard suggestion={latestSuggestion} isLatest />
-            )}
-
+          <div className="space-y-3">
+            {latestSuggestion && <SuggestionCard suggestion={latestSuggestion} isLatest />}
             {olderSuggestions.length > 0 && (
               <>
-                <h2 className="text-gray-500 text-sm font-medium pt-2">Previous advice</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-wider pt-2" style={{ color: '#736554' }}>
+                  Previous advice
+                </h2>
                 {olderSuggestions.map((s) => (
                   <SuggestionCard key={s.id} suggestion={s} />
                 ))}
@@ -129,9 +123,12 @@ export default function SuggestionsPage() {
         )}
 
         {/* How it works */}
-        <div className="mt-10 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-          <h3 className="text-gray-300 font-semibold text-sm mb-3">How it works</h3>
-          <ul className="text-gray-500 text-sm space-y-1.5">
+        <div
+          className="mt-10 rounded-2xl p-5"
+          style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+        >
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1E1611' }}>How it works</h3>
+          <ul className="text-sm space-y-1.5" style={{ color: '#736554' }}>
             <li>• Claude looks at your planned runs for the last 2 weeks</li>
             <li>• It compares them against what you actually ran (distance, pace, HR)</li>
             <li>• It suggests 1–2 concrete adjustments for the coming week</li>

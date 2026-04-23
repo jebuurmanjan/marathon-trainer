@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI Preview — Sub 3:30 Marathon Trainer</title>
+
+  <!-- Nohemi SemiBold 600 — self-hosted (cdnfonts CDN is Cloudflare-blocked) -->
+  <style>
+    @font-face {
+      font-family: 'Nohemi';
+      src: url('fonts/Nohemi-SemiBold.woff') format('woff');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+  <!-- Satoshi (Komoot body font, via Fontshare) -->
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* === Komoot Brand — Light Theme === */
+    :root {
+      /* Backgrounds */
+      --bg:         #F5F3EC;   /* Warm off-white page background */
+      --surface:    #EDE9DE;   /* Card surface */
+      --surface-2:  #F5F4F2;   /* Elevated surface / nav tabs bg */
+      --surface-3:  #E3D2B4;   /* Hover / selected state — warm tan */
+
+      /* Borders */
+      --border:         rgba(43, 49, 23, 0.08);   /* Dark green tint, very faint */
+      --border-md:      rgba(43, 49, 23, 0.14);   /* Hover border */
+      --border-accent:  rgba(238, 107, 23, 0.30); /* Orange accent border */
+
+      /* Brand accents */
+      --orange:      #EE6B17;
+      --orange-dim:  rgba(238, 107, 23, 0.12);
+      --orange-glow: rgba(238, 107, 23, 0.06);
+
+      --green:       #4A5427;   /* Dark forest green — nav, CTAs, icons */
+      --green-dim:   rgba(74, 84, 39, 0.10);
+      --green-deep:  #2B3117;   /* Darkest green (headlines, logo bg) */
+
+      --violet:      #8879E1;
+      --violet-dim:  rgba(136, 121, 225, 0.12);
+
+      --tan:         #E3D2B4;   /* Warm neutral */
+      --tan-dim:     rgba(227, 210, 180, 0.50);   /* Heavier fill for light bg */
+
+      /* Typography */
+      --text:        #1E1611;   /* Primary text — near-black brown */
+      --text-muted:  #4A5427;   /* Secondary text — dark green */
+      --text-dim:    #736554;   /* Disabled / faint — mid brown */
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Satoshi', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Nohemi at 600 weight for all display text */
+    h1, h2, h3, .nohemi {
+      font-family: 'Nohemi', 'Inter', system-ui, sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    /* ── Subtle warm grain texture on bg ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: .4;
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: rgba(245,243,236,0.92);
+      backdrop-filter: blur(14px);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 20px; height: 56px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 16px;
+      position: relative; z-index: 1;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo .icon {
+      width: 30px; height: 30px;
+      background: var(--orange);
+      border-radius: 7px;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 15px;
+    }
+    .nav-logo .name {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 16px;
+      letter-spacing: -0.025em; color: var(--text);
+    }
+    .nav-logo .name em { color: var(--orange); font-style: normal; }
+
+    .nav-tabs {
+      display: flex; gap: 1px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 3px;
+    }
+    .nav-tab {
+      padding: 5px 14px; border-radius: 7px;
+      font-size: 13px; font-weight: 500;
+      font-family: 'Satoshi', sans-serif;
+      color: var(--text-muted); cursor: pointer;
+      transition: all .15s; border: none; background: none;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active {
+      background: var(--surface-3);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(43,49,23,.12);
+    }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--orange); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: white;
+    }
+    .btn-ghost {
+      font-size: 12px; color: var(--text-muted);
+      background: none; border: 1px solid var(--border);
+      border-radius: 7px; padding: 5px 10px;
+      cursor: pointer; font-family: 'Satoshi', sans-serif;
+      transition: all .15s;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-md); }
+
+    /* ── Pages ── */
+    .page { display: none; }
+    .page.active { display: block; }
+    main {
+      max-width: 1100px; margin: 0 auto;
+      padding: 28px 20px 80px;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Stat grid ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px; margin-bottom: 22px;
+    }
+    @media(max-width:680px){ .stat-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 16px;
+      position: relative; overflow: hidden;
+      transition: border-color .2s, background .2s;
+    }
+    .stat-card:hover { background: var(--surface-2); border-color: var(--border-md); }
+    .stat-card.accent { border-color: var(--border-accent); }
+    .stat-card.accent::after {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 80px; height: 80px;
+      background: radial-gradient(circle at top right, var(--orange-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .stat-label {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-muted); margin-bottom: 8px;
+    }
+    .stat-value {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 30px;
+      letter-spacing: -0.04em; line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-card.accent .stat-value { color: var(--orange); }
+    .stat-unit { font-size: 15px; color: var(--text-muted); font-weight: 400; }
+    .stat-sub { font-size: 11px; color: var(--text-dim); }
+
+    /* ── Controls bar ── */
+    .controls {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 18px;
+    }
+    .filter-tabs {
+      display: flex; gap: 1px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 3px;
+    }
+    .filter-tab {
+      padding: 6px 14px; border-radius: 7px;
+      font-size: 13px; font-weight: 500;
+      font-family: 'Satoshi', sans-serif;
+      color: var(--text-muted); cursor: pointer;
+      border: none; background: none; transition: all .15s;
+    }
+    .filter-tab.active { background: var(--surface-3); color: var(--text); }
+    .filter-tab:hover:not(.active) { color: var(--text); }
+
+    .btn-sync {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--orange); color: white;
+      border: none; border-radius: 10px;
+      padding: 8px 16px; font-size: 13px; font-weight: 600;
+      font-family: 'Satoshi', sans-serif;
+      cursor: pointer; transition: background .15s, transform .1s;
+    }
+    .btn-sync:hover { background: #d85f12; transform: translateY(-1px); }
+    .btn-sync svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ── Current week banner ── */
+    .banner {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--orange-dim);
+      border: 1px solid var(--border-accent);
+      border-radius: 11px; padding: 11px 16px;
+      margin-bottom: 18px; font-size: 13px; font-weight: 500;
+      color: var(--orange); line-height: 1.4;
+    }
+    .banner svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* ── Week card ── */
+    .week-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; margin-bottom: 8px;
+      overflow: hidden; transition: border-color .2s;
+    }
+    .week-card:hover { border-color: var(--border-md); }
+    .week-card.current { border-color: var(--border-accent); }
+
+    .week-header {
+      display: flex; align-items: center;
+      gap: 12px; padding: 15px 18px; cursor: pointer;
+    }
+
+    .week-num {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 12px;
+      letter-spacing: 0.02em; color: var(--text-dim);
+      min-width: 26px;
+    }
+    .week-num.now { color: var(--orange); }
+
+    /* Phase badge */
+    .phase {
+      display: inline-flex; align-items: center;
+      font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 3px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .phase-base    { background: var(--tan-dim);    color: var(--text-dim); }
+    .phase-build   { background: var(--violet-dim); color: var(--violet); }
+    .phase-peak    { background: var(--orange-dim); color: var(--orange); }
+    .phase-taper   { background: var(--green-dim);  color: var(--green); }
+
+    .week-info { flex: 1; min-width: 0; }
+    .week-title {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 14px;
+      letter-spacing: -0.01em; line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .week-dates { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .week-km { text-align: right; flex-shrink: 0; }
+    .week-km-val {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 19px;
+      letter-spacing: -0.03em; line-height: 1;
+    }
+    .week-km-actual { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 2px; }
+    .week-km-label  { font-size: 10px; color: var(--text-dim); }
+
+    /* Progress bar under header */
+    .week-bar { height: 2px; background: var(--surface-2); }
+    .week-bar-fill { height: 2px; background: var(--green); border-radius: 1px; }
+
+    /* Expanded runs */
+    .week-runs {
+      padding: 10px 18px 14px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .run-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: var(--surface-2);
+      border-radius: 9px; border: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .run-row:hover { background: var(--surface-3); }
+
+    /* Run type colour dot */
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-easy     { background: var(--green); }
+    .dot-tempo    { background: var(--orange); }
+    .dot-long     { background: var(--violet); }
+    .dot-interval { background: var(--text-dim); }   /* tan too light on light bg */
+    .dot-rest     { background: rgba(43,49,23,0.20); }
+
+    .run-day  { font-size: 10px; color: var(--text-muted); font-weight: 600; min-width: 24px; }
+    .run-desc { flex: 1; font-size: 12px; color: var(--text); }
+    .run-km   {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 13px;
+      letter-spacing: -0.01em; color: var(--text-muted);
+    }
+    .run-actual { font-size: 10px; color: var(--green); font-weight: 600; margin-left: 2px; }
+
+    /* ── Progress page ── */
+    .section-title {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 17px;
+      letter-spacing: -0.02em; margin-bottom: 12px; color: var(--text);
+    }
+
+    .chart-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px; margin-bottom: 18px;
+    }
+    .chart-bars {
+      display: flex; align-items: flex-end; gap: 5px;
+      height: 130px; padding-bottom: 26px; position: relative;
+    }
+    .bar-group {
+      flex: 1; display: flex; gap: 2px;
+      align-items: flex-end; position: relative;
+    }
+    .bar {
+      flex: 1; border-radius: 3px 3px 0 0;
+      min-height: 2px; transition: opacity .15s;
+    }
+    .bar-planned { background: rgba(43,49,23,0.12); }
+    .bar-actual  { background: var(--green); }
+    .bar-label {
+      position: absolute; bottom: -22px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px; color: var(--text-muted); font-weight: 600;
+      white-space: nowrap;
+    }
+    .chart-legend { display: flex; gap: 14px; margin-top: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+    .legend-swatch { width: 8px; height: 8px; border-radius: 2px; }
+
+    .runs-table {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-muted); padding: 11px 16px;
+      text-align: left; border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    td {
+      padding: 11px 16px; font-size: 13px;
+      border-bottom: 1px solid rgba(43,49,23,0.05);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(43,49,23,0.03); }
+    .td-mono {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; letter-spacing: -0.02em;
+    }
+    .run-tag {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 2px 7px; border-radius: 20px;
+    }
+
+    /* ── AI Coach page ── */
+    .coach-hero {
+      display: flex; align-items: center;
+      gap: 14px; margin-bottom: 22px;
+    }
+    .coach-icon-wrap {
+      width: 46px; height: 46px;
+      background: var(--orange-dim);
+      border: 1px solid var(--border-accent);
+      border-radius: 13px;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 20px; flex-shrink: 0;
+    }
+    .coach-heading {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 21px;
+      letter-spacing: -0.03em;
+    }
+    .coach-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .btn-generate {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--orange); color: white;
+      border: none; border-radius: 11px;
+      padding: 11px 20px; font-size: 13px; font-weight: 600;
+      font-family: 'Satoshi', sans-serif;
+      cursor: pointer; margin-bottom: 20px;
+      transition: background .15s, transform .1s, box-shadow .15s;
+    }
+    .btn-generate:hover {
+      background: #d85f12; transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(238,107,23,.25);
+    }
+    .btn-generate svg { width: 14px; height: 14px; }
+
+    .insight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--orange);
+      border-radius: 14px; padding: 20px 20px 20px 19px;
+      margin-bottom: 10px;
+      transition: border-color .2s;
+    }
+    .insight-card:hover { border-color: var(--border-md); border-left-color: var(--orange); }
+    .insight-card.violet { border-left-color: var(--violet); }
+    .insight-meta {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px;
+    }
+    .insight-tag {
+      font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.09em;
+      color: var(--orange); background: var(--orange-dim);
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .insight-tag.violet-tag { color: var(--violet); background: var(--violet-dim); }
+    .insight-date { font-size: 11px; color: var(--text-muted); }
+    .insight-title {
+      font-family: 'Nohemi', 'Inter', sans-serif;
+      font-weight: 600; font-size: 15px;
+      letter-spacing: -0.015em; margin-bottom: 8px; line-height: 1.3;
+    }
+    .insight-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+    .insight-body strong { color: var(--text); font-weight: 600; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ Navigation ════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="icon">⏱</div>
+      <span class="name">Sub <em>3:30</em></span>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('plan',this)">Plan</button>
+      <button class="nav-tab" onclick="showPage('progress',this)">Progress</button>
+      <button class="nav-tab" onclick="showPage('coach',this)">AI Coach</button>
+    </div>
+
+    <div class="nav-right">
+      <div class="avatar">JB</div>
+      <button class="btn-ghost">Log out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ PLAN PAGE ══════════════════════════════════════════════ -->
+<div id="page-plan" class="page active">
+  <main>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-card accent">
+        <div class="stat-label">Days to race</div>
+        <div class="stat-value">192</div>
+        <div class="stat-sub">1 November 2026</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Current week</div>
+        <div class="stat-value">1<span class="stat-unit">/27</span></div>
+        <div class="stat-sub">BASE BUILDING</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Km logged</div>
+        <div class="stat-value">0</div>
+        <div class="stat-sub">of ~50 km planned</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Target pace</div>
+        <div class="stat-value">4:58<span class="stat-unit">/km</span></div>
+        <div class="stat-sub">sub 3:30 marathon</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="setFilter(this)">Upcoming</button>
+        <button class="filter-tab" onclick="setFilter(this)">All</button>
+        <button class="filter-tab" onclick="setFilter(this)">Past</button>
+      </div>
+      <button class="btn-sync">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+        </svg>
+        Sync Strava
+      </button>
+    </div>
+
+    <!-- Banner -->
+    <div class="banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+      </svg>
+      Week 1 — Base Building. Keep your easy runs genuinely easy. Aerobic adaptation happens at low intensity.
+    </div>
+
+    <!-- Week 1 — current (expanded) -->
+    <div class="week-card current">
+      <div class="week-header" onclick="toggleWeek(this)">
+        <div class="week-num now">W1</div>
+        <span class="phase phase-base">Base</span>
+        <div class="week-info">
+          <div class="week-title">Aerobic Base — Get Moving</div>
+          <div class="week-dates">27 Apr – 3 May 2026</div>
+        </div>
+        <div class="week-km">
+          <div class="week-km-val">50 km</div>
+          <div class="week-km-actual">0 / 50 km</div>
+          <div class="week-km-label">this week</div>
+        </div>
+      </div>
+      <div class="week-bar"><div class="week-bar-fill" style="width:0%"></div></div>
+      <div class="week-runs">
+        <div class="run-row">
+          <span class="dot dot-easy"></span>
+          <span class="run-day">Mon</span>
+          <span class="run-desc">Easy run — conversational effort</span>
+          <span class="run-km">10 km</span>
+        </div>
+        <div class="run-row">
+          <span class="dot dot-rest"></span>
+          <span class="run-day">Tue</span>
+          <span class="run-desc">Rest or cross-training</span>
+          <span class="run-km" style="color:var(--text-dim)">—</span>
+        </div>
+        <div class="run-row">
+          <span class="dot dot-tempo"></span>
+          <span class="run-day">Wed</span>
+          <span class="run-desc">Aerobic tempo @ 5:15/km</span>
+          <span class="run-km">12 km</span>
+        </div>
+        <div class="run-row">
+          <span class="dot dot-rest"></span>
+          <span class="run-day">Thu</span>
+          <span class="run-desc">Rest</span>
+          <span class="run-km" style="color:var(--text-dim)">—</span>
+        </div>
+        <div class="run-row">
+          <span class="dot dot-easy"></span>
+          <span class="run-day">Fri</span>
+          <span class="run-desc">Easy run</span>
+          <span class="run-km">8 km</span>
+        </div>
+        <div class="run-row">
+          <span class="dot dot-long"></span>
+          <span class="run-day">Sun</span>
+          <span class="run-desc">Long run — easy effort @ 5:30/km</span>
+          <span class="run-km">20 km</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week 2 -->
+    <div class="week-card">
+      <div class="week-header" onclick="toggleWeek(this)">
+        <div class="week-num">W2</div>
+        <span class="phase phase-base">Base</span>
+        <div class="week-info">
+          <div class="week-title">Aerobic Base — Build Consistency</div>
+          <div class="week-dates">4 May – 10 May 2026</div>
+        </div>
+        <div class="week-km">
+          <div class="week-km-val">55 km</div>
+          <div class="week-km-label">target</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week 3 -->
+    <div class="week-card">
+      <div class="week-header" onclick="toggleWeek(this)">
+        <div class="week-num">W3</div>
+        <span class="phase phase-build">Build</span>
+        <div class="week-info">
+          <div class="week-title">Aerobic Development — Add Tempo</div>
+          <div class="week-dates">11 May – 17 May 2026</div>
+        </div>
+        <div class="week-km">
+          <div class="week-km-val">60 km</div>
+          <div class="week-km-label">target</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week 4 (build) -->
+    <div class="week-card">
+      <div class="week-header" onclick="toggleWeek(this)">
+        <div class="week-num">W4</div>
+        <span class="phase phase-build">Build</span>
+        <div class="week-info">
+          <div class="week-title">Threshold Introduction</div>
+          <div class="week-dates">18 May – 24 May 2026</div>
+        </div>
+        <div class="week-km">
+          <div class="week-km-val">65 km</div>
+          <div class="week-km-label">target</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week X – peak preview -->
+    <div class="week-card" style="opacity:.5">
+      <div class="week-header">
+        <div class="week-num">W18</div>
+        <span class="phase phase-peak">Peak</span>
+        <div class="week-info">
+          <div class="week-title">Peak Volume Week</div>
+          <div class="week-dates">17 Aug – 23 Aug 2026</div>
+        </div>
+        <div class="week-km">
+          <div class="week-km-val">90 km</div>
+          <div class="week-km-label">target</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Taper preview -->
+    <div class="week-card" style="opacity:.5">
+      <div class="week-header">
+        <div class="week-num">W25</div>
+        <span class="phase phase-taper">Taper</span>
+        <div class="week-info">
+          <div class="week-title">Taper — Trust the Process</div>
+          <div class="week-dates">19 Oct – 25 Oct 2026</div>
+        </div>
+        <div class="week-km">
+          <div class="week-km-val">40 km</div>
+          <div class="week-km-label">target</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ PROGRESS PAGE ══════════════════════════════════════════ -->
+<div id="page-progress" class="page">
+  <main>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total logged</div>
+        <div class="stat-value">312</div>
+        <div class="stat-sub">km across 8 weeks</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Compliance</div>
+        <div class="stat-value">94<span class="stat-unit">%</span></div>
+        <div class="stat-sub">of planned volume</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Longest run</div>
+        <div class="stat-value">28</div>
+        <div class="stat-sub">km · 5:18/km avg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg weekly</div>
+        <div class="stat-value">39</div>
+        <div class="stat-sub">km · plan: 41 km</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Weekly volume</h2>
+    <div class="chart-wrap">
+      <div class="chart-bars" id="chart"></div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:rgba(43,49,23,.15)"></div>Planned
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--green)"></div>Actual
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Recent runs</h2>
+    <div class="runs-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Type</th><th>Distance</th><th>Pace</th><th>HR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text-muted)">Sun 19 Apr</td>
+            <td><span class="run-tag" style="background:var(--violet-dim);color:var(--violet)">Long</span></td>
+            <td class="td-mono">28.1 km</td>
+            <td class="td-mono">5:18/km</td>
+            <td style="color:var(--text-muted)">148 bpm</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-muted)">Fri 17 Apr</td>
+            <td><span class="run-tag" style="background:var(--orange-dim);color:var(--orange)">Tempo</span></td>
+            <td class="td-mono">12.0 km</td>
+            <td class="td-mono">4:52/km</td>
+            <td style="color:var(--text-muted)">162 bpm</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-muted)">Wed 15 Apr</td>
+            <td><span class="run-tag" style="background:var(--green-dim);color:var(--green)">Easy</span></td>
+            <td class="td-mono">10.5 km</td>
+            <td class="td-mono">5:32/km</td>
+            <td style="color:var(--text-muted)">135 bpm</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-muted)">Sun 12 Apr</td>
+            <td><span class="run-tag" style="background:var(--violet-dim);color:var(--violet)">Long</span></td>
+            <td class="td-mono">24.0 km</td>
+            <td class="td-mono">5:22/km</td>
+            <td style="color:var(--text-muted)">144 bpm</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-muted)">Thu 10 Apr</td>
+            <td><span class="run-tag" style="background:var(--tan-dim);color:var(--text-dim)">Intervals</span></td>
+            <td class="td-mono">9.2 km</td>
+            <td class="td-mono">4:25/km</td>
+            <td style="color:var(--text-muted)">174 bpm</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-muted)">Mon 7 Apr</td>
+            <td><span class="run-tag" style="background:var(--green-dim);color:var(--green)">Easy</span></td>
+            <td class="td-mono">8.0 km</td>
+            <td class="td-mono">5:41/km</td>
+            <td style="color:var(--text-muted)">129 bpm</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ AI COACH PAGE ══════════════════════════════════════════ -->
+<div id="page-coach" class="page">
+  <main>
+
+    <div class="coach-hero">
+      <div class="coach-icon-wrap">🤖</div>
+      <div>
+        <div class="coach-heading">AI Coaching</div>
+        <div class="coach-sub">Personalised advice based on your Strava data and training plan</div>
+      </div>
+    </div>
+
+    <button class="btn-generate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-5 3.63a1 1 0 00-.36 1.12L17.52 20 12 16.37 6.48 20l1.88-5.8a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/>
+      </svg>
+      Get coaching advice
+    </button>
+
+    <div class="insight-card">
+      <div class="insight-meta">
+        <span class="insight-tag">Week 1 · Pacing</span>
+        <span class="insight-date">23 Apr 2026</span>
+      </div>
+      <div class="insight-title">Your easy runs are too fast — slow down to build your aerobic base</div>
+      <div class="insight-body">
+        Your recent "easy" runs are averaging 4:58/km — that's marathon pace. For true aerobic base building, aim for <strong>5:20–5:40/km</strong>. The goal this week is aerobic adaptation, not fitness. Running too hard on easy days limits how hard you can push on quality sessions.
+        <br><br>
+        Try the talk test: if you can't hold a full conversation, you're going too fast. Your Sunday long run is the week's most important session — keep it at 5:30/km or slower.
+      </div>
+    </div>
+
+    <div class="insight-card violet">
+      <div class="insight-meta">
+        <span class="insight-tag violet-tag">Week 1 · Volume</span>
+        <span class="insight-date">23 Apr 2026</span>
+      </div>
+      <div class="insight-title">Strong base — you're ready to follow the plan as written</div>
+      <div class="insight-body">
+        Your last 4 weeks averaged 42 km with consistent 5–6 runs. Starting at 50 km in Week 1 is a ~19% increase — on the high end but manageable given your history.
+        <br><br>
+        Consider swapping Thursday's rest day for a 6–8 km recovery jog if your legs feel good mid-week. This helps hit the target without cramming volume onto the weekend.
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-meta">
+        <span class="insight-tag">Race strategy</span>
+        <span class="insight-date">20 Apr 2026</span>
+      </div>
+      <div class="insight-title">Sub 3:30 is realistic — your 27-week checkpoint framework</div>
+      <div class="insight-body">
+        Based on your 3:35 PB and current fitness, sub 3:30 (4:58/km) is achievable. Key milestones:<br><br>
+        <strong>Weeks 1–8</strong> (Base): long run reaches 28 km at ≤5:30/km<br>
+        <strong>Weeks 9–18</strong> (Build): threshold runs at 4:40–4:50/km without excessive HR<br>
+        <strong>Weeks 19–24</strong> (Peak): MP runs at 4:58/km feeling controlled<br>
+        <strong>Weeks 25–27</strong> (Taper): reduce volume 30–40%, trust the process
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'))
+    document.getElementById('page-' + name).classList.add('active')
+    btn.classList.add('active')
+    window.scrollTo(0, 0)
+  }
+
+  function setFilter(btn) {
+    btn.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'))
+    btn.classList.add('active')
+  }
+
+  function toggleWeek(header) {
+    const runs = header.parentElement.querySelector('.week-runs')
+    const bar  = header.parentElement.querySelector('.week-bar')
+    if (!runs) return
+    const open = runs.style.display !== 'none' && runs.innerHTML
+    if (open && runs.style.display !== 'none') {
+      runs.style.display = 'none'
+    } else {
+      runs.style.display = 'flex'
+    }
+  }
+
+  // Bar chart
+  const weeks = [
+    { w:'W−8', p:35, a:38 }, { w:'W−7', p:38, a:41 },
+    { w:'W−6', p:40, a:37 }, { w:'W−5', p:42, a:44 },
+    { w:'W−4', p:40, a:42 }, { w:'W−3', p:45, a:43 },
+    { w:'W−2', p:42, a:45 }, { w:'W−1', p:42, a:42 },
+  ]
+  const maxKm = Math.max(...weeks.map(d => Math.max(d.p, d.a)))
+  const chartH = 104
+  const el = document.getElementById('chart')
+  weeks.forEach(d => {
+    const g = document.createElement('div'); g.className = 'bar-group'
+    const bp = document.createElement('div')
+    bp.className = 'bar bar-planned'
+    bp.style.height = Math.round(d.p/maxKm*chartH)+'px'
+    bp.title = `Planned: ${d.p} km`
+    const ba = document.createElement('div')
+    ba.className = 'bar bar-actual'
+    ba.style.height = Math.round(d.a/maxKm*chartH)+'px'
+    ba.title = `Actual: ${d.a} km`
+    const lbl = document.createElement('div'); lbl.className = 'bar-label'; lbl.textContent = d.w
+    g.appendChild(bp); g.appendChild(ba); g.appendChild(lbl)
+    el.appendChild(g)
+  })
+</script>
+</body>
+</html>
