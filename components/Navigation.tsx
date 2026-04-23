@@ -68,10 +68,13 @@ export default function Navigation({ userName }: NavigationProps) {
               aria-label="Go to plan"
             >
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm"
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
                 style={{ background: '#EE6B17' }}
               >
-                ⏱
+                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
               </div>
               <span
                 style={{
