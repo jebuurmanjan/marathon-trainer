@@ -34,7 +34,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         <h1 className="text-4xl font-bold text-white mb-2">Sub 3:30</h1>
         <p className="text-gray-400 text-lg mb-1">Marathon Trainer</p>
         <p className="text-gray-600 text-sm mb-10">
-          October 25, 2026 · 26 weeks · Your plan, your data
+          November 1, 2026 · 27 weeks · Your plan, your data
         </p>
 
         {/* Stats */}
@@ -42,7 +42,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           {[
             { label: 'Best marathon', value: '3:35' },
             { label: 'Target', value: '3:30' },
-            { label: 'Weeks to go', value: '26' },
+            { label: 'Weeks to go', value: '27' },
           ].map((stat) => (
             <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-xl p-3">
               <div className="text-white font-bold text-xl">{stat.value}</div>

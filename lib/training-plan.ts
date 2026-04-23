@@ -1,9 +1,9 @@
 import { Week, PlannedRun, Phase, RunType } from '@/types'
 
 // Week 1 starts Monday April 27, 2026
-// Race day: Sunday October 25, 2026 (26 weeks later)
+// Race day: Sunday November 1, 2026 (27 weeks later)
 export const PLAN_START_DATE = '2026-04-27'
-export const RACE_DATE = '2026-10-25'
+export const RACE_DATE = '2026-11-01'
 
 // Target paces (min/km)
 export const PACES = {
@@ -308,7 +308,7 @@ const weekDefs: WeekDef[] = [
     ],
   },
 
-  // ── PHASE 5: TAPER (Weeks 25–26) ───────────────────────────────────────────
+  // ── PHASE 5: TAPER (Weeks 25–27) ───────────────────────────────────────────
   {
     // Week 25 — Oct 13
     phase: 'taper',
@@ -317,18 +317,29 @@ const weekDefs: WeekDef[] = [
       { dayOffset: 1, type: 'easy', km: 6, description: 'Easy 6 km. Keep it slow and short.' },
       { dayOffset: 3, type: 'quality', km: 8, pace: PACES.mp, description: 'MP tune-up: 2 km warm-up + 3 km at MP + 2 km easy + 4×100 m strides. Remind your legs what race pace feels like.' },
       { dayOffset: 5, type: 'medium_long', km: 7, description: 'Easy 7 km. Nothing heroic. Stay off your feet otherwise.' },
-      { dayOffset: 6, type: 'long', km: 14, description: 'Last long run — 14 km, fully easy. Resist all urge to push. The race is 9 days away.' },
+      { dayOffset: 6, type: 'long', km: 14, description: 'Long run 14 km, fully easy. Resist all urge to push. The race is 16 days away.' },
     ],
   },
   {
-    // Week 26 — Oct 20 — RACE WEEK
+    // Week 26 — Oct 19 — PRE-RACE WEEK
     phase: 'taper',
-    notes: 'Race week. Sleep, eat, rest. Everything you do this week is just maintenance. The work is done.',
+    notes: 'Final week before race week. Very light — keep the legs ticking over but nothing that causes fatigue. Sleep is your best training now.',
     runs: [
-      { dayOffset: 1, type: 'easy', km: 5, description: 'Easy 5 km + 4×100 m strides. Keep the engine ticking.' },
-      { dayOffset: 3, type: 'easy', km: 4, description: 'Easy 4 km. Gentle jog. Stay loose.' },
-      { dayOffset: 5, type: 'easy', km: 3, description: 'Pre-race shake-out: easy 3 km + 4×100 m strides. Wear race kit, run race pace for 60 sec to feel ready.' },
-      { dayOffset: 6, type: 'race', km: 42.2, pace: PACES.mp, description: '🏁 RACE DAY — Sub 3:30 target. Start conservative (first 5 km at 5:05/km), lock into 4:58/km from km 5–35, then empty the tank. You are ready.' },
+      { dayOffset: 1, type: 'easy', km: 5, description: 'Easy 5 km + 4×100 m strides. Keep the engine ticking. Race is 10 days away.' },
+      { dayOffset: 3, type: 'easy', km: 4, description: 'Easy 4 km. Gentle jog. Nothing more. Stay off your feet the rest of the day.' },
+      { dayOffset: 5, type: 'easy', km: 6, description: 'Easy 6 km with 4×100 m strides at the end. Wear your race kit and race shoes — do a quick systems check.' },
+      { dayOffset: 6, type: 'easy', km: 4, description: 'Easy 4 km. Last run with any real substance. Enjoy it — next Sunday is the big one.' },
+    ],
+  },
+  {
+    // Week 27 — Oct 26 — RACE WEEK (race Sunday November 1)
+    phase: 'taper',
+    notes: 'Race week. Sleep, eat well, rest. Everything this week is just maintenance. The work is done — trust it.',
+    runs: [
+      { dayOffset: 1, type: 'easy', km: 4, description: 'Easy 4 km + 4×100 m strides. Keep the engine warm. Race is 5 days away.' },
+      { dayOffset: 3, type: 'easy', km: 3, description: 'Easy 3 km. Gentle jog only. Stay loose, stay calm.' },
+      { dayOffset: 5, type: 'easy', km: 2, description: 'Pre-race shake-out: easy 2 km + 4×100 m strides. Wear race kit, run 60 sec at race pace to feel ready. Then rest completely.' },
+      { dayOffset: 6, type: 'race', km: 42.2, pace: PACES.mp, description: '🏁 RACE DAY — November 1 — Sub 3:30 target. Start conservative (first 5 km at 5:05/km), lock into 4:58/km from km 5–35, then empty the tank. You are ready.' },
     ],
   },
 ]

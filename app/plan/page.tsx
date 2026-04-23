@@ -92,7 +92,7 @@ export default function PlanPage() {
             {
               label: 'Days to race',
               value: daysToRace > 0 ? daysToRace : '🏁',
-              sub: new Date(RACE_DATE).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }),
+              sub: new Date(RACE_DATE + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }),
             },
             {
               label: 'Current week',
