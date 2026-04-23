@@ -41,6 +41,13 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
 
   const badge = PHASE_BADGE[week.phase] ?? { bg: 'rgba(43,49,23,0.08)', color: '#736554' }
 
+  // Summary line shown in collapsed state
+  const summaryHint = isPastWeek
+    ? `${completedRuns}/${week.runs.length} runs completed — click to expand`
+    : isCurrentWeek
+    ? `${week.runs.length} sessions this week — click to collapse`
+    : `${week.runs.length} sessions planned — click to expand`
+
   return (
     <div
       id={`week-${week.weekNumber}`}
@@ -52,107 +59,107 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
           : '1px solid rgba(43,49,23,0.08)',
       }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4">
-        {/* Week number */}
-        <span
-          className="text-xs font-semibold min-w-[28px]"
-          style={{
-            fontFamily: 'Nohemi, Inter, sans-serif',
-            fontWeight: 600,
-            color: isCurrentWeek ? '#EE6B17' : '#736554',
-          }}
-        >
-          W{week.weekNumber}
-        </span>
+      {/* <details> wraps everything — current week open by default */}
+      <details open={isCurrentWeek}>
+        {/* The <summary> is the clickable header row */}
+        <summary className="list-none cursor-pointer select-none" style={{ outline: 'none' }}>
+          {/* Week header */}
+          <div className="flex items-center gap-3 px-5 py-4">
+            {/* Week number */}
+            <span
+              className="text-xs font-semibold min-w-[28px]"
+              style={{
+                fontFamily: 'Nohemi, Inter, sans-serif',
+                fontWeight: 600,
+                color: isCurrentWeek ? '#EE6B17' : '#736554',
+              }}
+            >
+              W{week.weekNumber}
+            </span>
 
-        {/* Phase badge */}
-        <span
-          className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap"
-          style={{ background: badge.bg, color: badge.color }}
-        >
-          {PHASE_LABELS[week.phase]}
-          {week.isCutback ? ' · Cutback' : ''}
-        </span>
+            {/* Phase badge */}
+            <span
+              className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap"
+              style={{ background: badge.bg, color: badge.color }}
+            >
+              {PHASE_LABELS[week.phase]}
+              {week.isCutback ? ' · Cutback' : ''}
+            </span>
 
-        {/* Title + dates */}
-        <div className="flex-1 min-w-0">
-          <div
-            className="text-sm font-semibold truncate"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.01em', color: '#1E1611' }}
-          >
-            {week.notes}
-          </div>
-          <div className="text-[11px] mt-0.5" style={{ color: '#4A5427' }}>
-            {startLabel} – {endLabel}
-          </div>
-        </div>
+            {/* Title + dates */}
+            <div className="flex-1 min-w-0">
+              <div
+                className="text-sm font-semibold truncate"
+                style={{
+                  fontFamily: 'Nohemi, Inter, sans-serif',
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em',
+                  color: '#1E1611',
+                }}
+              >
+                {week.notes}
+              </div>
+              <div className="text-[11px] mt-0.5" style={{ color: '#4A5427' }}>
+                {startLabel} – {endLabel}
+              </div>
+            </div>
 
-        {/* KM */}
-        <div className="text-right shrink-0">
-          <div
-            className="text-lg leading-none"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
-          >
-            {week.targetKm} km
+            {/* KM + expand hint */}
+            <div className="text-right shrink-0">
+              <div
+                className="text-lg leading-none"
+                style={{
+                  fontFamily: 'Nohemi, Inter, sans-serif',
+                  fontWeight: 600,
+                  letterSpacing: '-0.03em',
+                  color: '#1E1611',
+                }}
+              >
+                {week.targetKm} km
+              </div>
+              {(isCurrentWeek || isPastWeek) && (
+                <div className="text-[11px] mt-0.5 font-semibold" style={{ color: '#4A5427' }}>
+                  {totalKmActual.toFixed(1)} logged
+                </div>
+              )}
+              <div className="text-[10px]" style={{ color: '#736554' }}>
+                {summaryHint.includes('expand') ? '▸ expand' : '▾ collapse'}
+              </div>
+            </div>
           </div>
+
+          {/* Progress bar (past + current weeks) */}
           {(isCurrentWeek || isPastWeek) && (
-            <div className="text-[11px] mt-0.5 font-semibold" style={{ color: '#4A5427' }}>
-              {totalKmActual.toFixed(1)} logged
+            <div style={{ height: '2px', background: '#F5F4F2' }}>
+              <div
+                style={{
+                  height: '2px',
+                  width: `${pct}%`,
+                  background: pct >= 90 ? '#4A5427' : '#EE6B17',
+                  borderRadius: '1px',
+                  transition: 'width 0.4s',
+                }}
+              />
             </div>
           )}
-          <div className="text-[10px]" style={{ color: '#736554' }}>target</div>
-        </div>
-      </div>
+        </summary>
 
-      {/* Progress bar */}
-      {(isCurrentWeek || isPastWeek) && (
-        <div style={{ height: '2px', background: '#F5F4F2' }}>
-          <div
-            style={{
-              height: '2px',
-              width: `${pct}%`,
-              background: pct >= 90 ? '#4A5427' : '#EE6B17',
-              borderRadius: '1px',
-              transition: 'width 0.4s',
-            }}
-          />
-        </div>
-      )}
-
-      {/* Run rows — always expanded for current week, collapsed for others */}
-      {isCurrentWeek && (
+        {/* Expanded run list — shown for ALL weeks when open */}
         <div className="px-4 pb-4 pt-2 flex flex-col gap-2">
           {week.runs.map((run) => {
             const actual = findActual(run.date)
             const runIsPast = run.date < today
             return (
-              <RunRow key={run.date} run={run} actual={actual} isPast={runIsPast && !actual} />
+              <RunRow
+                key={run.date}
+                run={run}
+                actual={actual}
+                isPast={runIsPast && !actual}
+              />
             )
           })}
         </div>
-      )}
-
-      {/* Past weeks: show collapsed run list */}
-      {isPastWeek && (
-        <details>
-          <summary
-            className="px-5 pb-3 text-xs font-medium cursor-pointer select-none"
-            style={{ color: '#736554' }}
-          >
-            {completedRuns}/{week.runs.length} runs · click to expand
-          </summary>
-          <div className="px-4 pb-4 flex flex-col gap-2">
-            {week.runs.map((run) => {
-              const actual = findActual(run.date)
-              const runIsPast = run.date < today
-              return (
-                <RunRow key={run.date} run={run} actual={actual} isPast={runIsPast && !actual} />
-              )
-            })}
-          </div>
-        </details>
-      )}
+      </details>
     </div>
   )
 }
