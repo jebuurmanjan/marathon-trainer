@@ -172,7 +172,7 @@ export default async function StatisticsPage({
     <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
       <Navigation userName={session.name} />
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-5 gap-4 flex-wrap">
           <div>
