@@ -69,12 +69,9 @@ export default function Navigation({ userName }: NavigationProps) {
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                style={{ background: '#EE6B17' }}
+                style={{ background: '#EE6B17', fontSize: '26px', lineHeight: 1 }}
               >
-                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
-                </svg>
+                ⏱
               </div>
               <span
                 style={{
