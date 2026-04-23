@@ -1,6 +1,7 @@
 import { Week, ActualRun } from '@/types'
 import RunRow from './RunRow'
 import { PHASE_LABELS } from '@/lib/training-plan'
+import { calcWeekScore, scoreColor, scoreLabel } from '@/lib/score'
 
 const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
   base:    { bg: 'rgba(227,210,180,0.50)', color: '#736554' },
@@ -40,6 +41,10 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
   })
 
   const badge = PHASE_BADGE[week.phase] ?? { bg: 'rgba(43,49,23,0.08)', color: '#736554' }
+
+  // Performance score — computed for past + current weeks only
+  const showScore = isCurrentWeek || isPastWeek
+  const score = showScore ? calcWeekScore(week, actualRuns, isCurrentWeek) : null
 
   // Summary line shown in collapsed state
   const summaryHint = isPastWeek
@@ -104,7 +109,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
               </div>
             </div>
 
-            {/* KM + expand hint */}
+            {/* KM + score + expand hint */}
             <div className="text-right shrink-0">
               <div
                 className="text-lg leading-none"
@@ -117,12 +122,90 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
               >
                 {week.targetKm} km
               </div>
+
               {(isCurrentWeek || isPastWeek) && (
                 <div className="text-[11px] mt-0.5 font-semibold" style={{ color: '#4A5427' }}>
                   {totalKmActual.toFixed(1)} logged
                 </div>
               )}
-              <div className="text-[10px]" style={{ color: '#736554' }}>
+
+              {/* Performance score */}
+              {score && score.total !== null && (
+                <div className="flex items-center justify-end gap-1 mt-1">
+                  <span className="text-[11px] font-bold tabular-nums" style={{ color: scoreColor(score.total) }}>
+                    {score.isPartial ? '~' : ''}{score.total}
+                    <span className="font-normal" style={{ opacity: 0.55 }}>/100</span>
+                  </span>
+
+                  {/* (i) icon — CSS-only hover tooltip */}
+                  <div className="relative group inline-flex items-center">
+                    <span
+                      className="flex items-center justify-center w-3.5 h-3.5 rounded-full text-[9px] font-bold cursor-help select-none"
+                      style={{ background: 'rgba(43,49,23,0.10)', color: '#736554', lineHeight: 1 }}
+                    >
+                      i
+                    </span>
+
+                    {/* Tooltip */}
+                    <div
+                      className="absolute bottom-full right-0 mb-2 w-60 rounded-xl px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30"
+                      style={{ background: '#2B3117', color: '#F5F3EC', boxShadow: '0 8px 24px rgba(0,0,0,0.28)' }}
+                    >
+                      {/* Arrow */}
+                      <div className="absolute -bottom-1.5 right-3 w-3 h-3 rotate-45" style={{ background: '#2B3117' }} />
+
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#E3D2B4' }}>
+                        Performance score
+                      </p>
+                      <p className="text-[11px] mb-2.5 leading-relaxed" style={{ color: '#C8BFA8' }}>
+                        Each week is rated 0–100 across three factors:
+                      </p>
+
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between items-center gap-2">
+                          <span style={{ color: '#C8BFA8' }}>Mileage — actual vs planned km</span>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: '#F5F3EC' }}>
+                            {score.mileage}/40
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center gap-2">
+                          <span style={{ color: '#C8BFA8' }}>Pace — closeness to target</span>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: '#F5F3EC' }}>
+                            {score.pace}/35
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center gap-2">
+                          <span style={{ color: '#C8BFA8' }}>
+                            HR — zone efficiency
+                            {!score.hrHasData && <span style={{ opacity: 0.6 }}> (est.)</span>}
+                          </span>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: '#F5F3EC' }}>
+                            {score.hr}/25
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        className="mt-2.5 pt-2 flex justify-between items-center text-[11px] border-t"
+                        style={{ borderColor: 'rgba(255,255,255,0.12)' }}
+                      >
+                        <span style={{ color: '#C8BFA8' }}>Total</span>
+                        <span className="font-bold" style={{ color: scoreColor(score.total) }}>
+                          {score.isPartial ? '~' : ''}{score.total} — {scoreLabel(score.total)}
+                          {score.isPartial && <span className="font-normal" style={{ opacity: 0.6 }}> (in progress)</span>}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Past week with zero runs logged */}
+              {score && score.total === null && isPastWeek && (
+                <div className="text-[11px] mt-1" style={{ color: '#A09880' }}>no data</div>
+              )}
+
+              <div className="text-[10px] mt-0.5" style={{ color: '#736554' }}>
                 {summaryHint.includes('expand') ? '▸ expand' : '▾ collapse'}
               </div>
             </div>
