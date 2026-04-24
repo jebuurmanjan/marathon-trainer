@@ -68,7 +68,8 @@ export async function getValidAccessToken(userId: string): Promise<string> {
   if (!user) throw new Error('User not found')
 
   const now = Math.floor(Date.now() / 1000)
-  if (user.strava_token_expires_at_unix > now + 300) {
+  const expiresAt = Math.floor(new Date(user.strava_token_expires_at).getTime() / 1000)
+  if (expiresAt > now + 300) {
     return user.strava_access_token
   }
 

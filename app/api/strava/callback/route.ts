@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { exchangeCode } from '@/lib/strava'
 import { createServerClient } from '@/lib/supabase'
 import { createSession, setSessionCookie } from '@/lib/session'
-import { JAN_CONFIG } from '@/lib/user-plan'
+import { JAN_CONFIG, generatePlanName } from '@/lib/user-plan'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -53,17 +53,20 @@ export async function GET(req: NextRequest) {
     // Auto-seed plan config for the primary athlete (Jan)
     if (allowedId && athlete.id === allowedId) {
       const { data: existing } = await db
-        .from('user_plans')
-        .select('user_id')
+        .from('training_plans')
+        .select('id')
         .eq('user_id', user.id)
+        .eq('is_active', true)
         .maybeSingle()
 
       if (!existing) {
-        await db.from('user_plans').insert({
+        await db.from('training_plans').insert({
           user_id:      user.id,
+          name:         generatePlanName(JAN_CONFIG.raceDate, JAN_CONFIG.goalSeconds),
           race_date:    JAN_CONFIG.raceDate,
           goal_seconds: JAN_CONFIG.goalSeconds,
           weekly_km:    JAN_CONFIG.weeklyKm,
+          is_active:    true,
         })
       }
     }
@@ -75,15 +78,16 @@ export async function GET(req: NextRequest) {
       name:     `${athlete.firstname} ${athlete.lastname}`,
     })
 
-    // Guests without a plan config go to onboarding
+    // Guests without an active plan go to onboarding
     const isJan = allowedId && athlete.id === allowedId
     let destination = '/plan'
 
     if (!isJan) {
       const { data: planRow } = await db
-        .from('user_plans')
-        .select('user_id')
+        .from('training_plans')
+        .select('id')
         .eq('user_id', user.id)
+        .eq('is_active', true)
         .maybeSingle()
 
       if (!planRow) destination = '/onboarding'

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase'
+import { generatePlanName } from '@/lib/user-plan'
 
-// POST /api/onboarding — save the guest user's plan config
+// POST /api/onboarding — save a new plan config (deactivates any existing active plan)
 export async function POST(req: Request) {
   const session = await getSession()
   if (!session) {
@@ -31,18 +32,25 @@ export async function POST(req: Request) {
   }
 
   const db = createServerClient()
+
+  // Deactivate any currently active plan for this user
+  await db
+    .from('training_plans')
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq('user_id', session.userId)
+    .eq('is_active', true)
+
+  // Insert the new active plan
   const { error } = await db
-    .from('user_plans')
-    .upsert(
-      {
-        user_id:      session.userId,
-        race_date:    raceDate,
-        goal_seconds: Math.round(goalSeconds),
-        weekly_km:    Math.round(weeklyKm),
-        updated_at:   new Date().toISOString(),
-      },
-      { onConflict: 'user_id' }
-    )
+    .from('training_plans')
+    .insert({
+      user_id:      session.userId,
+      name:         generatePlanName(raceDate, Math.round(goalSeconds)),
+      race_date:    raceDate,
+      goal_seconds: Math.round(goalSeconds),
+      weekly_km:    Math.round(weeklyKm),
+      is_active:    true,
+    })
 
   if (error) {
     console.error('Onboarding save error:', error)
