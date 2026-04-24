@@ -63,9 +63,9 @@ export default async function ProgressPage() {
             className="text-2xl"
             style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
           >
-            Progress
+            Marathon Plan
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>Week {currentWeek > 0 ? currentWeek : '—'} of 27 · training overview</p>
+          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>27 weeks · sub 3:30 goal</p>
         </div>
 
         <PlanTabs />

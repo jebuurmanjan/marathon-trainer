@@ -59,22 +59,25 @@ export default function SuggestionsPage() {
       <Navigation userName={userName} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <PlanTabs />
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-          <div>
-            <h1
-              className="text-2xl"
-              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
-            >
-              AI Coaching
-            </h1>
-            <p className="text-sm mt-1" style={{ color: '#4A5427' }}>
-              Claude analyses your training data and suggests adjustments.
-              {currentWeek > 0 && ` Week ${currentWeek} of 27.`}
-            </p>
-          </div>
+        {/* Page title */}
+        <div className="mb-5">
+          <h1
+            className="text-2xl"
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+          >
+            Marathon Plan
+          </h1>
+          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>27 weeks · sub 3:30 goal</p>
+        </div>
 
+        <PlanTabs />
+
+        {/* AI Coach action row */}
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <p className="text-sm" style={{ color: '#4A5427' }}>
+            Claude analyses your training data and suggests adjustments.
+            {currentWeek > 0 && ` Week ${currentWeek} of 27.`}
+          </p>
           <button
             onClick={handleGenerate}
             disabled={generating || currentWeek < 1 || currentWeek > 27}
