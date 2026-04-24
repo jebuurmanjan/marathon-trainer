@@ -13,7 +13,12 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default async function RunBuddyPage({ searchParams }: PageProps) {
   const session = await getSession()
-  if (session) redirect('/plan')
+
+  // Redirect logged-in users to their plan — but not the primary athlete,
+  // who may want to preview this page to see what guests see.
+  const primaryId = Number(process.env.STRAVA_ATHLETE_ID)
+  const isPrimary = !isNaN(primaryId) && primaryId > 0 && session?.stravaId === primaryId
+  if (session && !isPrimary) redirect('/plan')
 
   const { error } = await searchParams
   const errorMessage = error ? (ERROR_MESSAGES[error] ?? 'An error occurred.') : null
