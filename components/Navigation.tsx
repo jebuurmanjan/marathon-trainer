@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import SideMenu from './SideMenu'
@@ -18,7 +18,9 @@ export default function Navigation({ userName }: NavigationProps) {
 
   return (
     <>
-      <SideMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} userName={userName} />
+      <Suspense fallback={null}>
+        <SideMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} userName={userName} />
+      </Suspense>
 
       <header
         className="sticky top-0 z-50 border-b"
