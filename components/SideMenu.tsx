@@ -2,10 +2,24 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useCelebration } from './CelebrationProvider'
 
-const SECTIONS = [
+// `tab` is the value of the ?tab= query param that makes this item active.
+// Omit it for items where only the pathname matters.
+interface NavItem {
+  href: string
+  label: string
+  tab?: string
+  icon: React.ReactNode
+}
+
+interface Section {
+  title: string
+  items: NavItem[]
+}
+
+const SECTIONS: Section[] = [
   {
     title: 'Marathon Plan',
     items: [
@@ -43,10 +57,21 @@ const SECTIONS = [
     items: [
       {
         href: '/statistics',
-        label: 'Yearly goals',
+        label: 'Distance',
+        // active when on /statistics with no tab param (or tab=distance)
         icon: (
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/statistics?tab=zones',
+        label: 'Zones',
+        tab: 'zones',
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
           </svg>
         ),
       },
@@ -61,8 +86,18 @@ interface SideMenuProps {
 }
 
 export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
-  const pathname = usePathname()
+  const pathname    = usePathname()
+  const searchParams = useSearchParams()
+  const currentTab  = searchParams.get('tab') ?? ''
   const { triggerTest } = useCelebration()
+
+  function isActive(item: NavItem): boolean {
+    if (pathname !== item.href.split('?')[0]) return false
+    if (item.tab) return currentTab === item.tab
+    // Distance: active when on /statistics with no tab, or tab=distance
+    if (item.href === '/statistics') return currentTab === '' || currentTab === 'distance'
+    return true
+  }
 
   // Close on Escape
   useEffect(() => {
@@ -146,7 +181,7 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
                 {section.title}
               </p>
               {section.items.map((item) => {
-                const active = pathname === item.href
+                const active = isActive(item)
                 return (
                   <Link
                     key={item.href}
