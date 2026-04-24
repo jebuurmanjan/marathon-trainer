@@ -24,8 +24,14 @@ export const JAN_CONFIG: UserPlanConfig = {
 
 /**
  * Load the user's plan config from the DB and return the generated plan.
- * Returns null if the user has not completed onboarding yet.
- * Auto-seeds Jan's config if this is the primary athlete's first login.
+ * Returns null only for true new guests who have never used the app.
+ *
+ * Auto-seed priority:
+ *  1. User already has a user_plans row → use it
+ *  2. STRAVA_ATHLETE_ID env var matches → primary athlete (Jan), seed default config
+ *  3. User has existing actual_runs → pre-existing user before multi-user update,
+ *     seed default config (avoids getting stuck in onboarding on existing accounts)
+ *  4. None of the above → true new guest, redirect to onboarding
  */
 export async function getUserPlan(
   userId:   string,
@@ -33,6 +39,7 @@ export async function getUserPlan(
 ): Promise<UserPlan | null> {
   const db = createServerClient()
 
+  // ── 1. Existing plan config ────────────────────────────────────────────────
   const { data } = await db
     .from('user_plans')
     .select('race_date, goal_seconds, weekly_km')
@@ -47,19 +54,39 @@ export async function getUserPlan(
     })
   }
 
-  // Auto-seed the primary athlete (Jan) on first visit
+  // ── 2. Primary athlete identified by env var ───────────────────────────────
   const primaryId = Number(process.env.STRAVA_ATHLETE_ID)
-  if (primaryId && stravaId === primaryId) {
-    await db.from('user_plans').insert({
-      user_id:      userId,
-      race_date:    JAN_CONFIG.raceDate,
-      goal_seconds: JAN_CONFIG.goalSeconds,
-      weekly_km:    JAN_CONFIG.weeklyKm,
-    })
+  if (!isNaN(primaryId) && primaryId > 0 && stravaId === primaryId) {
+    await tryInsertDefault(db, userId)
     return build(JAN_CONFIG)
   }
 
-  return null // guest: needs onboarding
+  // ── 3. Fallback: user has runs → pre-dates the multi-user update ───────────
+  // This handles the case where STRAVA_ATHLETE_ID is not configured but the
+  // user (Jan) is already actively using the app with synced Strava data.
+  const { count } = await db
+    .from('actual_runs')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+
+  if ((count ?? 0) > 0) {
+    await tryInsertDefault(db, userId)
+    return build(JAN_CONFIG)
+  }
+
+  // ── 4. True new guest — needs onboarding ──────────────────────────────────
+  return null
+}
+
+async function tryInsertDefault(db: ReturnType<typeof createServerClient>, userId: string) {
+  // Ignore errors — table may not exist yet (migration pending) or row may
+  // already exist (race condition). The plan is returned from JAN_CONFIG either way.
+  await db.from('user_plans').insert({
+    user_id:      userId,
+    race_date:    JAN_CONFIG.raceDate,
+    goal_seconds: JAN_CONFIG.goalSeconds,
+    weekly_km:    JAN_CONFIG.weeklyKm,
+  }).then(() => {}, () => {})
 }
 
 function build(config: UserPlanConfig): UserPlan {
