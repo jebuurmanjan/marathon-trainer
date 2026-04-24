@@ -19,9 +19,11 @@ export async function GET() {
     return NextResponse.json({ needsOnboarding: true }, { status: 404 })
   }
 
-  const { config, plan, paces, planStartDate, currentWeek } = userPlan
+  const { planId, planName, config, plan, paces, planStartDate, currentWeek } = userPlan
 
   return NextResponse.json({
+    planId,
+    planName,
     config,
     plan,
     paces,

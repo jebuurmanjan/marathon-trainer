@@ -17,9 +17,12 @@ export interface UserPlan {
 // ─── Jan's default config (auto-seeded on first login) ───────────────────────
 
 export const JAN_CONFIG: UserPlanConfig = {
-  raceDate:    '2026-11-01',
-  goalSeconds: 12600,   // 3:30:00
-  weeklyKm:    50,
+  raceDate:     '2026-11-01',
+  goalSeconds:  12600,   // 3:30:00
+  weeklyKm:     50,
+  runsPerWeek:  4,
+  strengthDays: 1,
+  hasGym:       false,
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -55,7 +58,7 @@ export async function getUserPlan(
   // ── 1. Existing active plan ────────────────────────────────────────────────
   const { data } = await db
     .from('training_plans')
-    .select('id, name, race_date, goal_seconds, weekly_km')
+    .select('id, name, race_date, goal_seconds, weekly_km, runs_per_week, strength_days, has_gym')
     .eq('user_id', userId)
     .eq('is_active', true)
     .is('archived_at', null)
@@ -66,9 +69,12 @@ export async function getUserPlan(
       data.id,
       data.name || generatePlanName(data.race_date, data.goal_seconds),
       {
-        raceDate:    data.race_date,
-        goalSeconds: data.goal_seconds,
-        weeklyKm:    data.weekly_km,
+        raceDate:     data.race_date,
+        goalSeconds:  data.goal_seconds,
+        weeklyKm:     data.weekly_km,
+        runsPerWeek:  data.runs_per_week  ?? 4,
+        strengthDays: data.strength_days  ?? 0,
+        hasGym:       data.has_gym        ?? false,
       }
     )
   }

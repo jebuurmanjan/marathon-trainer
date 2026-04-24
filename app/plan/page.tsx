@@ -14,12 +14,14 @@ export default function PlanPage() {
   const router = useRouter()
 
   // Plan data (from API)
-  const [plan,         setPlan]        = useState<Week[]>([])
-  const [config,       setConfig]      = useState<UserPlanConfig | null>(null)
-  const [paces,        setPaces]       = useState<PlanPaces | null>(null)
-  const [currentWeek,  setCurrentWeek] = useState(0)
-  const [goalLabel,    setGoalLabel]   = useState('')
-  const [mpLabel,      setMpLabel]     = useState('')
+  const [plan,                  setPlan]                  = useState<Week[]>([])
+  const [config,                setConfig]                = useState<UserPlanConfig | null>(null)
+  const [paces,                 setPaces]                 = useState<PlanPaces | null>(null)
+  const [currentWeek,           setCurrentWeek]           = useState(0)
+  const [goalLabel,             setGoalLabel]             = useState('')
+  const [mpLabel,               setMpLabel]               = useState('')
+  const [planId,                setPlanId]                = useState('')
+  const [strengthCompletions,   setStrengthCompletions]   = useState<string[]>([])
 
   // Run data + UI
   const [actualRuns,   setActualRuns]  = useState<ActualRun[]>([])
@@ -42,6 +44,15 @@ export default function PlanPage() {
     setCurrentWeek(d.currentWeek ?? 0)
     setGoalLabel(d.goalLabel ?? '')
     setMpLabel(d.mpLabel ?? '')
+    const id: string = d.planId ?? ''
+    setPlanId(id)
+    // Fetch strength completions once we have the planId
+    if (id) {
+      fetch(`/api/strength?planId=${id}`)
+        .then((r) => r.ok ? r.json() : { completions: [] })
+        .then((data) => setStrengthCompletions(data.completions ?? []))
+        .catch(() => {})
+    }
   }, [router])
 
   const fetchRuns = useCallback(async () => {
@@ -280,6 +291,8 @@ export default function PlanPage() {
                 actualRuns={weekActual}
                 isCurrentWeek={week.weekNumber === currentWeek}
                 isPastWeek={week.weekNumber < currentWeek}
+                strengthCompletions={strengthCompletions}
+                planId={planId}
               />
             )
           })}

@@ -1,5 +1,6 @@
 import { Week, ActualRun } from '@/types'
 import RunRow from './RunRow'
+import StrengthRow from './StrengthRow'
 import { PHASE_LABELS } from '@/lib/training-plan'
 import { calcWeekScore, scoreColor, scoreLabel } from '@/lib/score'
 
@@ -12,13 +13,15 @@ const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
 }
 
 interface WeekCardProps {
-  week: Week
-  actualRuns: ActualRun[]
-  isCurrentWeek: boolean
-  isPastWeek: boolean
+  week:                 Week
+  actualRuns:           ActualRun[]
+  isCurrentWeek:        boolean
+  isPastWeek:           boolean
+  strengthCompletions?: string[]   // ISO dates of completed strength sessions
+  planId?:              string
 }
 
-export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }: WeekCardProps) {
+export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, strengthCompletions = [], planId = '' }: WeekCardProps) {
   const today = new Date().toISOString().slice(0, 10)
 
   function findActual(plannedDate: string): ActualRun | undefined {
@@ -29,9 +32,15 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
     })
   }
 
-  const completedRuns = week.runs.filter((r) => findActual(r.date)).length
+  // Separate running sessions from strength sessions
+  const runSessions      = week.runs.filter((r) => r.type !== 'strength')
+  const strengthSessions = week.runs.filter((r) => r.type === 'strength')
+
+  const completedRuns    = runSessions.filter((r) => findActual(r.date)).length
+  const completedStrength = strengthSessions.filter((r) => strengthCompletions.includes(r.date)).length
+
   const totalKmActual = actualRuns.reduce((sum, r) => sum + r.distanceKm, 0)
-  const pct = Math.min(100, Math.round((totalKmActual / week.targetKm) * 100))
+  const pct = Math.min(100, Math.round((totalKmActual / (week.targetKm || 1)) * 100))
 
   const startLabel = new Date(week.startDate + 'T00:00:00').toLocaleDateString('en-GB', {
     day: 'numeric', month: 'short',
@@ -47,11 +56,15 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
   const score = showScore ? calcWeekScore(week, actualRuns, isCurrentWeek) : null
 
   // Summary line shown in collapsed state
+  const strengthInfo = strengthSessions.length > 0
+    ? ` · ${strengthSessions.length > 1 ? completedStrength + '/' + strengthSessions.length : ''} strength`
+    : ''
+
   const summaryHint = isPastWeek
-    ? `${completedRuns}/${week.runs.length} runs completed — click to expand`
+    ? `${completedRuns}/${runSessions.length} runs completed${strengthInfo} — click to expand`
     : isCurrentWeek
-    ? `${week.runs.length} sessions this week — click to collapse`
-    : `${week.runs.length} sessions planned — click to expand`
+    ? `${runSessions.length} runs this week${strengthInfo} — click to collapse`
+    : `${runSessions.length} runs planned${strengthInfo} — click to expand`
 
   return (
     <div
@@ -230,6 +243,16 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek }
         {/* Expanded run list — shown for ALL weeks when open */}
         <div className="px-4 pb-4 pt-2 flex flex-col gap-2">
           {week.runs.map((run) => {
+            if (run.type === 'strength') {
+              return (
+                <StrengthRow
+                  key={run.date}
+                  run={run}
+                  isCompleted={strengthCompletions.includes(run.date)}
+                  planId={planId}
+                />
+              )
+            }
             const actual = findActual(run.date)
             const runIsPast = run.date < today
             return (

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { raceDate, goalSeconds, weeklyKm } = body
+  const { raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, hasGym } = body
 
   if (!raceDate || !goalSeconds || !weeklyKm) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
@@ -44,12 +44,15 @@ export async function POST(req: Request) {
   const { error } = await db
     .from('training_plans')
     .insert({
-      user_id:      session.userId,
-      name:         generatePlanName(raceDate, Math.round(goalSeconds)),
-      race_date:    raceDate,
-      goal_seconds: Math.round(goalSeconds),
-      weekly_km:    Math.round(weeklyKm),
-      is_active:    true,
+      user_id:       session.userId,
+      name:          generatePlanName(raceDate, Math.round(goalSeconds)),
+      race_date:     raceDate,
+      goal_seconds:  Math.round(goalSeconds),
+      weekly_km:     Math.round(weeklyKm),
+      runs_per_week: runsPerWeek  ?? 4,
+      strength_days: strengthDays ?? 0,
+      has_gym:       hasGym       ?? false,
+      is_active:     true,
     })
 
   if (error) {

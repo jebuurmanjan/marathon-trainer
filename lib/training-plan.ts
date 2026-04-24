@@ -418,9 +418,10 @@ export const PHASE_LABELS: Record<string, string> = {
 }
 
 export const RUN_TYPE_LABELS: Record<string, string> = {
-  easy: 'Easy',
-  quality: 'Quality',
+  easy:        'Easy',
+  quality:     'Quality',
   medium_long: 'Medium Long',
-  long: 'Long Run',
-  race: 'RACE',
+  long:        'Long Run',
+  race:        'RACE',
+  strength:    'Strength',
 }

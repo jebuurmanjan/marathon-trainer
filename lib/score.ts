@@ -36,7 +36,7 @@ function scoreMileage(plannedKm: number, actualKm: number): number {
 
 function scorePace(week: Week, actualRuns: ActualRun[]): number {
   const results: number[] = []
-  for (const run of week.runs) {
+  for (const run of week.runs.filter((r) => r.type !== 'strength')) {
     const actual = findActual(run, actualRuns)
     if (!actual) continue
     if (!run.targetPaceMinPerKm) {
@@ -62,7 +62,7 @@ function scorePace(week: Week, actualRuns: ActualRun[]): number {
 
 function scoreHR(week: Week, actualRuns: ActualRun[]): number | null {
   const results: number[] = []
-  for (const run of week.runs) {
+  for (const run of week.runs.filter((r) => r.type !== 'strength')) {
     const actual = findActual(run, actualRuns)
     if (!actual?.averageHeartrate) continue
     const hr = actual.averageHeartrate
