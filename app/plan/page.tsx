@@ -105,6 +105,17 @@ export default function PlanPage() {
       <Navigation userName={userName} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {/* Page title */}
+        <div className="mb-5">
+          <h1
+            className="text-2xl"
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+          >
+            Marathon Plan
+          </h1>
+          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>27 weeks · sub 3:30 goal</p>
+        </div>
+
         <PlanTabs />
         {/* Hero stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

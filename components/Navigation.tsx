@@ -5,11 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import SideMenu from './SideMenu'
 
-function pageTitle(pathname: string): string {
-  if (pathname.startsWith('/statistics')) return 'Statistics'
-  return 'Marathon Plan'
-}
-
 interface NavigationProps {
   userName: string
 }
@@ -37,8 +32,8 @@ export default function Navigation({ userName }: NavigationProps) {
             regardless of how wide the left/right elements are */}
         <div className="max-w-5xl mx-auto px-4 relative flex items-center" style={{ height: '72px' }}>
 
-          {/* Left: hamburger + active page label */}
-          <div className="flex items-center gap-2.5 shrink-0 z-10">
+          {/* Left: hamburger */}
+          <div className="flex items-center shrink-0 z-10">
             <button
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
@@ -51,13 +46,6 @@ export default function Navigation({ userName }: NavigationProps) {
                 <line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
             </button>
-
-            <span
-              className="text-sm font-semibold"
-              style={{ color: '#4A5427', letterSpacing: '-0.01em' }}
-            >
-              {pageTitle(pathname)}
-            </span>
           </div>
 
           {/* Centre: big brand title — absolutely centred in the bar */}
