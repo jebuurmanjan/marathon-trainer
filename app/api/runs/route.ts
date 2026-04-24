@@ -2,18 +2,23 @@ import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
 import { getActualRuns } from '@/lib/strava'
 import { createServerClient } from '@/lib/supabase'
-import { PLAN_START_DATE, RACE_DATE } from '@/lib/training-plan'
+import { getUserPlan } from '@/lib/user-plan'
 
-// GET /api/runs — returns all actual runs + the logged-in user's name
+// GET /api/runs — returns all actual runs for the user's plan period + display name
 export async function GET() {
   const session = await getSession()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const runs = await getActualRuns(session.userId, PLAN_START_DATE, RACE_DATE)
+  const userPlan = await getUserPlan(session.userId, session.stravaId)
 
-  // Fetch user's display name from DB
+  // If no plan yet, return empty — client will redirect to onboarding
+  const startDate = userPlan?.planStartDate ?? new Date().toISOString().slice(0, 10)
+  const endDate   = userPlan?.config.raceDate ?? new Date().toISOString().slice(0, 10)
+
+  const runs = await getActualRuns(session.userId, startDate, endDate)
+
   const db = createServerClient()
   const { data: user } = await db
     .from('users')
@@ -23,6 +28,7 @@ export async function GET() {
 
   return NextResponse.json({
     runs,
-    userName: user?.name ?? session.name,
+    userName:    user?.name ?? session.name,
+    needsOnboarding: !userPlan,
   })
 }

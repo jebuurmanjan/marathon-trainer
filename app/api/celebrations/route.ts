@@ -1,24 +1,25 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
 import { createServerClient } from '@/lib/supabase'
-import { trainingPlan, getCurrentWeekNumber } from '@/lib/training-plan'
+import { getUserPlan } from '@/lib/user-plan'
 import { calcWeekScore } from '@/lib/score'
 import { ActualRun } from '@/types'
 
-const YEAR     = 2026
-const GOAL_KM  = 1000
-const RACE_DATE = '2026-11-01'
-// sub 3:30 over a marathon = 210 min / 42.195 km ≈ 4.976 min/km
-const MARATHON_PACE_LIMIT = 4.98
+const YEAR    = 2026
+const GOAL_KM = 1000
 
 // ─── GET: detect new celebrations, return oldest unshown ─────────────────────
 export async function GET() {
   const session = await getSession()
   if (!session) return NextResponse.json({ celebration: null })
 
+  const userPlan = await getUserPlan(session.userId, session.stravaId)
+  if (!userPlan) return NextResponse.json({ celebration: null }) // no plan yet
+
+  const { plan, currentWeek, config } = userPlan
   const db = createServerClient()
 
-  // 1. Load existing celebration records for this user
+  // 1. Existing celebration records for this user
   const { data: existingRows } = await db
     .from('celebration_events')
     .select('celebration_type, context_key')
@@ -28,7 +29,7 @@ export async function GET() {
     (existingRows ?? []).map((e) => `${e.celebration_type}:${e.context_key}`)
   )
 
-  // 2. Load all actual runs for this year (DB only, no Strava API call)
+  // 2. All actual runs for this year
   const { data: runsData } = await db
     .from('actual_runs')
     .select('*')
@@ -49,29 +50,24 @@ export async function GET() {
     name: r.name,
   }))
 
-  const today     = new Date().toISOString().slice(0, 10)
-  const todayMs   = new Date(`${today}T12:00:00`).getTime()
-  const currentWeek = getCurrentWeekNumber()
-
+  const today   = new Date().toISOString().slice(0, 10)
+  const todayMs = new Date(`${today}T12:00:00Z`).getTime()
   const newCelebrations: { type: string; key: string }[] = []
 
   // ── Goal 1: Daily run completed ──────────────────────────────────────────────
-  // For each planned run in the last 1.5 days: if an actual run covers ≥ 90% of the distance, celebrate.
-  for (const week of trainingPlan) {
+  for (const week of plan) {
     for (const planned of week.runs) {
-      const plannedMs  = new Date(`${planned.date}T12:00:00`).getTime()
-      const daysAgo    = (todayMs - plannedMs) / 86_400_000
-      if (daysAgo < 0 || daysAgo > 1.5) continue // only today + yesterday
+      const plannedMs = new Date(`${planned.date}T12:00:00Z`).getTime()
+      const daysAgo   = (todayMs - plannedMs) / 86_400_000
+      if (daysAgo < 0 || daysAgo > 1.5) continue
 
       const key = `daily-${planned.date}`
       if (existingSet.has(`daily_run:${key}`)) continue
 
       const match = allRuns.find((r) => {
-        const rMs = new Date(`${r.runDate}T12:00:00`).getTime()
-        return (
-          Math.abs(rMs - plannedMs) <= 86_400_000 * 1.5 &&
-          r.distanceKm >= planned.targetDistanceKm * 0.9
-        )
+        const rMs = new Date(`${r.runDate}T12:00:00Z`).getTime()
+        return Math.abs(rMs - plannedMs) <= 86_400_000 * 1.5 &&
+               r.distanceKm >= planned.targetDistanceKm * 0.9
       })
       if (match) newCelebrations.push({ type: 'daily_run', key })
     }
@@ -80,7 +76,7 @@ export async function GET() {
   // ── Goal 2: Week score ≥ 65 — trigger on first day of next week ──────────────
   if (currentWeek > 1) {
     const lastWeekNum = currentWeek - 1
-    const lastWeek    = trainingPlan.find((w) => w.weekNumber === lastWeekNum)
+    const lastWeek    = plan.find((w) => w.weekNumber === lastWeekNum)
     if (lastWeek) {
       const key = `good-week-${lastWeekNum}`
       if (!existingSet.has(`good_week:${key}`)) {
@@ -95,14 +91,12 @@ export async function GET() {
     }
   }
 
-  // ── Goal 3: Yearly 1,000 km reached ─────────────────────────────────────────
+  // ── Goal 3: Yearly 1,000 km ─────────────────────────────────────────────────
   {
     const key = `yearly-1000-${YEAR}`
     if (!existingSet.has(`yearly_1000:${key}`)) {
       const totalKm = allRuns.reduce((s, r) => s + r.distanceKm, 0)
-      if (totalKm >= GOAL_KM) {
-        newCelebrations.push({ type: 'yearly_1000', key })
-      }
+      if (totalKm >= GOAL_KM) newCelebrations.push({ type: 'yearly_1000', key })
     }
   }
 
@@ -114,21 +108,22 @@ export async function GET() {
     }
   }
 
-  // ── Goal 5: Marathon finished in sub 3:30 on Nov 1 ──────────────────────────
+  // ── Goal 5: Marathon sub goal time on race date ──────────────────────────────
   {
-    const key = `marathon-sub330-${YEAR}`
+    const key = `marathon-sub-${YEAR}`
     if (!existingSet.has(`marathon_sub330:${key}`)) {
+      // Convert goal seconds to pace (min/km over 42.195 km)
+      const goalPace = config.goalSeconds / 42.195 / 60
       const hit = allRuns.find(
-        (r) =>
-          r.runDate >= RACE_DATE &&
-          r.distanceKm >= 38 &&
-          r.paceMinPerKm <= MARATHON_PACE_LIMIT
+        (r) => r.runDate >= config.raceDate &&
+               r.distanceKm >= 38 &&
+               r.paceMinPerKm <= goalPace * 1.005 // 0.5% tolerance for GPS
       )
       if (hit) newCelebrations.push({ type: 'marathon_sub330', key })
     }
   }
 
-  // 3. Persist any newly triggered celebrations
+  // 3. Persist newly triggered celebrations
   if (newCelebrations.length > 0) {
     await db.from('celebration_events').insert(
       newCelebrations.map((c) => ({
@@ -139,7 +134,7 @@ export async function GET() {
     )
   }
 
-  // 4. Return the oldest celebration that hasn't been shown yet
+  // 4. Return oldest unshown celebration
   const { data: unshown } = await db
     .from('celebration_events')
     .select('*')
@@ -151,7 +146,7 @@ export async function GET() {
   return NextResponse.json({ celebration: unshown?.[0] ?? null })
 }
 
-// ─── POST: mark a celebration as shown ──────────────────────────────────────
+// ─── POST: mark shown ────────────────────────────────────────────────────────
 export async function POST(req: Request) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

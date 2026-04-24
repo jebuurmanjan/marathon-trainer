@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Redirect user to Strava's OAuth consent screen
+// GET /api/strava/auth?mode=jan|guest
+// Redirect to Strava's OAuth consent screen.
+// The mode is passed through the OAuth `state` param so the callback
+// knows whether to enforce the STRAVA_ATHLETE_ID guard.
 export async function GET(req: NextRequest) {
   const clientId = process.env.STRAVA_CLIENT_ID
+  const mode     = req.nextUrl.searchParams.get('mode') ?? 'guest'
 
-  // Build redirect URI from the actual request host — works correctly on
-  // both localhost and any Vercel URL without needing NEXT_PUBLIC_APP_URL
-  const host = req.headers.get('host') ?? 'localhost:3000'
-  const protocol = host.startsWith('localhost') ? 'http' : 'https'
+  const host        = req.headers.get('host') ?? 'localhost:3000'
+  const protocol    = host.startsWith('localhost') ? 'http' : 'https'
   const redirectUri = `${protocol}://${host}/api/strava/callback`
 
   const params = new URLSearchParams({
-    client_id: clientId!,
-    redirect_uri: redirectUri,
-    response_type: 'code',
+    client_id:       clientId!,
+    redirect_uri:    redirectUri,
+    response_type:   'code',
     approval_prompt: 'auto',
-    scope: 'read,activity:read_all',
+    scope:           'read,activity:read_all',
+    state:           mode,
   })
 
   return NextResponse.redirect(`https://www.strava.com/oauth/authorize?${params}`)
