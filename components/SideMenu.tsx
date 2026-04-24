@@ -1,23 +1,35 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useCelebration } from './CelebrationProvider'
 
-// `tab` is the value of the ?tab= query param that makes this item active.
-// Omit it for items where only the pathname matters.
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Plan {
+  id:          string
+  name:        string
+  raceDate:    string
+  goalSeconds: number
+  weeklyKm:    number
+  isActive:    boolean
+  archivedAt:  string | null
+}
+
 interface NavItem {
-  href: string
-  label: string
-  tab?: string
-  icon: React.ReactNode
+  href:   string
+  label:  string
+  tab?:   string
+  icon:   React.ReactNode
 }
 
 interface Section {
   title: string
   items: NavItem[]
 }
+
+// ─── Nav sections (no Plans item — handled by selector above) ─────────────────
 
 const SECTIONS: Section[] = [
   {
@@ -50,15 +62,6 @@ const SECTIONS: Section[] = [
           </svg>
         ),
       },
-      {
-        href: '/plans',
-        label: 'My Plans',
-        icon: (
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-          </svg>
-        ),
-      },
     ],
   },
   {
@@ -67,7 +70,6 @@ const SECTIONS: Section[] = [
       {
         href: '/statistics',
         label: 'Distance',
-        // active when on /statistics with no tab param (or tab=distance)
         icon: (
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
@@ -88,9 +90,129 @@ const SECTIONS: Section[] = [
   },
 ]
 
+// ─── Plan selector ────────────────────────────────────────────────────────────
+
+interface PlanItemProps {
+  plan:       Plan
+  onActivate: (id: string) => void
+  onArchive:  (id: string) => void
+  onRestore:  (id: string) => void
+  onDelete:   (id: string) => void
+  busy:       string | null  // planId currently being mutated
+}
+
+function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: PlanItemProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const isBusy = busy === plan.id
+
+  return (
+    <div
+      className="rounded-xl px-3 py-2.5"
+      style={{
+        background: plan.isActive ? 'rgba(238,107,23,0.08)' : 'rgba(43,49,23,0.04)',
+        border:     plan.isActive ? '1px solid rgba(238,107,23,0.20)' : '1px solid transparent',
+      }}
+    >
+      {/* Plan name row */}
+      <div className="flex items-center gap-2 mb-1.5">
+        <span
+          className="w-1.5 h-1.5 rounded-full shrink-0"
+          style={{ background: plan.isActive ? '#EE6B17' : 'rgba(43,49,23,0.25)' }}
+        />
+        <span
+          className="text-xs font-semibold flex-1 truncate"
+          style={{ color: plan.isActive ? '#1E1611' : '#4A5427' }}
+        >
+          {plan.name}
+        </span>
+        {plan.isActive && (
+          <span
+            className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
+            style={{ background: 'rgba(238,107,23,0.15)', color: '#EE6B17' }}
+          >
+            Active
+          </span>
+        )}
+      </div>
+
+      {/* Action row */}
+      {confirmDelete ? (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] flex-1" style={{ color: '#736554' }}>Delete permanently?</span>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="text-[11px] px-2 py-1 rounded-lg font-medium"
+            style={{ color: '#736554', background: 'rgba(43,49,23,0.08)' }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => { setConfirmDelete(false); onDelete(plan.id) }}
+            disabled={isBusy}
+            className="text-[11px] px-2 py-1 rounded-lg font-semibold disabled:opacity-50"
+            style={{ background: 'rgba(220,38,38,0.12)', color: '#dc2626' }}
+          >
+            Delete
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-1.5">
+          {/* Activate (inactive, non-archived only) */}
+          {!plan.isActive && !plan.archivedAt && (
+            <button
+              onClick={() => onActivate(plan.id)}
+              disabled={isBusy}
+              className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors disabled:opacity-50"
+              style={{ background: '#EE6B17', color: '#fff' }}
+            >
+              {isBusy ? '…' : 'Activate'}
+            </button>
+          )}
+
+          {/* Restore (archived only) */}
+          {plan.archivedAt && (
+            <button
+              onClick={() => onRestore(plan.id)}
+              disabled={isBusy}
+              className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors disabled:opacity-50"
+              style={{ background: 'rgba(74,84,39,0.12)', color: '#4A5427' }}
+            >
+              {isBusy ? '…' : 'Restore'}
+            </button>
+          )}
+
+          {/* Archive (non-archived only) */}
+          {!plan.archivedAt && (
+            <button
+              onClick={() => onArchive(plan.id)}
+              disabled={isBusy}
+              className="text-[11px] px-2 py-1 rounded-lg font-medium transition-colors disabled:opacity-50"
+              style={{ color: '#736554', background: 'rgba(43,49,23,0.08)' }}
+            >
+              {isBusy ? '…' : 'Archive'}
+            </button>
+          )}
+
+          {/* Delete */}
+          <button
+            onClick={() => setConfirmDelete(true)}
+            disabled={isBusy}
+            className="text-[11px] px-2 py-1 rounded-lg font-medium transition-colors disabled:opacity-50 ml-auto"
+            style={{ color: '#dc2626', background: 'rgba(220,38,38,0.06)' }}
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 interface SideMenuProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen:   boolean
+  onClose:  () => void
   userName: string
 }
 
@@ -100,22 +222,95 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
   const currentTab  = searchParams.get('tab') ?? ''
   const { triggerTest } = useCelebration()
 
+  // ── Plan selector state ───────────────────────────────────────────────────
+  const [selectorOpen,  setSelectorOpen]  = useState(false)
+  const [showArchived,  setShowArchived]  = useState(false)
+  const [plans,         setPlans]         = useState<Plan[]>([])
+  const [loadingPlans,  setLoadingPlans]  = useState(false)
+  const [planError,     setPlanError]     = useState<string | null>(null)
+  const [busyPlanId,    setBusyPlanId]    = useState<string | null>(null)
+
+  const activePlan = plans.find((p) => p.isActive && !p.archivedAt)
+  const regularPlans = plans.filter((p) => !p.archivedAt)
+  const archivedPlans = plans.filter((p) => !!p.archivedAt)
+
+  const fetchPlans = useCallback(async () => {
+    setLoadingPlans(true)
+    setPlanError(null)
+    try {
+      const res = await fetch('/api/plans?all=true')
+      if (res.ok) {
+        const d = await res.json()
+        setPlans(d.plans ?? [])
+      }
+    } finally {
+      setLoadingPlans(false)
+    }
+  }, [])
+
+  // Fetch plans whenever the menu opens
+  useEffect(() => {
+    if (isOpen) fetchPlans()
+  }, [isOpen, fetchPlans])
+
+  // Reset selector when menu closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectorOpen(false)
+      setShowArchived(false)
+      setPlanError(null)
+    }
+  }, [isOpen])
+
+  async function mutate(planId: string, action: string) {
+    setBusyPlanId(planId)
+    setPlanError(null)
+    const res = await fetch('/api/plans', {
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ planId, action }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setPlanError(data.error ?? 'Something went wrong')
+    } else {
+      await fetchPlans()
+    }
+    setBusyPlanId(null)
+  }
+
+  async function deletePlan(planId: string) {
+    setBusyPlanId(planId)
+    setPlanError(null)
+    const res = await fetch('/api/plans', {
+      method:  'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ planId }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setPlanError(data.error ?? 'Something went wrong')
+    } else {
+      await fetchPlans()
+    }
+    setBusyPlanId(null)
+  }
+
+  // ── Nav active state ──────────────────────────────────────────────────────
   function isActive(item: NavItem): boolean {
     if (pathname !== item.href.split('?')[0]) return false
     if (item.tab) return currentTab === item.tab
-    // Distance: active when on /statistics with no tab, or tab=distance
     if (item.href === '/statistics') return currentTab === '' || currentTab === 'distance'
     return true
   }
 
-  // Close on Escape
+  // ── Keyboard / scroll lock ────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     if (isOpen) document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [isOpen, onClose])
 
-  // Lock body scroll while open
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -131,9 +326,9 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
         onClick={onClose}
         className="fixed inset-0 z-40 transition-opacity duration-300"
         style={{
-          background: 'rgba(30,22,17,0.45)',
+          background:   'rgba(30,22,17,0.45)',
           backdropFilter: 'blur(3px)',
-          opacity: isOpen ? 1 : 0,
+          opacity:      isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',
         }}
       />
@@ -142,10 +337,10 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
       <div
         className="fixed top-0 left-0 bottom-0 z-50 flex flex-col w-72 transition-transform duration-300 ease-out"
         style={{
-          background: '#F5F3EC',
-          borderRight: '1px solid rgba(43,49,23,0.10)',
-          boxShadow: '8px 0 32px rgba(30,22,17,0.14)',
-          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          background:   '#F5F3EC',
+          borderRight:  '1px solid rgba(43,49,23,0.10)',
+          boxShadow:    '8px 0 32px rgba(30,22,17,0.14)',
+          transform:    isOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
       >
         {/* Drawer header */}
@@ -177,6 +372,122 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
+        </div>
+
+        {/* ── Plan selector ── */}
+        <div
+          className="px-3 py-3 border-b shrink-0"
+          style={{ borderColor: 'rgba(43,49,23,0.08)' }}
+        >
+          <p
+            className="text-[10px] font-bold uppercase tracking-widest px-1 mb-1.5"
+            style={{ color: '#A09880' }}
+          >
+            Active Plan
+          </p>
+
+          {/* Selector trigger */}
+          <button
+            onClick={() => setSelectorOpen((o) => !o)}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors"
+            style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)', color: '#1E1611' }}
+          >
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ background: '#EE6B17' }}
+            />
+            <span className="flex-1 truncate">
+              {loadingPlans ? 'Loading…' : (activePlan?.name ?? 'No active plan')}
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              className="w-3.5 h-3.5 fill-none stroke-current stroke-2 shrink-0 transition-transform"
+              style={{ color: '#736554', transform: selectorOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              strokeLinecap="round" strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          {/* Expanded plan list */}
+          {selectorOpen && (
+            <div className="mt-2 space-y-1.5">
+              {/* Error */}
+              {planError && (
+                <div
+                  className="rounded-xl px-3 py-2 text-xs"
+                  style={{ background: 'rgba(238,107,23,0.10)', color: '#EE6B17' }}
+                >
+                  {planError}
+                </div>
+              )}
+
+              {/* Regular (non-archived) plans */}
+              {regularPlans.length === 0 && !loadingPlans && (
+                <p className="text-xs px-1" style={{ color: '#A09880' }}>No plans yet.</p>
+              )}
+              {regularPlans.map((plan) => (
+                <PlanItem
+                  key={plan.id}
+                  plan={plan}
+                  onActivate={(id) => mutate(id, 'activate')}
+                  onArchive={(id)  => mutate(id, 'archive')}
+                  onRestore={(id)  => mutate(id, 'unarchive')}
+                  onDelete={deletePlan}
+                  busy={busyPlanId}
+                />
+              ))}
+
+              {/* Archived section */}
+              {archivedPlans.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setShowArchived((s) => !s)}
+                    className="flex items-center gap-1.5 w-full px-1 py-1 text-[11px] font-medium"
+                    style={{ color: '#A09880' }}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-3 h-3 fill-none stroke-current stroke-2 transition-transform"
+                      style={{ transform: showArchived ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                      strokeLinecap="round" strokeLinejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                    Archived ({archivedPlans.length})
+                  </button>
+
+                  {showArchived && (
+                    <div className="space-y-1.5 mt-1">
+                      {archivedPlans.map((plan) => (
+                        <PlanItem
+                          key={plan.id}
+                          plan={plan}
+                          onActivate={(id) => mutate(id, 'activate')}
+                          onArchive={(id)  => mutate(id, 'archive')}
+                          onRestore={(id)  => mutate(id, 'unarchive')}
+                          onDelete={deletePlan}
+                          busy={busyPlanId}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* New plan */}
+              <a
+                href="/onboarding"
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                style={{ background: 'rgba(238,107,23,0.10)', color: '#EE6B17' }}
+              >
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Start new plan
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Nav sections */}

@@ -58,6 +58,7 @@ export async function getUserPlan(
     .select('id, name, race_date, goal_seconds, weekly_km')
     .eq('user_id', userId)
     .eq('is_active', true)
+    .is('archived_at', null)
     .maybeSingle()
 
   if (data) {
@@ -104,6 +105,7 @@ async function tryInsertDefault(
     .select('id')
     .eq('user_id', userId)
     .eq('is_active', true)
+    .is('archived_at', null)
     .maybeSingle()
 
   if (existing) return existing.id
