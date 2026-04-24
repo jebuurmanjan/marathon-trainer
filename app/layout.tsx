@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import CelebrationProvider from '@/components/CelebrationProvider'
 
 export const metadata: Metadata = {
   title: 'Sub 3:30 Marathon Trainer',
@@ -16,7 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <CelebrationProvider>{children}</CelebrationProvider>
+      </body>
     </html>
   )
 }

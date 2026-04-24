@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useCelebration } from './CelebrationProvider'
 
 const SECTIONS = [
   {
@@ -61,6 +62,7 @@ interface SideMenuProps {
 
 export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
   const pathname = usePathname()
+  const { triggerTest } = useCelebration()
 
   // Close on Escape
   useEffect(() => {
@@ -171,6 +173,18 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
             </div>
           ))}
         </nav>
+
+        {/* Test celebration button */}
+        <div className="px-3 pb-2 shrink-0">
+          <button
+            onClick={() => { triggerTest(); onClose() }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            style={{ color: '#4A5427' }}
+          >
+            <span style={{ color: '#736554', fontSize: '16px' }}>🎉</span>
+            Test celebration
+          </button>
+        </div>
 
         {/* Footer: user + logout */}
         <div
