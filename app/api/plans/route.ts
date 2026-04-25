@@ -191,3 +191,78 @@ export async function DELETE(req: Request) {
 
   return NextResponse.json({ ok: true })
 }
+
+// PUT /api/plans — update an existing plan's config in-place
+// Preserves the plan ID and all historical data; only the config fields change.
+// Body: { planId, raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, equipmentType, planWeeks }
+export async function PUT(req: Request) {
+  const session = await getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  const {
+    planId, raceDate, goalSeconds, weeklyKm,
+    runsPerWeek, strengthDays, equipmentType, planWeeks,
+  } = body as {
+    planId: string; raceDate: string; goalSeconds: number; weeklyKm: number
+    runsPerWeek?: number; strengthDays?: number; equipmentType?: string; planWeeks?: number
+  }
+
+  if (!planId || !raceDate || !goalSeconds || !weeklyKm) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
+
+  // Validation (same rules as onboarding)
+  const race      = new Date(raceDate)
+  const weeksAway = (race.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 7)
+  if (isNaN(race.getTime()) || weeksAway < 4) {
+    return NextResponse.json({ error: 'Race date must be at least 4 weeks away' }, { status: 400 })
+  }
+  if (goalSeconds < 9000 || goalSeconds > 16200) {
+    return NextResponse.json({ error: 'Invalid goal time' }, { status: 400 })
+  }
+  if (weeklyKm < 10 || weeklyKm > 150) {
+    return NextResponse.json({ error: 'Weekly km out of range' }, { status: 400 })
+  }
+
+  const db = createServerClient()
+
+  // Verify ownership — cannot edit archived plans
+  const { data: existing } = await db
+    .from('training_plans')
+    .select('id')
+    .eq('id', planId)
+    .eq('user_id', session.userId)
+    .is('archived_at', null)
+    .maybeSingle()
+
+  if (!existing) return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+
+  const { error } = await db
+    .from('training_plans')
+    .update({
+      name:           generatePlanName(raceDate, Math.round(goalSeconds)),
+      race_date:      raceDate,
+      goal_seconds:   Math.round(goalSeconds),
+      weekly_km:      Math.round(weeklyKm),
+      runs_per_week:  runsPerWeek    ?? 4,
+      strength_days:  strengthDays   ?? 0,
+      equipment_type: equipmentType  ?? 'bodyweight',
+      plan_weeks:     planWeeks      ?? 27,
+      updated_at:     new Date().toISOString(),
+    })
+    .eq('id', planId)
+
+  if (error) {
+    console.error('Plan update error:', error)
+    return NextResponse.json({ error: 'Failed to update plan' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}

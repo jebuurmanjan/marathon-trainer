@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Navigation from '@/components/Navigation'
 import PlanTabs from '@/components/PlanTabs'
 import WeekCard from '@/components/WeekCard'
+import EditGoalModal from '@/components/EditGoalModal'
 import { ActualRun, Week } from '@/types'
 import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
 
@@ -30,6 +31,7 @@ export default function PlanPage() {
   const [filter,       setFilter]      = useState<Filter>('upcoming')
   const [userName,     setUserName]    = useState('')
   const [loading,      setLoading]     = useState(true)
+  const [editingGoal,  setEditingGoal] = useState(false)
 
   // ── Fetch plan + runs ────────────────────────────────────────────────────
 
@@ -166,16 +168,31 @@ export default function PlanPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Page title */}
-        <div className="mb-5">
-          <h1
-            className="text-2xl"
-            style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'#1E1611' }}
-          >
-            Marathon Plan
-          </h1>
-          <p className="text-sm mt-1" style={{ color:'#4A5427' }}>
-            {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'}
-          </p>
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h1
+              className="text-2xl"
+              style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'#1E1611' }}
+            >
+              Marathon Plan
+            </h1>
+            <p className="text-sm mt-1" style={{ color:'#4A5427' }}>
+              {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'}
+            </p>
+          </div>
+          {config && (
+            <button
+              onClick={() => setEditingGoal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors shrink-0"
+              style={{ background:'#EDE9DE', border:'1px solid rgba(43,49,23,0.10)', color:'#4A5427' }}
+            >
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Edit goal
+            </button>
+          )}
         </div>
 
         <PlanTabs />
@@ -302,6 +319,21 @@ export default function PlanPage() {
           <div className="text-center py-20 text-sm" style={{ color:'#736554' }}>No weeks to show.</div>
         )}
       </main>
+
+      {/* Edit goal modal */}
+      {editingGoal && config && (
+        <EditGoalModal
+          planId={planId}
+          currentConfig={config}
+          onClose={() => setEditingGoal(false)}
+          onSaved={async () => {
+            setEditingGoal(false)
+            setLoading(true)
+            await fetchPlan()
+            setLoading(false)
+          }}
+        />
+      )}
     </div>
   )
 }
