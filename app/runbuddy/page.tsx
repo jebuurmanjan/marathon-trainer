@@ -51,7 +51,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
           Your personal marathon training plan
         </p>
         <p className="text-sm mb-10 leading-relaxed" style={{ color: '#A09880' }}>
-          Connect your Strava, set your goal, and get a personalised 27-week plan built around your training level.
+          Connect your Strava, set your goal, and get a personalised plan built around your race date and training level.
         </p>
 
         {/* Error */}
@@ -86,7 +86,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
           style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
         >
           {[
-            { icon: '📅', text: '27-week plan built backwards from your race date' },
+            { icon: '📅', text: 'Plan length tailored to your race date — 12 to 27 weeks' },
             { icon: '🎯', text: 'Paces tailored to your goal time' },
             { icon: '📈', text: 'Volume scaled to your current weekly km' },
             { icon: '🔄', text: 'Strava synced — track completed vs. planned runs' },
