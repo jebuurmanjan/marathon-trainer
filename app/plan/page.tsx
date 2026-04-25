@@ -8,6 +8,7 @@ import WeekCard from '@/components/WeekCard'
 import EditGoalModal from '@/components/EditGoalModal'
 import { ActualRun, Week } from '@/types'
 import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
+import { formatDistance, formatDistanceExact } from '@/lib/training-plan'
 
 type Filter = 'upcoming' | 'all' | 'past'
 
@@ -30,8 +31,10 @@ export default function PlanPage() {
   const [syncMessage,  setSyncMessage] = useState<string | null>(null)
   const [filter,       setFilter]      = useState<Filter>('upcoming')
   const [userName,     setUserName]    = useState('')
-  const [loading,      setLoading]     = useState(true)
-  const [editingGoal,  setEditingGoal] = useState(false)
+  const [loading,          setLoading]         = useState(true)
+  const [editingGoal,      setEditingGoal]     = useState(false)
+  const [profilePhotoUrl,  setProfilePhotoUrl] = useState<string | null>(null)
+  const [preferredUnits,   setPreferredUnits]  = useState<'km' | 'miles'>('km')
 
   // ── Fetch plan + runs ────────────────────────────────────────────────────
 
@@ -46,6 +49,9 @@ export default function PlanPage() {
     setCurrentWeek(d.currentWeek ?? 0)
     setGoalLabel(d.goalLabel ?? '')
     setMpLabel(d.mpLabel ?? '')
+    setUserName(d.userName ?? '')
+    setProfilePhotoUrl(d.profilePhotoUrl ?? null)
+    setPreferredUnits(d.preferredUnits ?? 'km')
     const id: string = d.planId ?? ''
     setPlanId(id)
     // Fetch strength completions once we have the planId
@@ -120,6 +126,7 @@ export default function PlanPage() {
   const totalPlannedKm = plan
     .filter((w) => w.weekNumber < currentWeek)
     .reduce((s, w) => s + w.targetKm, 0)
+  const u = preferredUnits
 
   const currentPhase = currentWeek > 0 && currentWeek <= plan.length
     ? plan[currentWeek - 1]?.phase ?? ''
@@ -139,9 +146,9 @@ export default function PlanPage() {
       accent: false,
     },
     {
-      label: 'Km logged',
-      value: String(Math.round(totalActualKm)),
-      sub:   `of ~${totalPlannedKm} km planned`,
+      label: u === 'miles' ? 'Miles logged' : 'Km logged',
+      value: formatDistanceExact(totalActualKm, u),
+      sub:   `of ~${formatDistance(totalPlannedKm, u)} planned`,
       accent: false,
     },
     {
@@ -164,7 +171,7 @@ export default function PlanPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
-      <Navigation userName={userName} />
+      <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Page title */}
@@ -177,7 +184,7 @@ export default function PlanPage() {
               Marathon Plan
             </h1>
             <p className="text-sm mt-1" style={{ color:'#4A5427' }}>
-              {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'}
+              {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'} · {u}
             </p>
           </div>
           {config && (
@@ -310,6 +317,7 @@ export default function PlanPage() {
                 isPastWeek={week.weekNumber < currentWeek}
                 strengthCompletions={strengthCompletions}
                 planId={planId}
+                units={preferredUnits}
               />
             )
           })}

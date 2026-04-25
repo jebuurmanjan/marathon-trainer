@@ -1,7 +1,7 @@
 import { Week, ActualRun } from '@/types'
 import RunRow from './RunRow'
 import StrengthRow from './StrengthRow'
-import { PHASE_LABELS } from '@/lib/training-plan'
+import { PHASE_LABELS, formatDistance, formatDistanceExact } from '@/lib/training-plan'
 import { calcWeekScore, scoreColor, scoreLabel } from '@/lib/score'
 
 const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
@@ -17,11 +17,12 @@ interface WeekCardProps {
   actualRuns:           ActualRun[]
   isCurrentWeek:        boolean
   isPastWeek:           boolean
-  strengthCompletions?: string[]   // ISO dates of completed strength sessions
+  strengthCompletions?: string[]
   planId?:              string
+  units?:               'km' | 'miles'
 }
 
-export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, strengthCompletions = [], planId = '' }: WeekCardProps) {
+export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, strengthCompletions = [], planId = '', units = 'km' }: WeekCardProps) {
   const today = new Date().toISOString().slice(0, 10)
 
   function findActual(plannedDate: string): ActualRun | undefined {
@@ -133,12 +134,12 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                   color: '#1E1611',
                 }}
               >
-                {week.targetKm} km
+                {formatDistance(week.targetKm, units)}
               </div>
 
               {(isCurrentWeek || isPastWeek) && (
                 <div className="text-[11px] mt-0.5 font-semibold" style={{ color: '#4A5427' }}>
-                  {totalKmActual.toFixed(1)} logged
+                  {formatDistanceExact(totalKmActual, units)} logged
                 </div>
               )}
 

@@ -212,11 +212,12 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
 
 interface SideMenuProps {
   isOpen:   boolean
-  onClose:  () => void
-  userName: string
+  onClose:         () => void
+  userName:        string
+  profilePhotoUrl?: string | null
 }
 
-export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
+export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }: SideMenuProps) {
   const pathname    = usePathname()
   const searchParams = useSearchParams()
   const currentTab  = searchParams.get('tab') ?? ''
@@ -541,24 +542,42 @@ export default function SideMenu({ isOpen, onClose, userName }: SideMenuProps) {
           </button>
         </div>
 
-        {/* Footer: user + logout */}
+        {/* Footer: user + settings + logout */}
         <div
           className="px-5 py-4 border-t shrink-0"
           style={{ borderColor: 'rgba(43,49,23,0.08)' }}
         >
-          <div className="flex items-center gap-3">
+          {/* User identity row */}
+          <div className="flex items-center gap-3 mb-3">
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-              style={{ background: '#EE6B17' }}
+              className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white shrink-0"
+              style={profilePhotoUrl ? undefined : { background: '#EE6B17' }}
             >
-              {initials}
+              {profilePhotoUrl
+                ? <img src={profilePhotoUrl} alt={userName} className="w-full h-full object-cover" />
+                : initials
+              }
             </div>
             <span className="text-sm font-medium flex-1 truncate" style={{ color: '#1E1611' }}>
               {userName || 'Athlete'}
             </span>
+          </div>
+          {/* Action links */}
+          <div className="flex gap-2">
+            <Link
+              href="/settings"
+              onClick={onClose}
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors font-medium"
+              style={{ color: '#4A5427', borderColor: 'rgba(43,49,23,0.12)', background: '#EDE9DE' }}
+            >
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Account
+            </Link>
             <a
               href="/api/logout"
-              className="text-xs px-2.5 py-1.5 rounded-lg border shrink-0 transition-colors"
+              className="flex-1 flex items-center justify-center text-xs px-3 py-2 rounded-lg border transition-colors font-medium"
               style={{ color: '#736554', borderColor: 'rgba(43,49,23,0.12)' }}
             >
               Log out

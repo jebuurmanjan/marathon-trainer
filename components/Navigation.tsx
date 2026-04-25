@@ -6,20 +6,21 @@ import { usePathname } from 'next/navigation'
 import SideMenu from './SideMenu'
 
 interface NavigationProps {
-  userName: string
+  userName:        string
+  profilePhotoUrl?: string | null
 }
 
-export default function Navigation({ userName }: NavigationProps) {
+export default function Navigation({ userName, profilePhotoUrl }: NavigationProps) {
   const pathname  = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const initials = userName
-    .split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'JB'
+    .split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
 
   return (
     <>
       <Suspense fallback={null}>
-        <SideMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} userName={userName} />
+        <SideMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} userName={userName} profilePhotoUrl={profilePhotoUrl} />
       </Suspense>
 
       <header
@@ -83,10 +84,13 @@ export default function Navigation({ userName }: NavigationProps) {
             <button
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
-              className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm"
-              style={{ background: '#EE6B17' }}
+              className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white shadow-sm"
+              style={profilePhotoUrl ? undefined : { background: '#EE6B17' }}
             >
-              {initials}
+              {profilePhotoUrl
+                ? <img src={profilePhotoUrl} alt={userName} className="w-full h-full object-cover" />
+                : initials
+              }
             </button>
           </div>
         </div>

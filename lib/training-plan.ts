@@ -409,6 +409,18 @@ export function formatPaceDisplay(paceMinPerKm: number): string {
   return `${min}:${String(sec).padStart(2, '0')}/km`
 }
 
+// Format a distance value respecting the user's preferred units
+export function formatDistance(km: number, units: 'km' | 'miles' = 'km'): string {
+  if (units === 'miles') return `${(km * 0.621371).toFixed(1)} mi`
+  return `${Math.round(km)} km`
+}
+
+// Format a distance value with one decimal place (for logged km)
+export function formatDistanceExact(km: number, units: 'km' | 'miles' = 'km'): string {
+  if (units === 'miles') return `${(km * 0.621371).toFixed(1)} mi`
+  return `${km.toFixed(1)} km`
+}
+
 export const PHASE_LABELS: Record<string, string> = {
   base: 'Base',
   build: 'Build',

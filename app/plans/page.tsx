@@ -17,10 +17,11 @@ interface Plan {
 
 export default function PlansPage() {
   const router = useRouter()
-  const [plans,      setPlans]      = useState<Plan[]>([])
-  const [loading,    setLoading]    = useState(true)
-  const [switching,  setSwitching]  = useState<string | null>(null)
-  const [userName,   setUserName]   = useState('')
+  const [plans,           setPlans]           = useState<Plan[]>([])
+  const [loading,         setLoading]         = useState(true)
+  const [switching,       setSwitching]       = useState<string | null>(null)
+  const [userName,        setUserName]        = useState('')
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -35,6 +36,7 @@ export default function PlansPage() {
       if (runsRes.ok) {
         const d = await runsRes.json()
         setUserName(d.userName ?? '')
+        setProfilePhotoUrl(d.profilePhotoUrl ?? null)
       }
       setLoading(false)
     }
@@ -73,7 +75,7 @@ export default function PlansPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
-      <Navigation userName={userName} />
+      <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         {/* Header */}

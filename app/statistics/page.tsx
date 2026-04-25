@@ -5,6 +5,7 @@ import StatsTabs from '@/components/StatsTabs'
 import ZonesTab from '@/components/ZonesTab'
 import { getSession } from '@/lib/session'
 import { getActualRuns } from '@/lib/strava'
+import { createServerClient } from '@/lib/supabase'
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const YEAR         = 2026
@@ -41,6 +42,15 @@ export default async function StatisticsPage({
 }) {
   const session = await getSession()
   if (!session) redirect('/')
+
+  const db      = createServerClient()
+  const userRow = await db.from('users')
+    .select('display_name, profile_photo_url')
+    .eq('id', session.userId)
+    .single()
+    .then((r) => r.data)
+  const userName       = userRow?.display_name ?? session.name
+  const profilePhotoUrl = userRow?.profile_photo_url ?? null
 
   const { tab = 'distance' } = await searchParams
   const activeTab = tab === 'zones' ? 'zones' : 'distance'
@@ -170,7 +180,7 @@ export default async function StatisticsPage({
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
-      <Navigation userName={session.name} />
+      <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}

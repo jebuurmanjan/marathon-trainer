@@ -22,13 +22,16 @@ export async function GET() {
   const db = createServerClient()
   const { data: user } = await db
     .from('users')
-    .select('name')
+    .select('name, display_name, profile_photo_url, preferred_units, theme')
     .eq('id', session.userId)
     .single()
 
   return NextResponse.json({
     runs,
-    userName:    user?.name ?? session.name,
+    userName:        user?.display_name ?? user?.name ?? session.name,
+    profilePhotoUrl: user?.profile_photo_url ?? null,
+    preferredUnits:  (user?.preferred_units ?? 'km') as 'km' | 'miles',
+    theme:           (user?.theme ?? 'light') as 'light' | 'dark',
     needsOnboarding: !userPlan,
   })
 }

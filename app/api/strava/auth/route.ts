@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// GET /api/strava/auth?mode=jan|guest
+// GET /api/strava/auth
 // Redirect to Strava's OAuth consent screen.
-// The mode is passed through the OAuth `state` param so the callback
-// knows whether to enforce the STRAVA_ATHLETE_ID guard.
 export async function GET(req: NextRequest) {
   const clientId = process.env.STRAVA_CLIENT_ID
-  const mode     = req.nextUrl.searchParams.get('mode') ?? 'guest'
 
   const host        = req.headers.get('host') ?? 'localhost:3000'
   const protocol    = host.startsWith('localhost') ? 'http' : 'https'
@@ -18,7 +15,6 @@ export async function GET(req: NextRequest) {
     response_type:   'code',
     approval_prompt: 'auto',
     scope:           'read,activity:read_all',
-    state:           mode,
   })
 
   return NextResponse.redirect(`https://www.strava.com/oauth/authorize?${params}`)

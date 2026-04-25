@@ -5,14 +5,25 @@ import { getActualRuns } from '@/lib/strava'
 import { formatPaceDisplay } from '@/lib/training-plan'
 import { formatGoalTime } from '@/lib/plan-generator'
 import { getUserPlan } from '@/lib/user-plan'
+import { createServerClient } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
 
 export default async function ProgressPage() {
   const session = await getSession()
   if (!session) redirect('/')
 
-  const userPlan = await getUserPlan(session.userId, session.stravaId)
+  const [userPlan, userRow] = await Promise.all([
+    getUserPlan(session.userId, session.stravaId),
+    createServerClient().from('users')
+      .select('display_name, profile_photo_url')
+      .eq('id', session.userId)
+      .single()
+      .then((r) => r.data),
+  ])
   if (!userPlan) redirect('/onboarding')
+
+  const userName        = userRow?.display_name ?? session.name
+  const profilePhotoUrl = userRow?.profile_photo_url ?? null
 
   const { plan, currentWeek, planStartDate, config } = userPlan
 
@@ -63,7 +74,7 @@ export default async function ProgressPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
-      <Navigation userName={session.name} />
+      <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Page title */}

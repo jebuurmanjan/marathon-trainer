@@ -8,11 +8,12 @@ import { Suggestion } from '@/types'
 import { getCurrentWeekNumber } from '@/lib/training-plan'
 
 export default function SuggestionsPage() {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [generating, setGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [userName, setUserName] = useState('')
+  const [suggestions,     setSuggestions]     = useState<Suggestion[]>([])
+  const [loading,         setLoading]         = useState(true)
+  const [generating,      setGenerating]      = useState(false)
+  const [error,           setError]           = useState<string | null>(null)
+  const [userName,        setUserName]        = useState('')
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null)
 
   const currentWeek = getCurrentWeekNumber()
 
@@ -29,6 +30,7 @@ export default function SuggestionsPage() {
       if (runsRes.ok) {
         const data = await runsRes.json()
         setUserName(data.userName ?? '')
+        setProfilePhotoUrl(data.profilePhotoUrl ?? null)
       }
     } catch { /* ignore */ }
     finally { setLoading(false) }
@@ -56,7 +58,7 @@ export default function SuggestionsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
-      <Navigation userName={userName} />
+      <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Page title */}
