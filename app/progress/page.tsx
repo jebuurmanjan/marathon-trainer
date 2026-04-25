@@ -3,6 +3,7 @@ import PlanTabs from '@/components/PlanTabs'
 import { getSession } from '@/lib/session'
 import { getActualRuns } from '@/lib/strava'
 import { formatPaceDisplay } from '@/lib/training-plan'
+import { formatGoalTime } from '@/lib/plan-generator'
 import { getUserPlan } from '@/lib/user-plan'
 import { redirect } from 'next/navigation'
 
@@ -16,7 +17,7 @@ export default async function ProgressPage() {
   const { plan, currentWeek, planStartDate, config } = userPlan
 
   const endDate = currentWeek > 0
-    ? plan[Math.min(currentWeek, 26) - 1].endDate
+    ? plan[Math.min(currentWeek, plan.length) - 1].endDate
     : config.raceDate
 
   const allRuns = await getActualRuns(session.userId, planStartDate, endDate)
@@ -73,7 +74,7 @@ export default async function ProgressPage() {
           >
             Marathon Plan
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>27 weeks · sub 3:30 goal</p>
+          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>{plan.length} weeks · sub {formatGoalTime(config.goalSeconds)} goal</p>
         </div>
 
         <PlanTabs />

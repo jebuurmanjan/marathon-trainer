@@ -2,23 +2,26 @@ import { Week, PlannedRun, Phase, RunType } from '@/types'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
+export type EquipmentType = 'bodyweight' | 'gym' | 'both'
+
 export interface UserPlanConfig {
-  raceDate:     string   // YYYY-MM-DD
-  goalSeconds:  number   // e.g. 12600 for 3:30:00
-  weeklyKm:     number   // current weekly running load
-  runsPerWeek:  number   // 3, 4, or 5
-  strengthDays: number   // 0, 1, or 2
-  hasGym:       boolean  // affects exercise selection
+  raceDate:      string        // YYYY-MM-DD
+  goalSeconds:   number        // e.g. 12600 for 3:30:00
+  weeklyKm:      number        // current weekly running load
+  runsPerWeek:   number        // 3, 4, or 5
+  strengthDays:  number        // 0, 1, or 2
+  equipmentType: EquipmentType // 'bodyweight' | 'gym' | 'both'
+  planWeeks:     number        // 12–27
 }
 
 // ─── Paces ────────────────────────────────────────────────────────────────────
 
 export interface PlanPaces {
-  mp:        number  // marathon pace (min/km)
-  threshold: number  // lactate threshold
-  interval:  number  // VO2max / 5K effort
-  easy:      number  // conversational
-  hill:      number  // hill flat-equivalent
+  mp:        number
+  threshold: number
+  interval:  number
+  easy:      number
+  hill:      number
 }
 
 export function calcPaces(goalSeconds: number): PlanPaces {
@@ -60,7 +63,7 @@ function mkRun(
 ): PlannedRun {
   return {
     weekNumber: wk, phase, date,
-    dayOfWeek: dowLabel(date),
+    dayOfWeek:  dowLabel(date),
     type, targetDistanceKm: km,
     targetPaceMinPerKm: pace,
     description: desc,
@@ -68,52 +71,267 @@ function mkRun(
   }
 }
 
-// ─── Volume progression (10% rule enforced) ───────────────────────────────────
+// ─── Phase allocation ─────────────────────────────────────────────────────────
 
-function buildVolumes(weeklyKm: number): number[] {
-  const MAX = 75
-  const cap  = (v: number) => Math.max(15, Math.min(MAX, Math.round(v)))
-  const grow = (from: number, pct = 0.09) => cap(from * (1 + pct))
-  const step = (peak: number) => cap(peak * 0.75)
+interface PhaseBlock { phase: Phase; weeks: number }
 
-  const v: number[] = new Array(27).fill(0)
-  let lastPeak = weeklyKm
+export function calcPhases(planWeeks: number): PhaseBlock[] {
+  // Taper: 3 weeks for 20+ week plans, 2 for shorter
+  const taper     = planWeeks >= 20 ? 3 : 2
+  const remaining = planWeeks - taper
 
-  // Base (W1–6): build 5, cutback W6
-  v[0] = cap(weeklyKm);  v[1] = grow(v[0]);  v[2] = grow(v[1])
-  v[3] = grow(v[2]);     v[4] = grow(v[3])
-  lastPeak = v[4];       v[5] = step(lastPeak)
+  // ≤ 16 weeks: combine peak+sharpen into one block
+  if (planWeeks <= 16) {
+    const base  = Math.max(3, Math.round(remaining * 0.33))
+    const build = Math.max(3, Math.round(remaining * 0.40))
+    const peak  = Math.max(2, remaining - base - build)
+    return [
+      { phase: 'base',  weeks: base  },
+      { phase: 'build', weeks: build },
+      { phase: 'peak',  weeks: peak  },
+      { phase: 'taper', weeks: taper },
+    ]
+  }
 
-  // Endurance (W7–13): restart from W5 peak, cutback W12
-  v[6]  = grow(lastPeak, 0.05); v[7]  = grow(v[6])
-  v[8]  = grow(v[7]);           v[9]  = grow(v[8])
-  v[10] = grow(v[9]);           lastPeak = v[10]
-  v[11] = step(lastPeak);       v[12] = grow(lastPeak, 0.05)
-  lastPeak = Math.max(lastPeak, v[12])
+  // > 16 weeks: four separate phases
+  const base    = Math.max(4, Math.round(remaining * 0.26))
+  const build   = Math.max(4, Math.round(remaining * 0.35))
+  const peak    = Math.max(2, Math.round(remaining * 0.24))
+  const sharpen = Math.max(1, remaining - base - build - peak)
+  return [
+    { phase: 'base',    weeks: base    },
+    { phase: 'build',   weeks: build   },
+    { phase: 'peak',    weeks: peak    },
+    { phase: 'sharpen', weeks: sharpen },
+    { phase: 'taper',   weeks: taper   },
+  ]
+}
 
-  // Strength & Speed (W14–19): 4 build, cutback W18, race sim W19
-  v[13] = grow(lastPeak, 0.07); v[14] = grow(v[13], 0.07)
-  v[15] = grow(v[14], 0.07);    v[16] = grow(v[15], 0.06)
-  lastPeak = v[16];              v[17] = step(lastPeak)
-  v[18] = grow(lastPeak, 0.04); lastPeak = Math.max(lastPeak, v[18])
+// ─── Volume progression ───────────────────────────────────────────────────────
+// Enforces 10% rule from Week 1 (week 1 = user's current weeklyKm).
+// Each non-cutback week grows ≤9% from the previous non-cutback week.
+// Cutback weeks drop to 75% of the last peak, then the next week resumes from that peak.
 
-  // Race Prep (W20–24): maintain near peak
-  v[19] = cap(lastPeak * 1.01); v[20] = cap(lastPeak * 1.00)
-  v[21] = cap(lastPeak * 0.88); v[22] = cap(lastPeak * 0.98)
-  v[23] = cap(lastPeak * 0.92)
-  const finalPeak = Math.max(...v.slice(0, 24))
+function buildVolumes(weeklyKm: number, phases: PhaseBlock[]): number[] {
+  const MAX      = Math.min(100, Math.max(60, weeklyKm * 3))
+  const cap      = (v: number) => Math.max(10, Math.min(MAX, Math.round(v)))
+  const grow     = (from: number) => cap(from * 1.09)
+  const cutbackV = (peak: number) => Math.max(weeklyKm, Math.round(peak * 0.75))
 
-  // Taper (W25–27)
-  v[24] = cap(finalPeak * 0.75)
-  v[25] = cap(finalPeak * 0.60)
-  v[26] = cap(finalPeak * 0.40)
+  const totalWeeks = phases.reduce((s, p) => s + p.weeks, 0)
+  const v: number[] = new Array(totalWeeks).fill(0)
+  let wi          = 0
+  let lastPeak    = weeklyKm
+  let prevCutback = false
+
+  for (const block of phases) {
+    // ── Taper: percentage drop off final peak ────────────────────────────────
+    if (block.phase === 'taper') {
+      const peak = Math.max(lastPeak, ...v.slice(0, wi).filter(Boolean))
+      if (block.weeks >= 3) {
+        v[wi] = Math.round(peak * 0.75); v[wi+1] = Math.round(peak * 0.60); v[wi+2] = Math.round(peak * 0.40)
+      } else {
+        v[wi] = Math.round(peak * 0.60); v[wi+1] = Math.round(peak * 0.40)
+      }
+      wi += block.weeks
+      continue
+    }
+
+    // ── Cutback position within this block ───────────────────────────────────
+    let cutbackAt: number
+    if      (block.phase === 'base')    cutbackAt = block.weeks - 1
+    else if (block.phase === 'build')   cutbackAt = Math.round(block.weeks * 0.55)
+    else if (block.phase === 'peak')    cutbackAt = block.weeks >= 4 ? Math.round(block.weeks * 0.6) : -1
+    else                                cutbackAt = block.weeks - 1  // sharpen
+
+    for (let j = 0; j < block.weeks; j++) {
+      if (wi === 0) {
+        // Week 1 always starts at the user's current weeklyKm
+        v[wi] = weeklyKm; lastPeak = weeklyKm; prevCutback = false
+      } else if (j === cutbackAt) {
+        v[wi] = cutbackV(lastPeak); prevCutback = true
+      } else if (prevCutback) {
+        // Week after cutback: restart from lastPeak (not the lower cutback value)
+        v[wi] = grow(lastPeak)
+        if (v[wi] > lastPeak) lastPeak = v[wi]
+        prevCutback = false
+      } else {
+        v[wi] = grow(v[wi - 1])
+        if (v[wi] > lastPeak) lastPeak = v[wi]
+      }
+      wi++
+    }
+  }
 
   return v
 }
 
+// ─── Week template generation ─────────────────────────────────────────────────
+
+type QKey =
+  | 'none' | 'progression' | 'hills' | 'tempo'
+  | 'fartlek' | 'mp' | 'race_sim' | 'tune_up' | 'dress_rehearsal'
+
+type LongStyle = 'easy' | 'mp_finish'
+
+interface WeekTmpl {
+  phase:      Phase
+  isCutback:  boolean
+  quality:    QKey
+  longStyle?: LongStyle
+  notes:      string
+}
+
+const BASE_NOTES = [
+  "First week of the plan. Establish the rhythm — all runs fully conversational. If you can't hold a conversation, slow down.",
+  "10% rule in action — a small step up. Keep HR under 145 bpm throughout. Aerobic development happens even when it feels easy.",
+  "Steady base building. Focus on feel, not pace. The long run is your weekend anchor.",
+  "Aerobic engine building. Every run should feel sustainable for hours. No ego in base phase.",
+  "Final push of the base block — still fully aerobic. Time on feet is the goal.",
+  "Cutback week. Reduce volume by ~25%. Recovery is where adaptation happens.",
+]
+
+const BUILD_NOTES = [
+  "Volume returns. Thursday introduces a controlled progression finish — stay well within yourself.",
+  "Volume ticks up. Practise fuelling every 40 min on the long run — this is a skill that needs training.",
+  "Long run getting serious. Aerobic base from the base phase is now paying dividends.",
+  "Building time on feet. The long run should feel comfortably challenging — not a struggle.",
+  "Biggest endurance week so far. Sleep and eat well — recovery is training too.",
+  "Cutback — absorb the endurance work. Short and easy, no exceptions.",
+  "Volume returns; legs feel fresh from the cutback.",
+  "Bridge week into the next phase. Endurance fitness is peaking.",
+]
+
+const PEAK_NOTES = [
+  "Hill work begins. Strong legs mean better form and resilience in the late miles. Uphill fast, downhill easy.",
+  "First tempo run. Comfortably hard — short phrases only, not free conversation. Builds lactate threshold.",
+  "Fartlek — unstructured speed within an easy run. Pick landmarks, accelerate, recover. Builds speed variety.",
+  "Hill repeats again. You should feel noticeably stronger than the first time. Form is everything.",
+  "Cutback with a shorter tempo. Consolidate the strength gains. Quality over quantity this week.",
+  "Race simulation — the most demanding session of the plan. This week proves you are ready.",
+]
+
+const SHARPEN_NOTES = [
+  "Race preparation begins. Long runs now include sustained marathon-pace sections. Your body learns what race day demands.",
+  "Tune-up race preparation. Stay sharp, nail the goal-pace section of the long run.",
+  "Tune-up race week! Run a half marathon — first 16 km at goal pace, pick it up in the final 5K.",
+  "Back to training after the tune-up race. Marathon-specific fitness is peaking. Every run has a purpose.",
+  "Last major quality session before the taper. Run it well — the hay is almost in the barn.",
+]
+
+const TAPER_NOTES = [
+  "Taper begins. Volume drops sharply. One dress-rehearsal session. Do not add extra miles. Trust the process.",
+  "Volume drops again. Short and sharp — one quality session, the rest easy. Legs start feeling bouncy. That's the taper working.",
+  "Race week. Three short easy runs, then go get it. Hydrate now. Eat breakfast 2 hours before the start. You are ready.",
+]
+
+function buildWeekTemplates(phases: PhaseBlock[]): WeekTmpl[] {
+  const tmpls: WeekTmpl[] = []
+
+  for (const block of phases) {
+    const { phase, weeks } = block
+
+    switch (phase) {
+      case 'base': {
+        const cutbackAt = weeks - 1
+        for (let i = 0; i < weeks; i++) {
+          const isCutback = i === cutbackAt
+          tmpls.push({
+            phase: 'base', isCutback, quality: 'none',
+            notes: isCutback ? BASE_NOTES[5] : BASE_NOTES[Math.min(i, 4)],
+          })
+        }
+        break
+      }
+
+      case 'build': {
+        const cutbackAt = Math.round(weeks * 0.55)
+        let noteIdx = 0
+        for (let i = 0; i < weeks; i++) {
+          const isCutback = i === cutbackAt
+          tmpls.push({
+            phase: 'build', isCutback, quality: 'progression',
+            notes: isCutback ? BUILD_NOTES[5] : BUILD_NOTES[Math.min(noteIdx++, 4)],
+          })
+          if (isCutback) noteIdx-- // don't advance note on cutback
+        }
+        break
+      }
+
+      case 'peak': {
+        const cutbackAt      = weeks >= 4 ? Math.round(weeks * 0.6) : -1
+        const qualityCycle: QKey[] = ['hills','tempo','fartlek','hills','tempo','fartlek']
+        let noteIdx = 0
+        for (let i = 0; i < weeks; i++) {
+          const isLast    = i === weeks - 1
+          const isCutback = i === cutbackAt
+          let quality: QKey
+          let longStyle: LongStyle | undefined
+          if (isLast) {
+            quality = 'race_sim'; longStyle = 'mp_finish'
+          } else if (isCutback) {
+            quality = 'tempo'
+          } else {
+            quality = qualityCycle[i % qualityCycle.length]
+            if (i >= weeks - 3) longStyle = 'mp_finish'
+          }
+          tmpls.push({
+            phase: 'peak', isCutback, quality, longStyle,
+            notes: isCutback ? PEAK_NOTES[4] : PEAK_NOTES[Math.min(noteIdx++, 3)],
+          })
+          if (isCutback) noteIdx--
+        }
+        break
+      }
+
+      case 'sharpen': {
+        const tuneUpAt  = weeks >= 3 ? Math.floor(weeks / 2) : -1
+        for (let i = 0; i < weeks; i++) {
+          const isCutback = i === weeks - 1
+          let quality: QKey
+          let longStyle: LongStyle | undefined
+          if (i === tuneUpAt) {
+            quality = 'tune_up'
+          } else if (isCutback) {
+            quality = 'tempo'
+          } else {
+            quality = i % 2 === 0 ? 'mp' : 'tempo'
+            longStyle = 'mp_finish'
+          }
+          tmpls.push({
+            phase: 'sharpen', isCutback, quality, longStyle,
+            notes: SHARPEN_NOTES[Math.min(i, SHARPEN_NOTES.length - 1)],
+          })
+        }
+        break
+      }
+
+      case 'taper': {
+        // 2-week taper: dress_rehearsal → race
+        // 3-week taper: dress_rehearsal → mp → race
+        const qualities: QKey[] = weeks >= 3
+          ? ['dress_rehearsal', 'mp', 'none']
+          : ['dress_rehearsal', 'none']
+        const noteOffset = weeks < 3 ? 1 : 0  // skip first taper note for 2-week
+        for (let i = 0; i < weeks; i++) {
+          const isRaceWeek = i === weeks - 1
+          tmpls.push({
+            phase: 'taper',
+            isCutback: !isRaceWeek,
+            quality: qualities[Math.min(i, qualities.length - 1)],
+            notes:   TAPER_NOTES[Math.min(i + noteOffset, TAPER_NOTES.length - 1)],
+          })
+        }
+        break
+      }
+    }
+  }
+
+  return tmpls
+}
+
 // ─── Strength sessions ────────────────────────────────────────────────────────
 
-// Phase-appropriate exercises, bodyweight or gym
 const STRENGTH: Record<Phase, Record<'bw' | 'gym', { duration: number; exercises: string[] }>> = {
   base: {
     bw: {
@@ -241,21 +459,26 @@ const STRENGTH: Record<Phase, Record<'bw' | 'gym', { duration: number; exercises
   },
 }
 
-// Strength day offsets from Monday (week start)
-// 4/3-run: free days are Mon(0), Wed(2), Fri(4)  → 1 day = Mon, 2 days = Mon+Wed
-// 5-run:   free days are Mon(0), Fri(4)           → 1 day = Mon, 2 days = Mon+Fri
 function strengthOffsets(runsPerWeek: number, strengthDays: number): number[] {
   if (strengthDays === 0) return []
   if (runsPerWeek === 5)  return strengthDays === 1 ? [0] : [0, 4]
   return strengthDays === 1 ? [0] : [0, 2]
 }
 
+// 'both' alternates: odd weeks → gym, even weeks → bodyweight
+function resolveEquipment(equipmentType: EquipmentType, weekNumber: number): 'bw' | 'gym' {
+  if (equipmentType === 'gym')       return 'gym'
+  if (equipmentType === 'bodyweight') return 'bw'
+  return weekNumber % 2 === 1 ? 'gym' : 'bw'  // 'both': alternate
+}
+
 function buildStrengthSession(
-  wk: number, phase: Phase, date: string, hasGym: boolean, isRaceWeek: boolean,
+  wk: number, phase: Phase, date: string,
+  equipmentType: EquipmentType, isRaceWeek: boolean,
 ): PlannedRun | null {
-  if (isRaceWeek) return null  // no strength in race week
-  const key = hasGym ? 'gym' : 'bw'
-  const s = STRENGTH[phase][key]
+  if (isRaceWeek) return null
+  const eq = resolveEquipment(equipmentType, wk)
+  const s  = STRENGTH[phase][eq]
   return {
     weekNumber: wk, phase, date,
     dayOfWeek: dowLabel(date),
@@ -273,99 +496,10 @@ function strengthDescription(phase: Phase): string {
     case 'base':    return 'Activation & foundation — movement quality and glute activation. Keep loads light; focus on form.'
     case 'build':   return 'Progressive runner strength — single-leg stability and posterior chain. Build load gradually.'
     case 'peak':    return 'Peak strength — power and resilience. Most demanding strength session; allow 24h before quality runs.'
-    case 'sharpen': return 'Maintenance strength — lighter loads, sharp movement patterns. Protect fitness, don\'t add stress.'
+    case 'sharpen': return "Maintenance strength — lighter loads, sharp movement patterns. Protect fitness, don't add stress."
     case 'taper':   return 'Activation only — keep muscles awake before race day. Light and brief; no fatigue.'
   }
 }
-
-// ─── Week template ────────────────────────────────────────────────────────────
-
-type QKey =
-  | 'none'            // Base phase: Thu is a second easy run
-  | 'progression'     // Easy → controlled MP effort in final 25%
-  | 'hills'           // Uphill fast bursts in easy run
-  | 'tempo'           // WU + threshold middle + CD
-  | 'fartlek'         // Easy with unstructured fast bursts
-  | 'mp'              // Marathon pace quality session
-  | 'race_sim'        // Extended MP block
-  | 'tune_up'         // Tune-up race week
-  | 'dress_rehearsal' // WU + 20 min at MP + CD
-
-type LongStyle = 'easy' | 'mp_finish'
-
-interface WeekTmpl {
-  phase:      Phase
-  isCutback:  boolean
-  quality:    QKey
-  longStyle?: LongStyle
-  notes:      string
-}
-
-const WEEK_TMPLS: WeekTmpl[] = [
-  // BASE (W1–6)
-  { phase:'base', isCutback:false, quality:'none',
-    notes:'First week of the plan. Establish the rhythm — all runs fully conversational. If you can\'t hold a conversation, slow down.' },
-  { phase:'base', isCutback:false, quality:'none',
-    notes:'10% rule in action — a small step up. Keep HR under 145 bpm throughout. Aerobic development happens even when it feels easy.' },
-  { phase:'base', isCutback:false, quality:'none',
-    notes:'Steady base building. Focus on feel, not pace. The long run is your weekend anchor.' },
-  { phase:'base', isCutback:false, quality:'none',
-    notes:'Aerobic engine building. Every run should feel sustainable for hours. No ego in base phase.' },
-  { phase:'base', isCutback:false, quality:'none',
-    notes:'Final push of the base block — still fully aerobic. Time on feet is the goal.' },
-  { phase:'base', isCutback:true,  quality:'none',
-    notes:'Cutback week. Reduce volume by ~25%. Recovery is where adaptation happens.' },
-
-  // BUILD / ENDURANCE (W7–13)
-  { phase:'build', isCutback:false, quality:'progression',
-    notes:'Endurance phase begins. Volume returns. Thursday introduces a controlled progression finish — stay well within yourself.' },
-  { phase:'build', isCutback:false, quality:'progression',
-    notes:'Volume ticks up. Practise fuelling every 40 min on the long run — this is a skill that needs training.' },
-  { phase:'build', isCutback:false, quality:'progression',
-    notes:'Long run getting serious. Aerobic base from the first 6 weeks is now paying dividends.' },
-  { phase:'build', isCutback:false, quality:'progression',
-    notes:'Building time on feet. The long run should feel comfortably challenging — not a struggle.' },
-  { phase:'build', isCutback:false, quality:'progression',
-    notes:'Biggest endurance week so far. Sleep and eat well — recovery is training too.' },
-  { phase:'build', isCutback:true,  quality:'progression',
-    notes:'Cutback — absorb 5 weeks of endurance work. Short and easy, no exceptions.' },
-  { phase:'build', isCutback:false, quality:'progression',
-    notes:'Bridge week into strength and speed. Volume returns; legs feel fresh from the cutback.' },
-
-  // PEAK / STRENGTH & SPEED (W14–19)
-  { phase:'peak', isCutback:false, quality:'hills',
-    notes:'Hill work begins. Strong legs mean better form and resilience in the late miles. Uphill fast, downhill easy.' },
-  { phase:'peak', isCutback:false, quality:'tempo',
-    notes:'First tempo run. Comfortably hard — short phrases only, not free conversation. Builds lactate threshold.' },
-  { phase:'peak', isCutback:false, quality:'fartlek',
-    notes:'Fartlek — unstructured speed within an easy run. Pick landmarks, accelerate, recover. Builds speed variety.' },
-  { phase:'peak', isCutback:false, quality:'hills',
-    notes:'Hill repeats again. You should feel noticeably stronger than week 14. Form is everything.' },
-  { phase:'peak', isCutback:true,  quality:'tempo',
-    notes:'Cutback with a shorter tempo. Consolidate the strength gains. Quality over quantity this week.' },
-  { phase:'peak', isCutback:false, quality:'race_sim', longStyle:'mp_finish',
-    notes:'Race simulation — the most demanding session of the plan. This week proves you are ready.' },
-
-  // SHARPEN / RACE PREP (W20–24)
-  { phase:'sharpen', isCutback:false, quality:'mp', longStyle:'mp_finish',
-    notes:'Race preparation begins. Long runs now include sustained marathon-pace sections. Your body learns what race day demands.' },
-  { phase:'sharpen', isCutback:false, quality:'tempo', longStyle:'mp_finish',
-    notes:'Tune-up race preparation. Stay sharp on Thursday, nail the goal-pace section of the long run.' },
-  { phase:'sharpen', isCutback:false, quality:'tune_up',
-    notes:'Tune-up race week! Run a half marathon — first 10 miles at goal pace, pick it up in the final 5K.' },
-  { phase:'sharpen', isCutback:false, quality:'mp', longStyle:'mp_finish',
-    notes:'Back to training after the tune-up race. Marathon-specific fitness is peaking. Every run has a purpose.' },
-  { phase:'sharpen', isCutback:false, quality:'tempo',
-    notes:'Last major quality session before the taper. Run it well — the hay is almost in the barn.' },
-
-  // TAPER (W25–27)
-  { phase:'taper', isCutback:true, quality:'dress_rehearsal',
-    notes:'Taper begins — volume drops 25%. One dress-rehearsal session. Do not add extra miles. Trust the process.' },
-  { phase:'taper', isCutback:true, quality:'mp',
-    notes:'Volume drops 40%. Short and sharp — one quality session, the rest easy. Legs start feeling bouncy. That\'s the taper working.' },
-  { phase:'taper', isCutback:false, quality:'none',
-    notes:'Race week. Three short easy runs, then go get it. Hydrate now. Eat breakfast 2 hours before the start. You are ready.' },
-]
 
 // ─── Run builders ─────────────────────────────────────────────────────────────
 
@@ -391,7 +525,7 @@ function buildThursdayRun(
 
     case 'hills':
       return mkRun(wk, phase, date, 'quality', km, paces.hill,
-        `Hill workout ${km} km. Easy on flat sections (${fmtPace(paces.easy)}). On uphills, drive knees and run strong — 6–10 climbs of 60–90s each. Total ~60 min.`, optional)
+        `Hill workout ${km} km. Easy on flat sections (${fmtPace(paces.easy)}). On uphills, drive knees and run strong — 6–10 climbs of 60–90s each.`, optional)
 
     case 'tempo':
       return mkRun(wk, phase, date, 'quality', km, paces.threshold,
@@ -440,13 +574,12 @@ function buildLongRun(
 
 function splitVolume(targetKm: number, runs: number) {
   if (runs === 3) {
-    // No medium-long — bigger long run
     return {
-      easy:     Math.max(5,  Math.round(targetKm * 0.22)),
-      qual:     Math.max(6,  Math.round(targetKm * 0.25)),
-      ml:       0,
-      long:     Math.min(38, Math.max(14, Math.round(targetKm * 0.53))),
-      extraEasy: Math.max(6,  Math.round(targetKm * 0.22)), // 5th run (5-plan only)
+      easy:      Math.max(5,  Math.round(targetKm * 0.22)),
+      qual:      Math.max(6,  Math.round(targetKm * 0.25)),
+      ml:        0,
+      long:      Math.min(38, Math.max(12, Math.round(targetKm * 0.53))),
+      extraEasy: Math.max(6,  Math.round(targetKm * 0.22)),
     }
   }
   if (runs === 5) {
@@ -454,8 +587,8 @@ function splitVolume(targetKm: number, runs: number) {
       easy:      Math.max(5,  Math.round(targetKm * 0.13)),
       qual:      Math.max(6,  Math.round(targetKm * 0.18)),
       ml:        Math.max(8,  Math.round(targetKm * 0.22)),
-      long:      Math.min(38, Math.max(14, Math.round(targetKm * 0.36))),
-      extraEasy: Math.max(5,  Math.round(targetKm * 0.11)), // Wed easy
+      long:      Math.min(38, Math.max(12, Math.round(targetKm * 0.36))),
+      extraEasy: Math.max(5,  Math.round(targetKm * 0.11)),
     }
   }
   // 4 runs (default)
@@ -463,7 +596,7 @@ function splitVolume(targetKm: number, runs: number) {
     easy:      Math.max(5,  Math.round(targetKm * 0.17)),
     qual:      Math.max(6,  Math.round(targetKm * 0.21)),
     ml:        Math.max(8,  Math.round(targetKm * 0.26)),
-    long:      Math.min(38, Math.max(14, Math.round(targetKm * 0.36))),
+    long:      Math.min(38, Math.max(12, Math.round(targetKm * 0.36))),
     extraEasy: 0,
   }
 }
@@ -471,25 +604,29 @@ function splitVolume(targetKm: number, runs: number) {
 // ─── Main generator ───────────────────────────────────────────────────────────
 
 export function generatePlan(config: UserPlanConfig): Week[] {
-  const paces   = calcPaces(config.goalSeconds)
-  const volumes = buildVolumes(config.weeklyKm)
-  const rpw     = config.runsPerWeek ?? 4
-  const sOffsets = strengthOffsets(rpw, config.strengthDays ?? 0)
-  const gym     = config.hasGym ?? false
+  const paces      = calcPaces(config.goalSeconds)
+  const planWeeks  = config.planWeeks  ?? 27
+  const rpw        = config.runsPerWeek ?? 4
+  const eqType     = config.equipmentType ?? 'bodyweight'
+  const sOffsets   = strengthOffsets(rpw, config.strengthDays ?? 0)
 
-  // Plan starts exactly 27 weeks before race date, snapped to Monday
+  const phases     = calcPhases(planWeeks)
+  const volumes    = buildVolumes(config.weeklyKm, phases)
+  const weekTmpls  = buildWeekTemplates(phases)
+
+  // Plan starts planWeeks weeks before race day, snapped to Monday
   const raceDateObj = new Date(config.raceDate + 'T12:00:00Z')
-  const startApprox = new Date(raceDateObj.getTime() - 188 * 86_400_000)
-  const dow = startApprox.getUTCDay()
+  const startApprox = new Date(raceDateObj.getTime() - planWeeks * 7 * 86_400_000)
+  const dow         = startApprox.getUTCDay()
   startApprox.setUTCDate(startApprox.getUTCDate() + (dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow))
-  const planStart = startApprox.toISOString().slice(0, 10)
+  const planStart   = startApprox.toISOString().slice(0, 10)
 
-  return WEEK_TMPLS.map((tmpl, i) => {
+  return weekTmpls.map((tmpl, i) => {
     const wk         = i + 1
     const weekStart  = addDays(planStart, i * 7)
     const weekEnd    = addDays(weekStart, 6)
     const targetKm   = volumes[i]
-    const isRaceWeek = wk === 27
+    const isRaceWeek = wk === planWeeks
     const split      = splitVolume(targetKm, rpw)
 
     let runs: PlannedRun[] = []
@@ -508,7 +645,7 @@ export function generatePlan(config: UserPlanConfig): Week[] {
           `Race day — 42.195 km at ${fmtPace(paces.mp)}. Conservative first 10 km, trust training in the middle, give everything in the final 10 km. You are ready.`),
       ]
 
-    // ── Tune-up race week (W22) ───────────────────────────────────────────────
+    // ── Tune-up race week ─────────────────────────────────────────────────────
     } else if (tmpl.quality === 'tune_up') {
       const shakeKm    = Math.max(5, Math.round(targetKm * 0.14))
       const recoveryKm = Math.max(6, Math.round(targetKm * 0.18))
@@ -526,49 +663,47 @@ export function generatePlan(config: UserPlanConfig): Week[] {
 
     // ── Standard week ─────────────────────────────────────────────────────────
     } else {
-      // Tue: easy
       runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 1), 'easy', split.easy, undefined,
         `Easy ${split.easy} km. Fully conversational (${fmtPace(paces.easy)}). HR under 145 bpm.`))
 
-      // Wed: extra easy (5-run only)
       if (rpw === 5) {
         runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 2), 'easy', split.extraEasy, undefined,
           `Easy ${split.extraEasy} km. Second easy run of the week — keep it relaxed and short.`))
       }
 
-      // Thu: quality
       runs.push(buildThursdayRun(wk, tmpl.phase, addDays(weekStart, 3), split.qual, tmpl.quality, paces))
 
-      // Sat: medium-long (mandatory for 4/5-run; optional from W7+ for 3-run)
       if (rpw >= 4) {
         runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 5), 'medium_long', split.ml, undefined,
           `Medium-long ${split.ml} km. Easy aerobic effort (${fmtPace(paces.easy)}). Comfortable time on feet.`))
       } else if (rpw === 3 && wk >= 7) {
-        // 3-run plan: add optional Sat from W7
-        runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 5), 'medium_long', split.ml ?? Math.round(targetKm * 0.22), undefined,
-          `Optional medium-long run. Complete this if you're feeling good and have the time — it builds volume without pressure.`,
+        runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 5), 'medium_long',
+          Math.round(targetKm * 0.22), undefined,
+          `Optional medium-long run. Complete this if you're feeling good — it builds volume without pressure.`,
           true))
       }
 
-      // Sun: long
       runs.push(buildLongRun(wk, tmpl.phase, addDays(weekStart, 6), split.long, tmpl.longStyle, paces))
     }
 
     // ── Strength sessions ─────────────────────────────────────────────────────
     for (const offset of sOffsets) {
-      const session = buildStrengthSession(wk, tmpl.phase, addDays(weekStart, offset), gym, isRaceWeek)
+      const session = buildStrengthSession(wk, tmpl.phase, addDays(weekStart, offset), eqType, isRaceWeek)
       if (session) runs.push(session)
     }
 
-    // Sort all sessions by date
     runs.sort((a, b) => a.date.localeCompare(b.date))
+
+    const runKm = runs
+      .filter(r => r.type !== 'strength')
+      .reduce((s, r) => s + r.targetDistanceKm, 0)
 
     return {
       weekNumber: wk,
       phase:      tmpl.phase,
       startDate:  weekStart,
       endDate:    weekEnd,
-      targetKm,
+      targetKm:   Math.round(runKm),
       notes:      tmpl.notes,
       runs,
       isCutback:  tmpl.isCutback,
@@ -581,12 +716,13 @@ export function generatePlan(config: UserPlanConfig): Week[] {
 export function getWeekNumber(planStartDate: string, raceDate: string): number {
   const today = new Date().toISOString().slice(0, 10)
   if (today < planStartDate) return 0
-  if (today > raceDate)      return 28
-  const diffDays = Math.floor(
-    (new Date(today + 'T12:00:00Z').getTime() - new Date(planStartDate + 'T12:00:00Z').getTime())
-    / 86_400_000
+  if (today > raceDate)      return 9999
+  const planMs   = new Date(raceDate + 'T12:00:00Z').getTime() - new Date(planStartDate + 'T12:00:00Z').getTime()
+  const planWeeks = Math.ceil(planMs / (7 * 86_400_000))
+  const diffDays  = Math.floor(
+    (new Date(today + 'T12:00:00Z').getTime() - new Date(planStartDate + 'T12:00:00Z').getTime()) / 86_400_000
   )
-  return Math.min(27, Math.floor(diffDays / 7) + 1)
+  return Math.min(planWeeks, Math.floor(diffDays / 7) + 1)
 }
 
 export function formatGoalTime(seconds: number): string {

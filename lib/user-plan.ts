@@ -17,12 +17,13 @@ export interface UserPlan {
 // ─── Jan's default config (auto-seeded on first login) ───────────────────────
 
 export const JAN_CONFIG: UserPlanConfig = {
-  raceDate:     '2026-11-01',
-  goalSeconds:  12600,   // 3:30:00
-  weeklyKm:     50,
-  runsPerWeek:  4,
-  strengthDays: 1,
-  hasGym:       false,
+  raceDate:      '2026-11-01',
+  goalSeconds:   12600,   // 3:30:00
+  weeklyKm:      50,
+  runsPerWeek:   4,
+  strengthDays:  1,
+  equipmentType: 'bodyweight',
+  planWeeks:     27,
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -58,23 +59,35 @@ export async function getUserPlan(
   // ── 1. Existing active plan ────────────────────────────────────────────────
   const { data } = await db
     .from('training_plans')
-    .select('id, name, race_date, goal_seconds, weekly_km, runs_per_week, strength_days, has_gym')
+    .select('id, name, race_date, goal_seconds, weekly_km, runs_per_week, strength_days, has_gym, equipment_type, plan_weeks')
     .eq('user_id', userId)
     .eq('is_active', true)
     .is('archived_at', null)
     .maybeSingle()
 
   if (data) {
+    // Derive equipmentType: prefer new equipment_type column, fall back to has_gym boolean
+    const equipmentType = data.equipment_type
+      ?? (data.has_gym ? 'gym' : 'bodyweight')
+
+    // planWeeks: prefer stored value, fall back to calculating from dates
+    const weeksFromDates = Math.floor(
+      (new Date(data.race_date + 'T12:00:00Z').getTime() - Date.now()) / (7 * 86_400_000)
+    )
+    const planWeeks = data.plan_weeks
+      ?? Math.max(12, Math.min(27, weeksFromDates))
+
     return build(
       data.id,
       data.name || generatePlanName(data.race_date, data.goal_seconds),
       {
-        raceDate:     data.race_date,
-        goalSeconds:  data.goal_seconds,
-        weeklyKm:     data.weekly_km,
-        runsPerWeek:  data.runs_per_week  ?? 4,
-        strengthDays: data.strength_days  ?? 0,
-        hasGym:       data.has_gym        ?? false,
+        raceDate:      data.race_date,
+        goalSeconds:   data.goal_seconds,
+        weeklyKm:      data.weekly_km,
+        runsPerWeek:   data.runs_per_week ?? 4,
+        strengthDays:  data.strength_days ?? 0,
+        equipmentType,
+        planWeeks,
       }
     )
   }

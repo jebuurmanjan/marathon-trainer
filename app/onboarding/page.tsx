@@ -1,16 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import type { EquipmentType } from '@/lib/plan-generator'
 
-// ─── Goal time presets ────────────────────────────────────────────────────────
+// ─── Goal time presets (every 15 min, 2:30–4:30) ─────────────────────────────
 
 const GOAL_PRESETS = [
+  { label: 'Sub 2:30', seconds: 9000  },
+  { label: 'Sub 2:45', seconds: 9900  },
   { label: 'Sub 3:00', seconds: 10800 },
+  { label: 'Sub 3:15', seconds: 11700 },
   { label: 'Sub 3:30', seconds: 12600 },
+  { label: 'Sub 3:45', seconds: 13500 },
   { label: 'Sub 4:00', seconds: 14400 },
+  { label: 'Sub 4:15', seconds: 15300 },
   { label: 'Sub 4:30', seconds: 16200 },
-  { label: 'Sub 5:00', seconds: 18000 },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -21,12 +26,15 @@ function minDate(): string {
   return d.toISOString().slice(0, 10)
 }
 
-// Max step depends on whether strength > 0 (gym question only shown then)
-function totalSteps(strengthDays: number): number {
-  return strengthDays > 0 ? 6 : 5
+function weeksUntilRace(raceDate: string): number {
+  if (!raceDate) return 27
+  return Math.floor((new Date(raceDate + 'T12:00:00Z').getTime() - Date.now()) / (7 * 86_400_000))
 }
 
-// ─── Shared card style ────────────────────────────────────────────────────────
+// Total steps: 6 always + 1 if strengthDays > 0
+function totalSteps(strengthDays: number | null): number {
+  return (strengthDays ?? 1) > 0 ? 7 : 6
+}
 
 const card = {
   background:   '#EDE9DE',
@@ -40,41 +48,47 @@ const card = {
 export default function OnboardingPage() {
   const router = useRouter()
 
-  const [step,         setStep]         = useState(1)
-  const [raceDate,     setRaceDate]     = useState('')
-  const [goalSecs,     setGoalSecs]     = useState<number | null>(null)
-  const [weeklyKm,     setWeeklyKm]     = useState(40)
-  const [runsPerWeek,  setRunsPerWeek]  = useState<number | null>(null)
-  const [strengthDays, setStrengthDays] = useState<number | null>(null)
-  const [hasGym,       setHasGym]       = useState<boolean | null>(null)
-  const [saving,       setSaving]       = useState(false)
-  const [error,        setError]        = useState<string | null>(null)
+  const [step,          setStep]          = useState(1)
+  const [raceDate,      setRaceDate]      = useState('')
+  const [planWeeks,     setPlanWeeks]     = useState(27)
+  const [goalSecs,      setGoalSecs]      = useState<number | null>(null)
+  const [weeklyKm,      setWeeklyKm]      = useState(40)
+  const [runsPerWeek,   setRunsPerWeek]   = useState<number | null>(null)
+  const [strengthDays,  setStrengthDays]  = useState<number | null>(null)
+  const [equipmentType, setEquipmentType] = useState<EquipmentType | null>(null)
+  const [saving,        setSaving]        = useState(false)
+  const [error,         setError]         = useState<string | null>(null)
 
-  const maxStep = strengthDays !== null ? totalSteps(strengthDays) : 6
+  const maxWeeks   = Math.min(27, weeksUntilRace(raceDate))
+  const displayMax = totalSteps(strengthDays)
 
-  // ── Validate + advance ─────────────────────────────────────────────────────
+  // When race date changes, clamp planWeeks to new max
+  useEffect(() => {
+    if (raceDate) setPlanWeeks((w) => Math.max(12, Math.min(maxWeeks, w)))
+  }, [raceDate, maxWeeks])
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
 
   function nextStep() {
     setError(null)
-    if (step === 1 && !raceDate)       { setError('Please pick a race date.');      return }
-    if (step === 2 && !goalSecs)       { setError('Please select a goal time.');    return }
-    if (step === 4 && !runsPerWeek)    { setError('Please choose runs per week.');  return }
-    if (step === 5 && strengthDays === null) { setError('Please choose a number.'); return }
-    // Step 5 → step 6 only if strength > 0, otherwise finish
-    if (step === 5 && strengthDays === 0) { finish(strengthDays, false); return }
-    if (step === maxStep) { finish(strengthDays ?? 0, hasGym ?? false); return }
+    if (step === 1 && !raceDate)           { setError('Please pick a race date.');        return }
+    if (step === 5 && !runsPerWeek)        { setError('Please choose runs per week.');    return }
+    if (step === 6 && strengthDays === null){ setError('Please choose a number.');        return }
+    // Step 6 with 0 strength → skip equipment step, go straight to finish
+    if (step === 6 && strengthDays === 0)  { submit(); return }
+    if (step === displayMax)               { submit(); return }
     setStep((s) => s + 1)
   }
 
   function prevStep() {
     setError(null)
-    // Going back from step 6 when strength was reduced to 0 (edge case)
+    // Stepping back from step 7 when strengthDays was set then unset — clamp
     setStep((s) => Math.max(1, s - 1))
   }
 
   // ── Submit ─────────────────────────────────────────────────────────────────
 
-  async function finish(sd: number, gym: boolean) {
+  async function submit() {
     setSaving(true)
     setError(null)
     try {
@@ -83,11 +97,12 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           raceDate,
-          goalSeconds:  goalSecs,
+          goalSeconds:   goalSecs,
           weeklyKm,
-          runsPerWeek:  runsPerWeek ?? 4,
-          strengthDays: sd,
-          hasGym:       gym,
+          runsPerWeek:   runsPerWeek   ?? 4,
+          strengthDays:  strengthDays  ?? 0,
+          equipmentType: equipmentType ?? 'bodyweight',
+          planWeeks,
         }),
       })
       if (!res.ok) {
@@ -101,7 +116,7 @@ export default function OnboardingPage() {
     }
   }
 
-  // ── Option button helper ───────────────────────────────────────────────────
+  // ── Shared option button ───────────────────────────────────────────────────
 
   function OptionBtn({
     active, onClick, children,
@@ -126,9 +141,7 @@ export default function OnboardingPage() {
     )
   }
 
-  // ── Label for step indicator ───────────────────────────────────────────────
-
-  const displayMax = strengthDays !== null ? totalSteps(strengthDays) : 6
+  const isLastStep = step === displayMax || (step === 6 && strengthDays === 0)
 
   return (
     <main
@@ -179,25 +192,61 @@ export default function OnboardingPage() {
               Pick your race date — the plan works backwards from there.
             </p>
             <input
-              type="date"
-              min={minDate()}
-              value={raceDate}
+              type="date" min={minDate()} value={raceDate}
               onChange={(e) => { setRaceDate(e.target.value); setError(null) }}
               className="w-full px-4 py-3 rounded-xl text-sm font-medium outline-none"
-              style={{
-                background: '#F5F3EC',
-                border:     '1px solid rgba(43,49,23,0.12)',
-                color:      '#1E1611',
-                fontFamily: 'Nohemi, Inter, sans-serif',
-              }}
+              style={{ background: '#F5F3EC', border: '1px solid rgba(43,49,23,0.12)', color: '#1E1611', fontFamily: 'Nohemi, Inter, sans-serif' }}
             />
           </div>
         )}
 
-        {/* ── Step 2: Goal time ── */}
+        {/* ── Step 2: Plan duration ── */}
         {step === 2 && (
           <div style={card}>
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 2 of {displayMax}</p>
+            <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>
+              How many weeks do you want to train?
+            </h2>
+            <p className="text-sm mb-5" style={{ color: '#736554' }}>
+              {maxWeeks >= 27
+                ? 'A full 27-week plan is available. Shorter options build all the same phases, just more compressed.'
+                : `Your race is ${maxWeeks} weeks away — that's your maximum. 12 weeks is the minimum for a complete plan.`}
+            </p>
+
+            <div className="text-center mb-4">
+              <span
+                className="text-5xl tabular-nums"
+                style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: '#EE6B17' }}
+              >
+                {planWeeks}
+              </span>
+              <span className="text-lg ml-1.5" style={{ color: '#736554' }}>weeks</span>
+            </div>
+
+            <input
+              type="range" min={12} max={maxWeeks} step={1} value={planWeeks}
+              onChange={(e) => setPlanWeeks(Number(e.target.value))}
+              className="w-full accent-orange-500 mb-4"
+            />
+
+            <div className="flex justify-between text-xs" style={{ color: '#A09880' }}>
+              <span>12 wk</span>
+              <span>{maxWeeks} wk</span>
+            </div>
+
+            <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+              {planWeeks <= 14 && 'Short block — Base + Build + combined Peak/Sharpen + 2-week taper. Every week counts.'}
+              {planWeeks > 14 && planWeeks <= 20 && 'Moderate plan — all 5 phases compressed. Good balance of build-up and recovery.'}
+              {planWeeks > 20 && planWeeks < 27 && 'Full plan structure with a bit less volume in the middle phases. Solid preparation.'}
+              {planWeeks === 27 && 'Full 27-week plan — the gold standard. Maximum time to build aerobic base and peak properly.'}
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 3: Goal time ── */}
+        {step === 3 && (
+          <div style={card}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 3 of {displayMax}</p>
             <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>
               What's your goal time?
             </h2>
@@ -214,17 +263,16 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* ── Step 3: Weekly km ── */}
-        {step === 3 && (
+        {/* ── Step 4: Weekly km ── */}
+        {step === 4 && (
           <div style={card}>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 3 of {displayMax}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 4 of {displayMax}</p>
             <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>
               How much do you run per week now?
             </h2>
             <p className="text-sm mb-5" style={{ color: '#736554' }}>
-              Your current load is the starting point — the plan builds from here.
+              Week 1 of your plan starts here — the plan builds from this point.
             </p>
-
             <div className="text-center mb-4">
               <span
                 className="text-5xl tabular-nums"
@@ -234,38 +282,27 @@ export default function OnboardingPage() {
               </span>
               <span className="text-lg ml-1.5" style={{ color: '#736554' }}>km/week</span>
             </div>
-
             <input
-              type="range"
-              min={10}
-              max={100}
-              step={5}
-              value={weeklyKm}
+              type="range" min={10} max={100} step={5} value={weeklyKm}
               onChange={(e) => setWeeklyKm(Number(e.target.value))}
               className="w-full accent-orange-500 mb-4"
             />
-
             <div className="flex justify-between text-xs" style={{ color: '#A09880' }}>
-              <span>10 km</span>
-              <span>100 km</span>
+              <span>10 km</span><span>100 km</span>
             </div>
-
-            <div
-              className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed"
-              style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}
-            >
-              {weeklyKm < 30 && 'Good starting point — the plan will build your volume gradually and safely.'}
+            <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+              {weeklyKm < 30  && 'Good starting point — the plan builds safely from week 1 at your current load.'}
               {weeklyKm >= 30 && weeklyKm < 50 && 'Solid base. The plan will push your volume through the build and peak phases.'}
               {weeklyKm >= 50 && weeklyKm < 70 && "Strong base. You're well-placed to hit the peak training weeks comfortably."}
-              {weeklyKm >= 70 && 'High volume athlete. The plan will peak at elite training loads — make sure recovery is a priority.'}
+              {weeklyKm >= 70 && 'High volume athlete. The plan will peak at elite training loads — make recovery a priority.'}
             </div>
           </div>
         )}
 
-        {/* ── Step 4: Runs per week ── */}
-        {step === 4 && (
+        {/* ── Step 5: Runs per week ── */}
+        {step === 5 && (
           <div style={card}>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 4 of {displayMax}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 5 of {displayMax}</p>
             <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>
               How many days a week can you run?
             </h2>
@@ -283,24 +320,20 @@ export default function OnboardingPage() {
                 5 days — Tue · Wed · Thu · Sat · Sun
               </OptionBtn>
             </div>
-
             {runsPerWeek && (
-              <div
-                className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed"
-                style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}
-              >
-                {runsPerWeek === 3 && '3 focused sessions per week with good recovery. Perfect if you\'re also strength training or managing injury risk.'}
-                {runsPerWeek === 4 && 'The sweet spot for most marathon runners — enough volume to build fitness without burning out.'}
-                {runsPerWeek === 5 && 'High frequency training. The extra Wednesday easy run adds meaningful aerobic base. Make sure recovery is a priority.'}
+              <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+                {runsPerWeek === 3 && "3 focused sessions with good recovery. Perfect alongside strength training or if managing injury risk."}
+                {runsPerWeek === 4 && 'The sweet spot for most marathon runners — enough volume without burning out.'}
+                {runsPerWeek === 5 && 'High frequency. The extra Wednesday easy run adds meaningful aerobic base. Prioritise recovery.'}
               </div>
             )}
           </div>
         )}
 
-        {/* ── Step 5: Strength days ── */}
-        {step === 5 && (
+        {/* ── Step 6: Strength days ── */}
+        {step === 6 && (
           <div style={card}>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 5 of {displayMax}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 6 of {displayMax}</p>
             <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>
               Strength training sessions?
             </h2>
@@ -308,7 +341,7 @@ export default function OnboardingPage() {
               Strength work prevents injury and improves running economy. It shows up inside your week cards.
             </p>
             <div className="flex flex-col gap-2">
-              <OptionBtn active={strengthDays === 0} onClick={() => { setStrengthDays(0); setHasGym(false); setError(null) }}>
+              <OptionBtn active={strengthDays === 0} onClick={() => { setStrengthDays(0); setEquipmentType('bodyweight'); setError(null) }}>
                 0 — no strength training
               </OptionBtn>
               <OptionBtn active={strengthDays === 1} onClick={() => { setStrengthDays(1); setError(null) }}>
@@ -318,45 +351,40 @@ export default function OnboardingPage() {
                 2 days — Mon + {runsPerWeek === 5 ? 'Fri' : 'Wed'}
               </OptionBtn>
             </div>
-
             {strengthDays !== null && strengthDays > 0 && (
-              <div
-                className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed"
-                style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}
-              >
-                Sessions are placed on rest days for maximum recovery. Each session is 30–45 min, adapted to your training phase.
+              <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+                Sessions sit on rest days for maximum recovery. 25–45 min per session, adapted per phase.
               </div>
             )}
           </div>
         )}
 
-        {/* ── Step 6: Gym or bodyweight (only if strength > 0) ── */}
-        {step === 6 && (
+        {/* ── Step 7: Equipment (only if strength > 0) ── */}
+        {step === 7 && (
           <div style={card}>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 6 of {displayMax}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#A09880' }}>Step 7 of {displayMax}</p>
             <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>
-              Gym access or bodyweight?
+              What equipment do you have?
             </h2>
             <p className="text-sm mb-5" style={{ color: '#736554' }}>
-              This affects the exercises recommended — both options are equally effective for runners.
+              This shapes the exercises in your strength sessions.
             </p>
             <div className="flex flex-col gap-2">
-              <OptionBtn active={hasGym === false} onClick={() => { setHasGym(false); setError(null) }}>
+              <OptionBtn active={equipmentType === 'bodyweight'} onClick={() => { setEquipmentType('bodyweight'); setError(null) }}>
                 Bodyweight — no equipment needed
               </OptionBtn>
-              <OptionBtn active={hasGym === true} onClick={() => { setHasGym(true); setError(null) }}>
+              <OptionBtn active={equipmentType === 'gym'} onClick={() => { setEquipmentType('gym'); setError(null) }}>
                 Gym — barbells, machines, cables
               </OptionBtn>
+              <OptionBtn active={equipmentType === 'both'} onClick={() => { setEquipmentType('both'); setError(null) }}>
+                Both — alternate gym and bodyweight weeks
+              </OptionBtn>
             </div>
-
-            {hasGym !== null && (
-              <div
-                className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed"
-                style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}
-              >
-                {hasGym
-                  ? 'Gym sessions use compound lifts (squats, deadlifts, hip thrusts) that build real running strength.'
-                  : 'Bodyweight sessions focus on glutes, single-leg stability, and core — all the stuff that keeps runners injury free.'}
+            {equipmentType && (
+              <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+                {equipmentType === 'bodyweight' && 'Glutes, single-leg stability, and core — the stuff that keeps runners injury free.'}
+                {equipmentType === 'gym' && 'Compound lifts (squats, deadlifts, hip thrusts) that build real running strength.'}
+                {equipmentType === 'both' && 'Gym weeks and bodyweight weeks alternate, keeping variety without overloading any one stimulus.'}
               </div>
             )}
           </div>
@@ -389,11 +417,7 @@ export default function OnboardingPage() {
             className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60"
             style={{ background: '#EE6B17' }}
           >
-            {saving
-              ? 'Setting up your plan…'
-              : step === displayMax || (step === 5 && strengthDays === 0)
-              ? 'Build my plan →'
-              : 'Continue →'}
+            {saving ? 'Setting up your plan…' : isLastStep ? 'Build my plan →' : 'Continue →'}
           </button>
         </div>
       </div>

@@ -67,7 +67,7 @@ export default function SuggestionsPage() {
           >
             Marathon Plan
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>27 weeks · sub 3:30 goal</p>
+          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>Marathon plan</p>
         </div>
 
         <PlanTabs />
@@ -76,11 +76,11 @@ export default function SuggestionsPage() {
         <div className="flex items-center justify-between mb-6 gap-4">
           <p className="text-sm" style={{ color: '#4A5427' }}>
             Claude analyses your training data and suggests adjustments.
-            {currentWeek > 0 && ` Week ${currentWeek} of 27.`}
+            {currentWeek > 0 && ` Week ${currentWeek}.`}
           </p>
           <button
             onClick={handleGenerate}
-            disabled={generating || currentWeek < 1 || currentWeek > 27}
+            disabled={generating || currentWeek < 1}
             className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all disabled:opacity-50 shrink-0"
             style={{ background: '#EE6B17' }}
           >

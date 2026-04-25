@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, hasGym } = body
+  const { raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, equipmentType, planWeeks } = body
 
   if (!raceDate || !goalSeconds || !weeklyKm) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   if (isNaN(race.getTime()) || weeksAway < 4) {
     return NextResponse.json({ error: 'Race date must be at least 4 weeks away' }, { status: 400 })
   }
-  if (goalSeconds < 7200 || goalSeconds > 21600) { // 2h – 6h
+  if (goalSeconds < 9000 || goalSeconds > 16200) { // 2:30 – 4:30
     return NextResponse.json({ error: 'Invalid goal time' }, { status: 400 })
   }
   if (weeklyKm < 10 || weeklyKm > 150) {
@@ -44,15 +44,16 @@ export async function POST(req: Request) {
   const { error } = await db
     .from('training_plans')
     .insert({
-      user_id:       session.userId,
-      name:          generatePlanName(raceDate, Math.round(goalSeconds)),
-      race_date:     raceDate,
-      goal_seconds:  Math.round(goalSeconds),
-      weekly_km:     Math.round(weeklyKm),
-      runs_per_week: runsPerWeek  ?? 4,
-      strength_days: strengthDays ?? 0,
-      has_gym:       hasGym       ?? false,
-      is_active:     true,
+      user_id:        session.userId,
+      name:           generatePlanName(raceDate, Math.round(goalSeconds)),
+      race_date:      raceDate,
+      goal_seconds:   Math.round(goalSeconds),
+      weekly_km:      Math.round(weeklyKm),
+      runs_per_week:  runsPerWeek    ?? 4,
+      strength_days:  strengthDays   ?? 0,
+      equipment_type: equipmentType  ?? 'bodyweight',
+      plan_weeks:     planWeeks      ?? 27,
+      is_active:      true,
     })
 
   if (error) {

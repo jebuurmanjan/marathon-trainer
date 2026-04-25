@@ -119,7 +119,7 @@ export default function PlanPage() {
     .filter((w) => w.weekNumber < currentWeek)
     .reduce((s, w) => s + w.targetKm, 0)
 
-  const currentPhase = currentWeek > 0 && currentWeek <= 27
+  const currentPhase = currentWeek > 0 && currentWeek <= plan.length
     ? plan[currentWeek - 1]?.phase ?? ''
     : ''
 
@@ -132,7 +132,7 @@ export default function PlanPage() {
     },
     {
       label: 'Current week',
-      value: currentWeek > 0 && currentWeek <= 27 ? `${currentWeek}/27` : '—',
+      value: currentWeek > 0 && currentWeek <= plan.length ? `${currentWeek}/${plan.length}` : '—',
       sub:   currentPhase ? currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1) : '',
       accent: false,
     },
@@ -174,7 +174,7 @@ export default function PlanPage() {
             Marathon Plan
           </h1>
           <p className="text-sm mt-1" style={{ color:'#4A5427' }}>
-            27 weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'}
+            {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'}
           </p>
         </div>
 
@@ -266,7 +266,7 @@ export default function PlanPage() {
         </div>
 
         {/* Current week banner */}
-        {currentWeek > 0 && currentWeek <= 27 && filter !== 'past' && currentPhase && (
+        {currentWeek > 0 && currentWeek <= plan.length && filter !== 'past' && currentPhase && (
           <div
             className="flex items-center gap-2.5 rounded-xl px-4 py-3 mb-4 text-sm font-medium"
             style={{ background:'rgba(238,107,23,0.10)', border:'1px solid rgba(238,107,23,0.25)', color:'#EE6B17' }}

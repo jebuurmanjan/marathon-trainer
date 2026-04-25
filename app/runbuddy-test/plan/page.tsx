@@ -63,7 +63,7 @@ export default function RunBuddyTestPlanPage() {
 
   const stats = [
     { label: 'Days to race',  value: daysToRace > 0 ? String(daysToRace) : '🏁', sub: raceDateLabel,                     accent: true },
-    { label: 'Current week',  value: currentWeek > 0 ? `${currentWeek}/27` : '—', sub: currentPhase ? currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1) : '', accent: false },
+    { label: 'Current week',  value: currentWeek > 0 ? `${currentWeek}/${plan.length}` : '—', sub: currentPhase ? currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1) : '', accent: false },
     { label: 'Weekly volume', value: `${config.weeklyKm} km`,                     sub: 'starting point',                  accent: false },
     { label: 'Target pace',   value: mpLabel,                                      sub: `Sub ${goalLabel} goal`,           accent: false },
   ]
@@ -102,7 +102,7 @@ export default function RunBuddyTestPlanPage() {
             Marathon Plan
           </h1>
           <p className="text-sm mt-1" style={{ color: '#4A5427' }}>
-            27 weeks · sub {goalLabel} goal · {config.runsPerWeek} runs/week
+            {plan.length} weeks · sub {goalLabel} goal · {config.runsPerWeek} runs/week
             {config.strengthDays > 0 && ` · ${config.strengthDays}× strength`}
           </p>
         </div>
