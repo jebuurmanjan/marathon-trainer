@@ -45,9 +45,21 @@ export async function POST(req: Request) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { planId, weekNumber, sessionDate } = await req.json()
+  let planId: string, weekNumber: number, sessionDate: string
+  try {
+    ;({ planId, weekNumber, sessionDate } = await req.json())
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
   if (!planId || weekNumber == null || !sessionDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
+  if (!Number.isInteger(weekNumber) || weekNumber < 1) {
+    return NextResponse.json({ error: 'Invalid weekNumber' }, { status: 400 })
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sessionDate)) {
+    return NextResponse.json({ error: 'Invalid sessionDate format' }, { status: 400 })
   }
 
   const db = createServerClient()
@@ -88,19 +100,33 @@ export async function DELETE(req: Request) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { planId, sessionDate } = await req.json()
+  let planId: string, sessionDate: string
+  try {
+    ;({ planId, sessionDate } = await req.json())
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
   if (!planId || !sessionDate) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sessionDate)) {
+    return NextResponse.json({ error: 'Invalid sessionDate format' }, { status: 400 })
   }
 
   const db = createServerClient()
 
-  await db
+  const { error } = await db
     .from('strength_completions')
     .delete()
     .eq('user_id', session.userId)
     .eq('plan_id', planId)
     .eq('session_date', sessionDate)
+
+  if (error) {
+    console.error('Strength DELETE error:', error)
+    return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }

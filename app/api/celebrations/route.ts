@@ -5,7 +5,7 @@ import { getUserPlan } from '@/lib/user-plan'
 import { calcWeekScore } from '@/lib/score'
 import { ActualRun } from '@/types'
 
-const YEAR    = 2026
+const YEAR    = new Date().getFullYear()
 const GOAL_KM = 1000
 
 // ─── GET: detect new celebrations, return oldest unshown ─────────────────────
@@ -57,6 +57,8 @@ export async function GET() {
   // ── Goal 1: Daily run completed ──────────────────────────────────────────────
   for (const week of plan) {
     for (const planned of week.runs) {
+      if (planned.type === 'strength') continue  // strength sessions are not running events
+
       const plannedMs = new Date(`${planned.date}T12:00:00Z`).getTime()
       const daysAgo   = (todayMs - plannedMs) / 86_400_000
       if (daysAgo < 0 || daysAgo > 1.5) continue
@@ -100,38 +102,42 @@ export async function GET() {
     }
   }
 
-  // ── Goal 4: All 27 weeks of the plan completed ───────────────────────────────
+  // ── Goal 4: All plan weeks completed ─────────────────────────────────────────
   {
     const key = `full-plan-${YEAR}`
-    if (!existingSet.has(`full_plan:${key}`) && currentWeek > 27) {
+    if (!existingSet.has(`full_plan:${key}`) && currentWeek > plan.length) {
       newCelebrations.push({ type: 'full_plan', key })
     }
   }
 
   // ── Goal 5: Marathon sub goal time on race date ──────────────────────────────
   {
-    const key = `marathon-sub-${YEAR}`
-    if (!existingSet.has(`marathon_sub330:${key}`)) {
-      // Convert goal seconds to pace (min/km over 42.195 km)
+    // Key is goal-specific so runners with different targets get distinct records
+    const goalMins = Math.floor(config.goalSeconds / 60)
+    const celebType = `marathon_sub_${goalMins}`
+    const key = `marathon-sub-${goalMins}-${YEAR}`
+    if (!existingSet.has(`${celebType}:${key}`)) {
+      // Accept any run ≥ 90% of marathon distance on or after race date
       const goalPace = config.goalSeconds / 42.195 / 60
       const hit = allRuns.find(
         (r) => r.runDate >= config.raceDate &&
-               r.distanceKm >= 38 &&
+               r.distanceKm >= 42.195 * 0.90 &&
                r.paceMinPerKm <= goalPace * 1.005 // 0.5% tolerance for GPS
       )
-      if (hit) newCelebrations.push({ type: 'marathon_sub330', key })
+      if (hit) newCelebrations.push({ type: celebType, key })
     }
   }
 
   // 3. Persist newly triggered celebrations
   if (newCelebrations.length > 0) {
-    await db.from('celebration_events').insert(
+    const { error: insertError } = await db.from('celebration_events').insert(
       newCelebrations.map((c) => ({
         user_id:          session.userId,
         celebration_type: c.type,
         context_key:      c.key,
       }))
     )
+    if (insertError) console.error('Failed to insert celebrations:', insertError)
   }
 
   // 4. Return oldest unshown celebration

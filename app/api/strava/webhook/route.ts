@@ -41,8 +41,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
-    // Fetch and store the activity
-    await syncSingleActivity(user.id, activityId)
+    // Fetch and store the activity — isolate errors so a bad activity
+    // doesn't return 500 to Strava (which would trigger exponential retries)
+    try {
+      await syncSingleActivity(user.id, activityId)
+    } catch (syncErr) {
+      console.error(`Failed to sync activity ${activityId} for user ${user.id}:`, syncErr)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {

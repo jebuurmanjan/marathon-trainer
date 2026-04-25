@@ -46,7 +46,12 @@ export async function PATCH(req: Request) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { planId, action } = await req.json()
+  let planId: string, action: string
+  try {
+    ;({ planId, action } = await req.json())
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
   if (!planId || !action) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const db = createServerClient()
@@ -126,7 +131,12 @@ export async function DELETE(req: Request) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { planId } = await req.json()
+  let planId: string
+  try {
+    ;({ planId } = await req.json())
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
   if (!planId) return NextResponse.json({ error: 'Missing planId' }, { status: 400 })
 
   const db = createServerClient()

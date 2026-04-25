@@ -36,7 +36,12 @@ export async function PUT(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await req.json() as ZoneConfig
+  let body: ZoneConfig
+  try {
+    body = await req.json() as ZoneConfig
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
 
   // Validate: each boundary must be a positive integer, and strictly increasing
   const vals = [body.zone1Max, body.zone2Max, body.zone3Max, body.zone4Max, body.zone5Max]

@@ -10,8 +10,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await req.json()
-  const { raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, equipmentType, planWeeks } = body
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+  const { raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, equipmentType, planWeeks } = body as {
+    raceDate: string; goalSeconds: number; weeklyKm: number
+    runsPerWeek?: number; strengthDays?: number; equipmentType?: string; planWeeks?: number
+  }
 
   if (!raceDate || !goalSeconds || !weeklyKm) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })

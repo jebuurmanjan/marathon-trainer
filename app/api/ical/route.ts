@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
-import { trainingPlan, RACE_DATE, RUN_TYPE_LABELS, formatPaceDisplay } from '@/lib/training-plan'
+import { getUserPlan } from '@/lib/user-plan'
+import { formatGoalTime } from '@/lib/plan-generator'
+import { RUN_TYPE_LABELS, formatPaceDisplay } from '@/lib/training-plan'
 
 // Escape special characters in iCal text fields
 function esc(s: string): string {
@@ -43,33 +45,45 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const userPlan = await getUserPlan(session.userId, session.stravaId)
+  if (!userPlan) {
+    return NextResponse.json({ error: 'No active plan' }, { status: 404 })
+  }
+
+  const { plan, config } = userPlan
+  const goalLabel = formatGoalTime(config.goalSeconds)
+  const raceDateLabel = new Date(config.raceDate + 'T12:00:00Z').toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  })
+
   const lines: string[] = []
 
-  // Calendar header
   lines.push(
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Sub 3:30 Marathon Trainer//EN',
+    'PRODID:-//Marathon Trainer//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:Sub 3:30 Training Plan',
-    'X-WR-CALDESC:27-week marathon training plan — target sub 3:30 on 1 Nov 2026',
+    `X-WR-CALNAME:Sub ${goalLabel} Training Plan`,
+    `X-WR-CALDESC:${plan.length}-week marathon training plan — target sub ${goalLabel} on ${raceDateLabel}`,
   )
 
-  // One VEVENT per planned run
-  for (const week of trainingPlan) {
+  for (const week of plan) {
     for (const run of week.runs) {
+      // Strength sessions belong in the plan UI, not the running calendar
+      if (run.type === 'strength') continue
+
       const typeLabel = RUN_TYPE_LABELS[run.type] ?? run.type
-      const paceNote = run.targetPaceMinPerKm
+      const paceNote  = run.targetPaceMinPerKm
         ? ` @ ${formatPaceDisplay(run.targetPaceMinPerKm)}`
         : ' — easy effort'
 
-      const summary = `${typeLabel} ${run.targetDistanceKm} km${paceNote}`
+      const summary     = `${typeLabel} ${run.targetDistanceKm} km${paceNote}`
       const description = [
         `Week ${week.weekNumber} · ${week.phase.charAt(0).toUpperCase() + week.phase.slice(1)} phase`,
         run.description,
         week.notes,
-      ].join('\\n\\n')
+      ].filter(Boolean).join('\\n\\n')
 
       const uid = `w${week.weekNumber}-${run.date}-${run.type}@marathon-trainer`
 
@@ -81,7 +95,7 @@ export async function GET() {
         foldLine(`SUMMARY:${esc(summary)}`),
         foldLine(`DESCRIPTION:${esc(description)}`),
         `CATEGORIES:${typeLabel}`,
-        `URL:https://marathon-trainer-ten.vercel.app/plan`,
+        'URL:https://marathon-trainer-phi.vercel.app/plan',
         'END:VEVENT',
       )
     }
@@ -90,11 +104,11 @@ export async function GET() {
   // Race day event
   lines.push(
     'BEGIN:VEVENT',
-    `UID:race-day-${RACE_DATE}@marathon-trainer`,
-    `DTSTART;VALUE=DATE:${toIcalDate(RACE_DATE)}`,
-    `DTEND;VALUE=DATE:${nextDay(RACE_DATE)}`,
-    'SUMMARY:🏁 Marathon Race Day — Sub 3:30',
-    'DESCRIPTION:Race day! Target time: 3:30:00 (4:58/km). Good luck!',
+    `UID:race-day-${config.raceDate}@marathon-trainer`,
+    `DTSTART;VALUE=DATE:${toIcalDate(config.raceDate)}`,
+    `DTEND;VALUE=DATE:${nextDay(config.raceDate)}`,
+    `SUMMARY:🏁 Marathon Race Day — Sub ${goalLabel}`,
+    `DESCRIPTION:Race day! Target time: ${goalLabel} (${formatPaceDisplay(config.goalSeconds / 42.195 / 60)}). Good luck!`,
     'CATEGORIES:Race',
     'END:VEVENT',
   )
@@ -107,7 +121,7 @@ export async function GET() {
     status: 200,
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="sub330-training-plan.ics"',
+      'Content-Disposition': `attachment; filename="marathon-training-plan.ics"`,
       'Cache-Control': 'no-cache',
     },
   })
