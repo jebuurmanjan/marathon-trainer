@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
 
-const PUBLIC_PATHS = ['/', '/api/strava/auth', '/api/strava/callback', '/api/strava/webhook']
+const PUBLIC_PATHS = ['/', '/api/strava/auth', '/api/strava/callback', '/api/strava/webhook', '/dark-preview']
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
