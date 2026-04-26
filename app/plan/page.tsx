@@ -9,7 +9,7 @@ import EditGoalModal from '@/components/EditGoalModal'
 import UpcomingWeeksModal from '@/components/UpcomingWeeksModal'
 import { ActualRun, Week } from '@/types'
 import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
-import { formatDistance, formatDistanceExact } from '@/lib/training-plan'
+import { formatDistance, formatDistanceExact, applyOverrides, RunOverride } from '@/lib/training-plan'
 
 type Filter = 'upcoming' | 'all' | 'past'
 
@@ -37,6 +37,7 @@ export default function PlanPage() {
   const [upcomingOpen,     setUpcomingOpen]    = useState(false)
   const [profilePhotoUrl,  setProfilePhotoUrl] = useState<string | null>(null)
   const [preferredUnits,   setPreferredUnits]  = useState<'km' | 'miles'>('km')
+  const [overrides,        setOverrides]       = useState<RunOverride[]>([])
 
   // ── Fetch plan + runs ────────────────────────────────────────────────────
 
@@ -56,11 +57,15 @@ export default function PlanPage() {
     setPreferredUnits(d.preferredUnits ?? 'km')
     const id: string = d.planId ?? ''
     setPlanId(id)
-    // Fetch strength completions once we have the planId
+    // Fetch strength completions and run overrides once we have the planId
     if (id) {
       fetch(`/api/strength?planId=${id}`)
         .then((r) => r.ok ? r.json() : { completions: [] })
         .then((data) => setStrengthCompletions(data.completions ?? []))
+        .catch(() => {})
+      fetch(`/api/plan-overrides?planId=${id}`)
+        .then((r) => r.ok ? r.json() : { overrides: [] })
+        .then((data) => setOverrides(data.overrides ?? []))
         .catch(() => {})
     }
   }, [router])
@@ -110,7 +115,10 @@ export default function PlanPage() {
 
   // ── Derived values ────────────────────────────────────────────────────────
 
-  const visibleWeeks = plan.filter((week) => {
+  // Apply drag-and-drop overrides to the plan for display
+  const displayedPlan = applyOverrides(plan, overrides)
+
+  const visibleWeeks = displayedPlan.filter((week) => {
     if (filter === 'all')  return true
     if (filter === 'past') return week.weekNumber < currentWeek
     return week.weekNumber >= currentWeek
@@ -367,6 +375,8 @@ export default function PlanPage() {
           })}
           actualRuns={actualRuns}
           currentWeek={currentWeek}
+          overrides={overrides}
+          onOverridesChange={setOverrides}
         />
       )}
     </div>

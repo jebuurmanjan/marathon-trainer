@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -332,27 +332,18 @@ function WeekSection({ week, actuals, editMode, isCurrent }: WeekSectionProps) {
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
 interface Props {
-  onClose:    () => void
-  planId:     string
-  weeks:      Week[]       // current week + next week
-  actualRuns: ActualRun[]
-  currentWeek: number
+  onClose:           () => void
+  planId:            string
+  weeks:             Week[]       // base weeks — no overrides applied
+  actualRuns:        ActualRun[]
+  currentWeek:       number
+  overrides:         RunOverride[]
+  onOverridesChange: (overrides: RunOverride[]) => void
 }
 
-export default function UpcomingWeeksModal({ onClose, planId, weeks, actualRuns, currentWeek }: Props) {
-  const [overrides,    setOverrides]    = useState<RunOverride[]>([])
-  const [editMode,     setEditMode]     = useState(false)
-  const [activeRun,    setActiveRun]    = useState<PlannedRun | null>(null)
-  const [loadingOvr,   setLoadingOvr]   = useState(true)
-
-  // Load overrides on mount
-  useEffect(() => {
-    fetch(`/api/plan-overrides?planId=${planId}`)
-      .then((r) => r.ok ? r.json() : { overrides: [] })
-      .then((d) => setOverrides(d.overrides ?? []))
-      .catch(() => {})
-      .finally(() => setLoadingOvr(false))
-  }, [planId])
+export default function UpcomingWeeksModal({ onClose, planId, weeks, actualRuns, currentWeek, overrides, onOverridesChange }: Props) {
+  const [editMode,  setEditMode]  = useState(false)
+  const [activeRun, setActiveRun] = useState<PlannedRun | null>(null)
 
   // Escape key to close
   useEffect(() => {
@@ -417,10 +408,10 @@ export default function UpcomingWeeksModal({ onClose, planId, weeks, actualRuns,
     const prevOverrides = overrides
 
     if (isReset) {
-      setOverrides((prev) => prev.filter(
+      const next = overrides.filter(
         (o) => !(o.originalDate === originalDate && o.runType === runType)
-      ))
-      // DELETE override
+      )
+      onOverridesChange(next)
       try {
         await fetch('/api/plan-overrides', {
           method:  'DELETE',
@@ -428,16 +419,14 @@ export default function UpcomingWeeksModal({ onClose, planId, weeks, actualRuns,
           body:    JSON.stringify({ planId, originalDate, runType }),
         })
       } catch {
-        setOverrides(prevOverrides) // revert
+        onOverridesChange(prevOverrides) // revert
       }
     } else {
-      setOverrides((prev) => {
-        const without = prev.filter(
-          (o) => !(o.originalDate === originalDate && o.runType === runType)
-        )
-        return [...without, { originalDate, runType, newDate }]
-      })
-      // PATCH override
+      const without = overrides.filter(
+        (o) => !(o.originalDate === originalDate && o.runType === runType)
+      )
+      const next = [...without, { originalDate, runType, newDate }]
+      onOverridesChange(next)
       try {
         await fetch('/api/plan-overrides', {
           method:  'PATCH',
@@ -445,7 +434,7 @@ export default function UpcomingWeeksModal({ onClose, planId, weeks, actualRuns,
           body:    JSON.stringify({ planId, originalDate, runType, newDate }),
         })
       } catch {
-        setOverrides(prevOverrides) // revert
+        onOverridesChange(prevOverrides) // revert
       }
     }
   }
@@ -531,26 +520,20 @@ export default function UpcomingWeeksModal({ onClose, planId, weeks, actualRuns,
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          {loadingOvr ? (
-            <div className="text-center py-10 text-sm" style={{ color: 'var(--text-dim)' }}>
-              Loading…
-            </div>
-          ) : (
-            <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              {displayedWeeks.map((week) => (
-                <WeekSection
-                  key={week.weekNumber}
-                  week={week}
-                  actuals={weekActuals(week)}
-                  editMode={editMode}
-                  isCurrent={week.weekNumber === currentWeek}
-                />
-              ))}
-              <DragOverlay>
-                {activeRun ? <DragOverlayChip run={activeRun} /> : null}
-              </DragOverlay>
-            </DndContext>
-          )}
+          <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+            {displayedWeeks.map((week) => (
+              <WeekSection
+                key={week.weekNumber}
+                week={week}
+                actuals={weekActuals(week)}
+                editMode={editMode}
+                isCurrent={week.weekNumber === currentWeek}
+              />
+            ))}
+            <DragOverlay>
+              {activeRun ? <DragOverlayChip run={activeRun} /> : null}
+            </DragOverlay>
+          </DndContext>
 
           {weeks.length === 0 && (
             <div className="text-center py-20 text-sm" style={{ color: 'var(--text-dim)' }}>
