@@ -27,9 +27,11 @@ const DARK = {
   greenTint:    'rgba(122,154,58,0.14)',
   redTint:      'rgba(220,38,38,0.10)',
   // workout card states — type-agnostic
-  cardBase:     '#1B1A18',   // not completed (upcoming + missed): neutral, recessive
-  cardDone:     '#1E2219',   // completed: +green channel lift reads as resolved
-  cardDoneBorder: 'rgba(122,154,58,0.20)', // faint green rim echoes the checkmark
+  cardBase:        '#1B1A18',              // upcoming: neutral, recessive
+  cardDone:        '#1E2219',              // completed: +8 green channel lift reads as resolved
+  cardDoneBorder:  'rgba(122,154,58,0.20)',// faint green rim echoes the checkmark
+  cardMissed:      '#221A18',              // missed: +7 red channel — red equivalent of cardDone
+  cardMissedBorder:'rgba(220,38,38,0.20)', // faint red rim
 }
 
 const LIGHT = {
@@ -51,9 +53,11 @@ const LIGHT = {
   violetTint:   'rgba(136,121,225,0.12)',
   greenTint:    'rgba(74,84,39,0.10)',
   redTint:      'rgba(220,38,38,0.08)',
-  cardBase:     '#F5F4F2',
-  cardDone:     'rgba(74,84,39,0.08)',
-  cardDoneBorder: 'rgba(74,84,39,0.20)',
+  cardBase:        '#F5F4F2',
+  cardDone:        'rgba(74,84,39,0.08)',
+  cardDoneBorder:  'rgba(74,84,39,0.20)',
+  cardMissed:      'rgba(238,107,23,0.06)',
+  cardMissedBorder:'rgba(220,38,38,0.18)',
 }
 
 // ─── Preview page ──────────────────────────────────────────────────────────────
@@ -374,9 +378,13 @@ function RunRowPreview({ t, type, label, km, pace, date, status }: {
   }[type]
 
   // Card background — type-agnostic, only completion state matters
+  const rowBg = status === 'completed' ? t.cardDone
+              : status === 'missed'    ? t.cardMissed
+              :                          t.cardBase
+  const rowBorder = status === 'completed' ? `1px solid ${t.cardDoneBorder}`
+                  : status === 'missed'    ? `1px solid ${t.cardMissedBorder}`
+                  :                          `1px solid ${t.border}`
   const isCompleted = status === 'completed'
-  const rowBg     = isCompleted ? t.cardDone : t.cardBase
-  const rowBorder = isCompleted ? `1px solid ${t.cardDoneBorder}` : `1px solid ${t.border}`
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '12px', background: rowBg, border: rowBorder }}>
