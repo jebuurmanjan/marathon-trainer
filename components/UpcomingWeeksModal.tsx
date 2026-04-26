@@ -7,6 +7,7 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -90,20 +91,29 @@ function RunChip({ run, actual, editMode, dragId, isPast, compact = false }: Chi
     border:     actual ? '1px solid var(--card-done-border)' : isPast ? '1px solid var(--card-missed-border)' : '1px solid var(--border)',
     opacity:    isDragging ? 0.35 : 1,
     transform:  transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined,
-    cursor:     editMode ? 'grab' : 'default',
   }
 
+  // Drag handle — listeners live here only so the rest of the card scrolls freely on touch
+  const handle = editMode ? (
+    <span
+      {...listeners}
+      style={{ touchAction: 'none', cursor: 'grab', color: 'var(--text-muted)', fontSize: compact ? 9 : 14, lineHeight: 1, userSelect: 'none', flexShrink: 0 }}
+    >
+      ⠿
+    </span>
+  ) : null
+
   if (compact) {
-    // Grid column chip — very tight, badge + stat only
+    // Grid column chip — badge + stat + truncated description
     return (
       <div
         ref={setNodeRef}
         className="rounded-lg p-1.5 text-xs select-none"
         style={chipStyle}
-        {...(editMode ? { ...listeners, ...attributes } : {})}
+        {...(editMode ? attributes : {})}
       >
         <div className="flex items-center gap-1 flex-wrap">
-          {editMode && <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>⠿</span>}
+          {handle}
           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: style.dot }} />
           <span
             className="text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded-full"
@@ -115,21 +125,24 @@ function RunChip({ run, actual, editMode, dragId, isPast, compact = false }: Chi
           {!actual && isPast && <span style={{ color: 'var(--accent)', fontSize: 8 }}>✗</span>}
         </div>
         <div className="mt-1 font-semibold" style={{ color: 'var(--text-dim)', fontSize: 10 }}>{stat}</div>
+        {run.description && (
+          <div className="mt-0.5 truncate" style={{ color: 'var(--text-secondary)', fontSize: 9 }}>
+            {run.description}
+          </div>
+        )}
       </div>
     )
   }
 
-  // Agenda row chip — wider, shows description
+  // Agenda row chip — wider, full description visible
   return (
     <div
       ref={setNodeRef}
       className="rounded-xl px-3 py-2.5 text-xs select-none flex items-start gap-2.5"
       style={{ ...chipStyle, minWidth: 0 }}
-      {...(editMode ? { ...listeners, ...attributes } : {})}
+      {...(editMode ? attributes : {})}
     >
-      {editMode && (
-        <span className="text-sm shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }}>⠿</span>
-      )}
+      {handle}
       <span className="w-2 h-2 rounded-full shrink-0 mt-1" style={{ background: style.dot }} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
@@ -438,7 +451,11 @@ export default function UpcomingWeeksModal({
   const displayedWeeks = applyOverrides(weeks, overrides)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    // Mouse / stylus — activate after moving 8px
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    // Touch — require a 200ms press on the handle before drag starts,
+    // so normal scroll gestures on the card body pass through untouched
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
   )
 
   function onDragStart(event: DragStartEvent) {
