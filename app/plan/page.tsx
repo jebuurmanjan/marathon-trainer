@@ -185,19 +185,18 @@ export default function PlanPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Page title */}
-        <div className="flex items-start justify-between mb-5">
-          <div>
-            <h1
-              className="text-2xl"
-              style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'var(--text-primary)' }}
-            >
-              Marathon Plan
-            </h1>
-            <p className="text-sm mt-1" style={{ color:'var(--text-secondary)' }}>
-              {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'} · {u}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+        <div className="mb-5">
+          <h1
+            className="text-2xl"
+            style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'var(--text-primary)' }}
+          >
+            Marathon Plan
+          </h1>
+          <p className="text-sm mt-1" style={{ color:'var(--text-secondary)' }}>
+            {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'} · {u}
+          </p>
+          {/* Action buttons — own row so they never crowd the title on mobile */}
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
             {plan.length > 0 && (
               <button
                 onClick={() => setUpcomingOpen(true)}
