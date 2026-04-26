@@ -41,7 +41,7 @@ export default function SyncButton() {
       <button
         onClick={handleSync}
         disabled={syncing}
-        className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+        className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
         style={{ background: '#EE6B17' }}
       >
         <svg

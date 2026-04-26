@@ -95,7 +95,7 @@ export default async function ProgressPage() {
           {topStats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-2xl p-4 relative overflow-hidden"
+              className="rounded-xl p-4 relative overflow-hidden"
               style={{
                 background: '#EDE9DE',
                 border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(43,49,23,0.08)',
@@ -117,7 +117,7 @@ export default async function ProgressPage() {
 
         {/* Weekly volume chart */}
         <div
-          className="rounded-2xl p-5 mb-6"
+          className="rounded-xl p-5 mb-6"
           style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
         >
           <h2
@@ -158,7 +158,7 @@ export default async function ProgressPage() {
         </div>
 
         {/* Runs table */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
           <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(43,49,23,0.08)' }}>
             <h2 className="text-base font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}>
               All runs ({allRuns.length})

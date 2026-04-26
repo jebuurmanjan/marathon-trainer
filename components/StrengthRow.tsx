@@ -49,7 +49,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
 
   return (
     <div
-      className="rounded-xl px-3 py-2.5 transition-all"
+      className="rounded-lg px-3 py-2.5 transition-all"
       style={{
         background: completed ? 'rgba(74,84,39,0.08)' : '#F5F4F2',
         border: completed

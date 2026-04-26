@@ -24,7 +24,7 @@ function PillToggle<T extends string>({
 }) {
   return (
     <div
-      className="flex gap-0.5 p-1 rounded-xl w-fit"
+      className="flex gap-0.5 p-1 rounded-lg w-fit"
       style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
     >
       {options.map((o) => (
@@ -57,7 +57,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         {title}
       </h2>
       <div
-        className="rounded-2xl divide-y divide-[rgba(43,49,23,0.06)]"
+        className="rounded-xl divide-y divide-[rgba(43,49,23,0.06)]"
         style={{
           background: '#EDE9DE',
           border:     '1px solid rgba(43,49,23,0.08)',
@@ -232,13 +232,13 @@ export default function SettingsPage() {
                 onKeyDown={(e) => { if (e.key === 'Enter') saveDisplayName() }}
                 placeholder={settings.stravaName}
                 maxLength={60}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm outline-none"
                 style={{ background: '#F5F3EC', border: '1px solid rgba(43,49,23,0.12)', color: '#1E1611' }}
               />
               <button
                 onClick={saveDisplayName}
                 disabled={nameSaving}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60 shrink-0"
+                className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60 shrink-0"
                 style={{ background: '#EE6B17' }}
               >
                 {nameSaving ? 'Saving…' : nameSaved ? '✓ Saved' : 'Save'}
@@ -270,7 +270,7 @@ export default function SettingsPage() {
           </div>
           {settings.theme === 'dark' && (
             <div
-              className="mx-4 mb-4 px-3 py-2.5 rounded-xl text-xs"
+              className="mx-4 mb-4 px-3 py-2.5 rounded-lg text-xs"
               style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}
             >
               Full dark theme is coming soon — preference is saved for when it lands.
@@ -286,7 +286,7 @@ export default function SettingsPage() {
             </p>
             <a
               href="/statistics?tab=zones"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg"
               style={{ background: '#F5F3EC', border: '1px solid rgba(43,49,23,0.12)', color: '#4A5427' }}
             >
               Open zone settings →
@@ -302,7 +302,7 @@ export default function SettingsPage() {
             </p>
             <button
               onClick={() => setDeleteOpen(true)}
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold"
+              className="px-4 py-2.5 rounded-lg text-sm font-semibold"
               style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.20)', color: '#DC2626' }}
             >
               Delete account
@@ -319,7 +319,7 @@ export default function SettingsPage() {
           onClick={(e) => { if (e.target === e.currentTarget && !deleting) setDeleteOpen(false) }}
         >
           <div
-            className="w-full max-w-sm rounded-3xl p-6"
+            className="w-full max-w-sm rounded-2xl p-6"
             style={{ background: '#F5F3EC' }}
           >
             <div className="text-center mb-5">
@@ -339,7 +339,7 @@ export default function SettingsPage() {
               <button
                 onClick={deleteAccount}
                 disabled={deleting}
-                className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+                className="w-full py-3 rounded-lg text-sm font-bold text-white disabled:opacity-60"
                 style={{ background: '#DC2626' }}
               >
                 {deleting ? 'Deleting…' : 'Yes, delete everything'}
@@ -347,7 +347,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => setDeleteOpen(false)}
                 disabled={deleting}
-                className="w-full py-3 rounded-xl text-sm font-semibold"
+                className="w-full py-3 rounded-lg text-sm font-semibold"
                 style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.10)', color: '#4A5427' }}
               >
                 Cancel

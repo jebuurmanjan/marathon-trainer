@@ -94,13 +94,13 @@ export default function PlansPage() {
         {/* Start new plan */}
         <a
           href="/onboarding"
-          className="flex items-center gap-3 w-full rounded-2xl p-4 mb-4 text-sm font-semibold transition-colors"
+          className="flex items-center gap-3 w-full rounded-xl p-4 mb-4 text-sm font-semibold transition-colors"
           style={{
             background:   '#EE6B17',
             color:        '#fff',
           }}
         >
-          <span className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.20)' }}>
+          <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.20)' }}>
             <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14"/>
             </svg>
@@ -116,7 +116,7 @@ export default function PlansPage() {
         {/* Plans list */}
         {plans.length === 0 ? (
           <div
-            className="rounded-2xl p-6 text-center text-sm"
+            className="rounded-xl p-6 text-center text-sm"
             style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)', color: '#736554' }}
           >
             No plans yet. Start by setting up your first plan.
@@ -126,7 +126,7 @@ export default function PlansPage() {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className="rounded-2xl p-4"
+                className="rounded-xl p-4"
                 style={{
                   background: '#EDE9DE',
                   border:     plan.isActive

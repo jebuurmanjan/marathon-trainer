@@ -107,7 +107,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
 
   return (
     <div
-      className="rounded-xl px-3 py-2.5"
+      className="rounded-lg px-3 py-2.5"
       style={{
         background: plan.isActive ? 'rgba(238,107,23,0.08)' : 'rgba(43,49,23,0.04)',
         border:     plan.isActive ? '1px solid rgba(238,107,23,0.20)' : '1px solid transparent',
@@ -390,7 +390,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
           {/* Selector trigger */}
           <button
             onClick={() => setSelectorOpen((o) => !o)}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors"
             style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)', color: '#1E1611' }}
           >
             <span
@@ -416,7 +416,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               {/* Error */}
               {planError && (
                 <div
-                  className="rounded-xl px-3 py-2 text-xs"
+                  className="rounded-lg px-3 py-2 text-xs"
                   style={{ background: 'rgba(238,107,23,0.10)', color: '#EE6B17' }}
                 >
                   {planError}
@@ -479,7 +479,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               {/* New plan */}
               <a
                 href="/onboarding"
-                className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
                 style={{ background: 'rgba(238,107,23,0.10)', color: '#EE6B17' }}
               >
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
@@ -508,7 +508,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors mb-0.5"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5"
                     style={
                       active
                         ? { background: '#EDE9DE', color: '#1E1611', boxShadow: '0 1px 3px rgba(43,49,23,0.08)' }
@@ -534,7 +534,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
         <div className="px-3 pb-2 shrink-0">
           <button
             onClick={() => { triggerTest(); onClose() }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
             style={{ color: '#4A5427' }}
           >
             <span style={{ color: '#736554', fontSize: '16px' }}>🎉</span>

@@ -30,7 +30,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
       <div className="relative z-10 text-center max-w-sm w-full">
         {/* Brand mark */}
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm"
+          className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm"
           style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
         >
           🏃
@@ -57,7 +57,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
         {/* Error */}
         {errorMessage && (
           <div
-            className="mb-6 rounded-xl px-4 py-3 text-sm text-left"
+            className="mb-6 rounded-lg px-4 py-3 text-sm text-left"
             style={{
               background: 'rgba(238,107,23,0.10)',
               border:     '1px solid rgba(238,107,23,0.25)',
@@ -71,7 +71,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
         {/* Connect CTA */}
         <a
           href="/api/strava/auth?mode=guest"
-          className="flex items-center justify-center gap-2.5 w-full text-white font-bold py-3.5 px-6 rounded-2xl transition-opacity hover:opacity-90 text-base mb-4"
+          className="flex items-center justify-center gap-2.5 w-full text-white font-bold py-3.5 px-6 rounded-xl transition-opacity hover:opacity-90 text-base mb-4"
           style={{ background: '#EE6B17' }}
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
@@ -82,7 +82,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
 
         {/* Feature bullets */}
         <div
-          className="rounded-2xl p-4 text-left space-y-2.5"
+          className="rounded-xl p-4 text-left space-y-2.5"
           style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
         >
           {[

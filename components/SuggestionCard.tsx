@@ -12,7 +12,7 @@ export default function SuggestionCard({ suggestion, isLatest }: SuggestionCardP
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-xl overflow-hidden"
       style={{
         background: '#EDE9DE',
         border: '1px solid rgba(43,49,23,0.08)',

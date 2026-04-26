@@ -83,7 +83,7 @@ export default function SuggestionsPage() {
           <button
             onClick={handleGenerate}
             disabled={generating || currentWeek < 1}
-            className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all disabled:opacity-50 shrink-0"
+            className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-all disabled:opacity-50 shrink-0"
             style={{ background: '#EE6B17' }}
           >
             {generating ? (
@@ -96,7 +96,7 @@ export default function SuggestionsPage() {
 
         {error && (
           <div
-            className="mb-4 rounded-xl px-4 py-3 text-sm"
+            className="mb-4 rounded-lg px-4 py-3 text-sm"
             style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: '#EE6B17' }}
           >
             {error}
@@ -131,7 +131,7 @@ export default function SuggestionsPage() {
 
         {/* How it works */}
         <div
-          className="mt-10 rounded-2xl p-5"
+          className="mt-10 rounded-xl p-5"
           style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
         >
           <h3 className="text-sm font-semibold mb-3" style={{ color: '#1E1611' }}>How it works</h3>

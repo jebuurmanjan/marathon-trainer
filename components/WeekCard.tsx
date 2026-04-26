@@ -70,7 +70,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
   return (
     <div
       id={`week-${week.weekNumber}`}
-      className="rounded-2xl overflow-hidden transition-all"
+      className="rounded-xl overflow-hidden transition-all"
       style={{
         background: '#EDE9DE',
         border: isCurrentWeek
@@ -162,7 +162,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
                     {/* Tooltip */}
                     <div
-                      className="absolute bottom-full right-0 mb-2 w-60 rounded-xl px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30"
+                      className="absolute bottom-full right-0 mb-2 w-60 rounded-lg px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30"
                       style={{ background: '#2B3117', color: '#F5F3EC', boxShadow: '0 8px 24px rgba(0,0,0,0.28)' }}
                     >
                       {/* Arrow */}

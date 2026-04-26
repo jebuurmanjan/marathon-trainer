@@ -118,7 +118,7 @@ function ZoneEditor({
 
   return (
     <div
-      className="rounded-xl p-4 mb-4"
+      className="rounded-lg p-4 mb-4"
       style={{ background: '#F5F4F2', border: '1px solid rgba(43,49,23,0.10)' }}
     >
       <p className="text-xs font-semibold mb-3" style={{ color: '#4A5427' }}>
@@ -252,7 +252,7 @@ export default function ZonesTab() {
     <button
       onClick={handleSync}
       disabled={syncing}
-      className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-xl text-sm disabled:opacity-60 shrink-0"
+      className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-60 shrink-0"
       style={{ background: '#EE6B17' }}
     >
       <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-none stroke-current stroke-2 ${syncing ? 'animate-spin' : ''}`}>
@@ -277,7 +277,7 @@ export default function ZonesTab() {
   if (status === 'empty' || !data) {
     return (
       <div
-        className="rounded-2xl p-8 text-center"
+        className="rounded-xl p-8 text-center"
         style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
       >
         <div className="text-4xl mb-3">💓</div>
@@ -342,7 +342,7 @@ export default function ZonesTab() {
 
       {/* ── Zone distribution ── */}
       <div
-        className="rounded-2xl p-5"
+        className="rounded-xl p-5"
         style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
       >
         <h3
@@ -404,7 +404,7 @@ export default function ZonesTab() {
       {/* ── Weekly trend chart ── */}
       {weekly.length > 0 && (
         <div
-          className="rounded-2xl p-5"
+          className="rounded-xl p-5"
           style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
         >
           <h3

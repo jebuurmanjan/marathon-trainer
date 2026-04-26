@@ -99,7 +99,7 @@ export default async function StatisticsPage({
       <>
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="rounded-2xl p-4" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+          <div className="rounded-xl p-4" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>Current</div>
             <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: '#1E1611' }}>
               {totalKm.toLocaleString('en')}
@@ -107,7 +107,7 @@ export default async function StatisticsPage({
             <div className="text-[11px]" style={{ color: '#736554' }}>km this year</div>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+          <div className="rounded-xl p-4" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>To Go</div>
             <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: '#1E1611' }}>
               {toGoKm > 0 ? toGoKm.toLocaleString('en') : '🏁'}
@@ -115,7 +115,7 @@ export default async function StatisticsPage({
             <div className="text-[11px]" style={{ color: '#736554' }}>{toGoKm > 0 ? `of ${GOAL_KM.toLocaleString('en')} km goal` : 'Goal reached!'}</div>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: '#EDE9DE', border: isAhead ? '1px solid rgba(74,84,39,0.20)' : '1px solid rgba(238,107,23,0.25)' }}>
+          <div className="rounded-xl p-4" style={{ background: '#EDE9DE', border: isAhead ? '1px solid rgba(74,84,39,0.20)' : '1px solid rgba(238,107,23,0.25)' }}>
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>{isAhead ? 'Ahead of plan' : 'Behind plan'}</div>
             <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: isAhead ? '#4A5427' : '#EE6B17' }}>
               {Math.abs(diffKm)}
@@ -125,7 +125,7 @@ export default async function StatisticsPage({
         </div>
 
         {/* Progress bar */}
-        <div className="rounded-2xl p-5 mb-5" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+        <div className="rounded-xl p-5 mb-5" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>Goal: {GOAL_KM.toLocaleString('en')} km</span>
             <span className="text-sm font-bold tabular-nums" style={{ color: pctDone >= 100 ? '#4A5427' : '#EE6B17' }}>{pctDone}%</span>
@@ -139,7 +139,7 @@ export default async function StatisticsPage({
         </div>
 
         {/* Distance chart */}
-        <div className="rounded-2xl p-5" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+        <div className="rounded-xl p-5" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}>
               Distance over {YEAR}

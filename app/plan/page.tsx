@@ -190,7 +190,7 @@ export default function PlanPage() {
           {config && (
             <button
               onClick={() => setEditingGoal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
               style={{ background:'#EDE9DE', border:'1px solid rgba(43,49,23,0.10)', color:'#4A5427' }}
             >
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
@@ -209,7 +209,7 @@ export default function PlanPage() {
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-2xl p-4 relative overflow-hidden"
+              className="rounded-xl p-4 relative overflow-hidden"
               style={{
                 background: '#EDE9DE',
                 border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(43,49,23,0.08)',
@@ -238,7 +238,7 @@ export default function PlanPage() {
         {/* Controls */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div
-            className="flex gap-0.5 p-1 rounded-xl"
+            className="flex gap-0.5 p-1 rounded-lg"
             style={{ background:'#EDE9DE', border:'1px solid rgba(43,49,23,0.08)' }}
           >
             {(['upcoming','all','past'] as Filter[]).map((f) => (
@@ -266,7 +266,7 @@ export default function PlanPage() {
             <a
               href="/api/ical"
               download="marathon-training-plan.ics"
-              className="flex items-center gap-2 font-semibold px-4 py-2 rounded-xl text-sm transition-all border"
+              className="flex items-center gap-2 font-semibold px-4 py-2 rounded-lg text-sm transition-all border"
               style={{ color:'#4A5427', background:'#EDE9DE', borderColor:'rgba(43,49,23,0.14)' }}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
@@ -278,7 +278,7 @@ export default function PlanPage() {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+              className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
               style={{ background:'#EE6B17' }}
             >
               <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-none stroke-current stroke-2 ${syncing ? 'animate-spin' : ''}`}>
@@ -292,7 +292,7 @@ export default function PlanPage() {
         {/* Current week banner */}
         {currentWeek > 0 && currentWeek <= plan.length && filter !== 'past' && currentPhase && (
           <div
-            className="flex items-center gap-2.5 rounded-xl px-4 py-3 mb-4 text-sm font-medium"
+            className="flex items-center gap-2.5 rounded-lg px-4 py-3 mb-4 text-sm font-medium"
             style={{ background:'rgba(238,107,23,0.10)', border:'1px solid rgba(238,107,23,0.25)', color:'#EE6B17' }}
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

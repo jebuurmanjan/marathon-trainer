@@ -31,7 +31,7 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
 
   return (
     <div
-      className="rounded-xl px-3 py-2.5 transition-all"
+      className="rounded-lg px-3 py-2.5 transition-all"
       style={{
         background: actual
           ? 'rgba(74,84,39,0.08)'

@@ -59,7 +59,7 @@ export default function Navigation({ userName, profilePhotoUrl }: NavigationProp
               aria-label="Go to plan"
             >
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
                 style={{ background: '#EE6B17', fontSize: '26px', lineHeight: 1 }}
               >
                 ⏱

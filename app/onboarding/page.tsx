@@ -39,7 +39,7 @@ function totalSteps(strengthDays: number | null): number {
 const card = {
   background:   '#EDE9DE',
   border:       '1px solid rgba(43,49,23,0.08)',
-  borderRadius: '20px',
+  borderRadius: '12px',
   padding:      '20px',
 }
 
@@ -124,7 +124,7 @@ export default function OnboardingPage() {
     return (
       <button
         onClick={onClick}
-        className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-semibold transition-colors"
+        className="flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors"
         style={
           active
             ? { background: '#EE6B17', color: '#fff' }
@@ -152,7 +152,7 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4"
+            className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl mx-auto mb-4"
             style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
           >
             ⏱
@@ -194,7 +194,7 @@ export default function OnboardingPage() {
             <input
               type="date" min={minDate()} value={raceDate}
               onChange={(e) => { setRaceDate(e.target.value); setError(null) }}
-              className="w-full px-4 py-3 rounded-xl text-sm font-medium outline-none"
+              className="w-full px-4 py-3 rounded-lg text-sm font-medium outline-none"
               style={{ background: '#F5F3EC', border: '1px solid rgba(43,49,23,0.12)', color: '#1E1611', fontFamily: 'Nohemi, Inter, sans-serif' }}
             />
           </div>
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
               <span>{maxWeeks} wk</span>
             </div>
 
-            <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+            <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
               {planWeeks <= 14 && 'Short block — Base + Build + combined Peak/Sharpen + 2-week taper. Every week counts.'}
               {planWeeks > 14 && planWeeks <= 20 && 'Moderate plan — all 5 phases compressed. Good balance of build-up and recovery.'}
               {planWeeks > 20 && planWeeks < 27 && 'Full plan structure with a bit less volume in the middle phases. Solid preparation.'}
@@ -290,7 +290,7 @@ export default function OnboardingPage() {
             <div className="flex justify-between text-xs" style={{ color: '#A09880' }}>
               <span>10 km</span><span>100 km</span>
             </div>
-            <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+            <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
               {weeklyKm < 30  && 'Good starting point — the plan builds safely from week 1 at your current load.'}
               {weeklyKm >= 30 && weeklyKm < 50 && 'Solid base. The plan will push your volume through the build and peak phases.'}
               {weeklyKm >= 50 && weeklyKm < 70 && "Strong base. You're well-placed to hit the peak training weeks comfortably."}
@@ -321,7 +321,7 @@ export default function OnboardingPage() {
               </OptionBtn>
             </div>
             {runsPerWeek && (
-              <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
                 {runsPerWeek === 3 && "3 focused sessions with good recovery. Perfect alongside strength training or if managing injury risk."}
                 {runsPerWeek === 4 && 'The sweet spot for most marathon runners — enough volume without burning out.'}
                 {runsPerWeek === 5 && 'High frequency. The extra Wednesday easy run adds meaningful aerobic base. Prioritise recovery.'}
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
               </OptionBtn>
             </div>
             {strengthDays !== null && strengthDays > 0 && (
-              <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
                 Sessions sit on rest days for maximum recovery. 25–45 min per session, adapted per phase.
               </div>
             )}
@@ -381,7 +381,7 @@ export default function OnboardingPage() {
               </OptionBtn>
             </div>
             {equipmentType && (
-              <div className="mt-4 px-3 py-2.5 rounded-xl text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
+              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}>
                 {equipmentType === 'bodyweight' && 'Glutes, single-leg stability, and core — the stuff that keeps runners injury free.'}
                 {equipmentType === 'gym' && 'Compound lifts (squats, deadlifts, hip thrusts) that build real running strength.'}
                 {equipmentType === 'both' && 'Gym weeks and bodyweight weeks alternate, keeping variety without overloading any one stimulus.'}
@@ -393,7 +393,7 @@ export default function OnboardingPage() {
         {/* Error */}
         {error && (
           <div
-            className="mt-3 rounded-xl px-4 py-3 text-sm"
+            className="mt-3 rounded-lg px-4 py-3 text-sm"
             style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: '#EE6B17' }}
           >
             {error}
@@ -405,7 +405,7 @@ export default function OnboardingPage() {
           {step > 1 && (
             <button
               onClick={prevStep}
-              className="px-5 py-3 rounded-xl text-sm font-semibold"
+              className="px-5 py-3 rounded-lg text-sm font-semibold"
               style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.10)', color: '#4A5427' }}
             >
               Back
@@ -414,7 +414,7 @@ export default function OnboardingPage() {
           <button
             onClick={nextStep}
             disabled={saving}
-            className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+            className="flex-1 py-3 rounded-lg text-sm font-bold text-white disabled:opacity-60"
             style={{ background: '#EE6B17' }}
           >
             {saving ? 'Setting up your plan…' : isLastStep ? 'Build my plan →' : 'Continue →'}
