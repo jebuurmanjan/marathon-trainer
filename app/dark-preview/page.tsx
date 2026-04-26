@@ -8,7 +8,7 @@ import { useState } from 'react'
 
 const DARK = {
   bgBase:       '#111111',   // page background
-  surface:      '#1B1313',   // cards, week cards, drawers
+  surface:      '#1F1919',   // cards, week cards, drawers
   surface2:     '#252420',   // progress bar bg, subtle wells
   surface3:     '#2B1F0B',   // active tab, deepest surface
   textPrimary:  '#EDE9DE',   // headlines, body
@@ -21,11 +21,15 @@ const DARK = {
   border:       'rgba(237,233,222,0.08)',
   borderMid:    'rgba(237,233,222,0.12)',
   borderStrong: 'rgba(237,233,222,0.20)',
-  // semi-transparent accent tints
+  // semi-transparent accent tints (used only in badges/pills, not card backgrounds)
   orangeTint:   'rgba(238,73,23,0.14)',
   violetTint:   'rgba(136,121,225,0.14)',
   greenTint:    'rgba(122,154,58,0.14)',
   redTint:      'rgba(220,38,38,0.10)',
+  // workout card states — type-agnostic
+  cardBase:     '#1B1A18',   // not completed (upcoming + missed): neutral, recessive
+  cardDone:     '#1E2219',   // completed: +green channel lift reads as resolved
+  cardDoneBorder: 'rgba(122,154,58,0.20)', // faint green rim echoes the checkmark
 }
 
 const LIGHT = {
@@ -47,6 +51,9 @@ const LIGHT = {
   violetTint:   'rgba(136,121,225,0.12)',
   greenTint:    'rgba(74,84,39,0.10)',
   redTint:      'rgba(220,38,38,0.08)',
+  cardBase:     '#F5F4F2',
+  cardDone:     'rgba(74,84,39,0.08)',
+  cardDoneBorder: 'rgba(74,84,39,0.20)',
 }
 
 // ─── Preview page ──────────────────────────────────────────────────────────────
@@ -359,23 +366,17 @@ function RunRowPreview({ t, type, label, km, pace, date, status }: {
   date: string
   status: 'completed' | 'upcoming' | 'missed'
 }) {
+  // Type badge colours — still differentiate the run type
   const typeStyle = {
     easy:    { bg: t.greenTint,  color: t.accentGreen,  dot: t.accentGreen  },
     quality: { bg: t.orangeTint, color: t.accent,        dot: t.accent       },
     long:    { bg: t.violetTint, color: t.accentViolet,  dot: t.accentViolet },
   }[type]
 
-  const rowBg = {
-    completed: `rgba(74,84,39,0.10)`,
-    upcoming:  t.surface2,
-    missed:    `rgba(238,107,23,0.07)`,
-  }[status]
-
-  const rowBorder = {
-    completed: `1px solid rgba(74,84,39,0.25)`,
-    upcoming:  `1px solid ${t.border}`,
-    missed:    `1px solid rgba(238,107,23,0.18)`,
-  }[status]
+  // Card background — type-agnostic, only completion state matters
+  const isCompleted = status === 'completed'
+  const rowBg     = isCompleted ? t.cardDone : t.cardBase
+  const rowBorder = isCompleted ? `1px solid ${t.cardDoneBorder}` : `1px solid ${t.border}`
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '12px', background: rowBg, border: rowBorder }}>
@@ -386,10 +387,10 @@ function RunRowPreview({ t, type, label, km, pace, date, status }: {
         <div style={{ fontSize: '11px', color: t.textDim, marginTop: '1px' }}>{date}</div>
       </div>
       <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: t.textPrimary }}>{km}</div>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: isCompleted ? t.textPrimary : t.textDim }}>{km}</div>
         <div style={{ fontSize: '11px', color: t.textDim }}>{pace}</div>
       </div>
-      {status === 'completed' && (
+      {isCompleted && (
         <div style={{ color: t.accentGreen, fontSize: '16px', flexShrink: 0 }}>✓</div>
       )}
     </div>
@@ -398,7 +399,7 @@ function RunRowPreview({ t, type, label, km, pace, date, status }: {
 
 function StrengthRowPreview({ t, date, completed }: { t: typeof DARK; date: string; completed: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '12px', background: completed ? `rgba(74,84,39,0.10)` : t.surface2, border: `1px solid ${completed ? 'rgba(74,84,39,0.25)' : t.border}` }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '12px', background: completed ? t.cardDone : t.cardBase, border: `1px solid ${completed ? t.cardDoneBorder : t.border}` }}>
       <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.textDim, flexShrink: 0 }} />
       <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', padding: '2px 7px', borderRadius: '999px', background: t.border, color: t.textDim, flexShrink: 0 }}>strength</span>
       <div style={{ flex: 1 }}>
