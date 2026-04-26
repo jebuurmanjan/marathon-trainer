@@ -14,7 +14,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Week, PlannedRun, ActualRun } from '@/types'
 import { RunOverride, applyOverrides } from '@/lib/training-plan'
 
-// ─── Type colours ─────────────────────────────────────────────────────────────
+// ─── Type styles ──────────────────────────────────────────────────────────────
 
 const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
   easy:        { bg: 'rgba(74,84,39,0.10)',   color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
@@ -25,12 +25,11 @@ const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
   strength:    { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
 }
 
-// Abbreviated labels that fit in narrow chips
-const CHIP_LABELS: Record<string, string> = {
+const TYPE_LABELS: Record<string, string> = {
   easy:        'Easy',
   quality:     'Quality',
   medium_long: 'Med Long',
-  long:        'Long',
+  long:        'Long Run',
   race:        'Race',
   strength:    'Strength',
 }
@@ -39,7 +38,7 @@ const DAY_NAMES = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function isoToDisplayDate(iso: string): string {
+function isoToDate(iso: string): string {
   return String(new Date(iso + 'T12:00:00Z').getUTCDate())
 }
 
@@ -59,143 +58,150 @@ function findActual(run: PlannedRun, actuals: ActualRun[]): ActualRun | undefine
   return actuals.find((a) => Math.abs(new Date(a.runDate).getTime() - pt) <= 86_400_000 * 1.5)
 }
 
-// ─── Run Chip ─────────────────────────────────────────────────────────────────
-
-interface ChipProps {
-  run:          PlannedRun
-  actual?:      ActualRun
-  editMode:     boolean
-  dragId:       string   // always encodes the ORIGINAL date
-  isPast:       boolean
+function getOriginalDate(run: PlannedRun, overrides: RunOverride[]): string {
+  const o = overrides.find((o) => o.newDate === run.date && o.runType === run.type)
+  return o ? o.originalDate : run.date
 }
 
-function RunChip({ run, actual, editMode, dragId, isPast }: ChipProps) {
+// ─── Run chip (used in both layouts) ─────────────────────────────────────────
+
+interface ChipProps {
+  run:      PlannedRun
+  actual?:  ActualRun
+  editMode: boolean
+  dragId:   string        // always originalDate::type
+  isPast:   boolean
+  compact?: boolean       // true = grid column, false = agenda row
+}
+
+function RunChip({ run, actual, editMode, dragId, isPast, compact = false }: ChipProps) {
   const style = TYPE_STYLE[run.type] ?? { bg: 'rgba(var(--tint),0.06)', color: 'var(--text-dim)', dot: 'var(--text-dim)' }
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id:       dragId,
-    disabled: !editMode,
-    data:     { run },
+    id: dragId, disabled: !editMode, data: { run },
   })
 
+  const stat = run.type === 'strength'
+    ? `${run.durationMinutes ?? 30} min`
+    : `${run.targetDistanceKm} km`
+
   const chipStyle: React.CSSProperties = {
-    background: actual  ? 'var(--card-done)'
-               : isPast ? 'var(--card-missed)'
-               :           'var(--card-base)',
-    border: actual  ? '1px solid var(--card-done-border)'
-           : isPast ? '1px solid var(--card-missed-border)'
-           :           '1px solid var(--border)',
-    opacity:   isDragging ? 0.35 : 1,
-    transform: transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined,
-    cursor:    editMode ? 'grab' : 'default',
+    background: actual ? 'var(--card-done)' : isPast ? 'var(--card-missed)' : 'var(--card-base)',
+    border:     actual ? '1px solid var(--card-done-border)' : isPast ? '1px solid var(--card-missed-border)' : '1px solid var(--border)',
+    opacity:    isDragging ? 0.35 : 1,
+    transform:  transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined,
+    cursor:     editMode ? 'grab' : 'default',
   }
 
-  const stat = run.type === 'strength'
-    ? `${run.durationMinutes ?? 30}m`
-    : `${run.targetDistanceKm}k`
+  if (compact) {
+    // Grid column chip — very tight, badge + stat only
+    return (
+      <div
+        ref={setNodeRef}
+        className="rounded-lg p-1.5 text-xs select-none"
+        style={chipStyle}
+        {...(editMode ? { ...listeners, ...attributes } : {})}
+      >
+        <div className="flex items-center gap-1 flex-wrap">
+          {editMode && <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>⠿</span>}
+          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: style.dot }} />
+          <span
+            className="text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded-full"
+            style={{ background: style.bg, color: style.color }}
+          >
+            {TYPE_LABELS[run.type]}
+          </span>
+          {actual && <span style={{ color: 'var(--accent-green)', fontSize: 8 }}>✓</span>}
+          {!actual && isPast && <span style={{ color: 'var(--accent)', fontSize: 8 }}>✗</span>}
+        </div>
+        <div className="mt-1 font-semibold" style={{ color: 'var(--text-dim)', fontSize: 10 }}>{stat}</div>
+      </div>
+    )
+  }
 
+  // Agenda row chip — wider, shows description
   return (
     <div
       ref={setNodeRef}
-      className="rounded-lg p-1.5 text-xs select-none"
-      style={chipStyle}
+      className="rounded-xl px-3 py-2.5 text-xs select-none flex items-start gap-2.5"
+      style={{ ...chipStyle, minWidth: 0 }}
       {...(editMode ? { ...listeners, ...attributes } : {})}
     >
-      {/* Top row: handle (edit) + dot + badge + status */}
-      <div className="flex items-center gap-1">
-        {editMode && (
-          <span style={{ color: 'var(--text-muted)', fontSize: 9, lineHeight: 1 }}>⠿</span>
+      {editMode && (
+        <span className="text-sm shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }}>⠿</span>
+      )}
+      <span className="w-2 h-2 rounded-full shrink-0 mt-1" style={{ background: style.dot }} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <span
+            className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
+            style={{ background: style.bg, color: style.color }}
+          >
+            {TYPE_LABELS[run.type]}
+          </span>
+          <span className="font-semibold shrink-0" style={{ color: 'var(--text-dim)', fontSize: 11 }}>{stat}</span>
+          {actual && <span style={{ color: 'var(--accent-green)', fontSize: 10 }}>✓</span>}
+          {!actual && isPast && <span style={{ color: 'var(--accent)', fontSize: 10 }}>✗</span>}
+        </div>
+        {run.description && (
+          <div className="truncate" style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
+            {run.description}
+          </div>
         )}
-        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: style.dot }} />
-        <span
-          className="text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded-full truncate"
-          style={{ background: style.bg, color: style.color }}
-        >
-          {CHIP_LABELS[run.type]}
-        </span>
-        {actual && <span style={{ color: 'var(--accent-green)', fontSize: 8 }}>✓</span>}
-        {!actual && isPast && <span style={{ color: 'var(--accent)', fontSize: 8 }}>✗</span>}
-      </div>
-      {/* Stat row */}
-      <div className="mt-1 font-semibold" style={{ color: 'var(--text-dim)', fontSize: 10 }}>
-        {stat}
       </div>
     </div>
   )
 }
 
-// ─── Drag Overlay Chip ────────────────────────────────────────────────────────
+// ─── Drag overlay chip ────────────────────────────────────────────────────────
 
 function DragOverlayChip({ run }: { run: PlannedRun }) {
   const style = TYPE_STYLE[run.type] ?? { bg: 'rgba(var(--tint),0.06)', color: 'var(--text-dim)', dot: 'var(--text-dim)' }
-  const stat = run.type === 'strength'
-    ? `${run.durationMinutes ?? 30}m`
-    : `${run.targetDistanceKm}k`
+  const stat = run.type === 'strength' ? `${run.durationMinutes ?? 30} min` : `${run.targetDistanceKm} km`
   return (
     <div
-      className="rounded-lg p-1.5 text-xs shadow-lg"
-      style={{
-        background: 'var(--card-base)',
-        border: '1px solid var(--border)',
-        opacity: 0.95,
-        cursor: 'grabbing',
-        minWidth: 64,
-      }}
+      className="rounded-xl px-3 py-2.5 text-xs shadow-lg flex items-center gap-2"
+      style={{ background: 'var(--card-base)', border: '1px solid var(--border)', opacity: 0.95, cursor: 'grabbing', minWidth: 120 }}
     >
-      <div className="flex items-center gap-1">
-        <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>⠿</span>
-        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: style.dot }} />
-        <span
-          className="text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded-full"
-          style={{ background: style.bg, color: style.color }}
-        >
-          {CHIP_LABELS[run.type]}
-        </span>
-      </div>
-      <div className="mt-1 font-semibold" style={{ color: 'var(--text-dim)', fontSize: 10 }}>
-        {stat}
-      </div>
+      <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>⠿</span>
+      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: style.dot }} />
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: style.bg, color: style.color }}>
+        {TYPE_LABELS[run.type]}
+      </span>
+      <span className="font-semibold" style={{ color: 'var(--text-dim)', fontSize: 11 }}>{stat}</span>
     </div>
   )
 }
 
-// ─── Day Column ───────────────────────────────────────────────────────────────
+// ─── Agenda day row (mobile) ──────────────────────────────────────────────────
 
-interface DayColumnProps {
+interface DayRowProps {
   date:      string
   dayIndex:  number
-  runs:      PlannedRun[]           // displayed runs (overrides already applied)
+  runs:      PlannedRun[]
   actuals:   ActualRun[]
   editMode:  boolean
   today:     boolean
-  overrides: RunOverride[]          // needed to look up original date per run
+  overrides: RunOverride[]
 }
 
-function DayColumn({ date, dayIndex, runs, actuals, editMode, today, overrides }: DayColumnProps) {
-  // Always register the element; disabled prop controls droppability
-  const { setNodeRef, isOver } = useDroppable({ id: date, disabled: !editMode })
+function DayRow({ date, dayIndex, runs, actuals, editMode, today, overrides }: DayRowProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: `mobile::${date}`, disabled: !editMode })
   const isPast = date < new Date().toISOString().slice(0, 10)
 
   return (
     <div
-      ref={setNodeRef}                          // always registered — fixes drop detection
-      className="flex flex-col gap-1 rounded-lg p-1 transition-colors"
+      ref={setNodeRef}
+      className="flex gap-3 py-2.5 transition-colors"
       style={{
-        minHeight: 64,
-        background: isOver && editMode
-          ? 'rgba(238,107,23,0.08)'
-          : today
-          ? 'var(--surface)'
-          : 'transparent',
-        border: isOver && editMode
-          ? '1px dashed rgba(238,107,23,0.40)'
-          : today
-          ? '1px solid var(--border)'
-          : '1px solid transparent',
+        borderBottom: '1px solid var(--border)',
+        background: isOver && editMode ? 'rgba(238,107,23,0.05)' : 'transparent',
+        borderLeft: isOver && editMode ? '2px solid var(--accent)' : '2px solid transparent',
+        paddingLeft: isOver && editMode ? '0.5rem' : '0',
       }}
     >
-      {/* Day header */}
-      <div className="text-center mb-0.5">
+      {/* Day label */}
+      <div className="w-12 shrink-0 pt-0.5">
         <div
           className="text-[9px] font-bold uppercase tracking-wider"
           style={{ color: today ? 'var(--accent)' : 'var(--text-muted)' }}
@@ -203,67 +209,114 @@ function DayColumn({ date, dayIndex, runs, actuals, editMode, today, overrides }
           {DAY_NAMES[dayIndex]}
         </div>
         <div
-          className={today ? 'w-5 h-5 rounded-full flex items-center justify-center mx-auto text-white' : ''}
+          className={`text-sm font-semibold leading-tight ${today ? 'w-6 h-6 rounded-full flex items-center justify-center text-white text-xs' : ''}`}
           style={{
-            fontSize:   11,
-            fontWeight: 600,
             color:      today ? '#fff' : 'var(--text-secondary)',
             background: today ? 'var(--accent)' : undefined,
           }}
         >
-          {isoToDisplayDate(date)}
+          {isoToDate(date)}
         </div>
       </div>
 
-      {/* Run chips */}
+      {/* Runs or rest */}
+      <div className="flex-1 flex flex-col gap-1.5">
+        {runs.length === 0 ? (
+          <div className="py-2 text-xs" style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Rest day</div>
+        ) : (
+          runs.map((run) => {
+            const actual = findActual(run, actuals)
+            const originalDate = getOriginalDate(run, overrides)
+            const dragId = `${originalDate}::${run.type}`
+            return (
+              <RunChip
+                key={dragId}
+                run={run}
+                actual={actual}
+                editMode={editMode}
+                dragId={dragId}
+                isPast={isPast}
+                compact={false}
+              />
+            )
+          })
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Calendar day column (desktop) ───────────────────────────────────────────
+
+interface DayColumnProps {
+  date:      string
+  dayIndex:  number
+  runs:      PlannedRun[]
+  actuals:   ActualRun[]
+  editMode:  boolean
+  today:     boolean
+  overrides: RunOverride[]
+}
+
+function DayColumn({ date, dayIndex, runs, actuals, editMode, today, overrides }: DayColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: date, disabled: !editMode })
+  const isPast = date < new Date().toISOString().slice(0, 10)
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="flex flex-col gap-1 rounded-lg p-1 transition-colors"
+      style={{
+        minHeight: 80,
+        background: isOver && editMode ? 'rgba(238,107,23,0.08)' : today ? 'var(--surface)' : 'transparent',
+        border: isOver && editMode ? '1px dashed rgba(238,107,23,0.40)' : today ? '1px solid var(--border)' : '1px solid transparent',
+      }}
+    >
+      {/* Day header */}
+      <div className="text-center mb-0.5">
+        <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color: today ? 'var(--accent)' : 'var(--text-muted)' }}>
+          {DAY_NAMES[dayIndex]}
+        </div>
+        <div
+          className={today ? 'w-5 h-5 rounded-full flex items-center justify-center mx-auto text-white' : ''}
+          style={{ fontSize: 11, fontWeight: 600, color: today ? '#fff' : 'var(--text-secondary)', background: today ? 'var(--accent)' : undefined }}
+        >
+          {isoToDate(date)}
+        </div>
+      </div>
+
       {runs.map((run) => {
         const actual = findActual(run, actuals)
-        // Find the original date: if this run has been moved, look up the override
-        // that set newDate = run.date for this runType. Otherwise run.date IS the original.
-        const override = overrides.find(
-          (o) => o.newDate === run.date && o.runType === run.type
-        )
-        const originalDate = override?.originalDate ?? run.date
+        const originalDate = getOriginalDate(run, overrides)
         const dragId = `${originalDate}::${run.type}`
         return (
-          <RunChip
-            key={dragId}
-            run={run}
-            actual={actual}
-            editMode={editMode}
-            dragId={dragId}
-            isPast={isPast}
-          />
+          <RunChip key={dragId} run={run} actual={actual} editMode={editMode} dragId={dragId} isPast={isPast} compact />
         )
       })}
     </div>
   )
 }
 
-// ─── Week Section ─────────────────────────────────────────────────────────────
+// ─── Week section ─────────────────────────────────────────────────────────────
 
 interface WeekSectionProps {
-  week:      Week          // displayed week (overrides already applied)
+  week:      Week
   actuals:   ActualRun[]
   editMode:  boolean
   isCurrent: boolean
   overrides: RunOverride[]
+  isMobile:  boolean
 }
 
-function WeekSection({ week, actuals, editMode, isCurrent, overrides }: WeekSectionProps) {
+function WeekSection({ week, actuals, editMode, isCurrent, overrides, isMobile }: WeekSectionProps) {
   const days = weekDays(week.startDate)
   const today = new Date().toISOString().slice(0, 10)
 
-  // Group displayed runs by their current date
   const runsByDay: Record<string, PlannedRun[]> = {}
   for (const day of days) runsByDay[day] = []
   for (const run of week.runs) {
-    if (runsByDay[run.date]) {
-      runsByDay[run.date].push(run)
-    } else {
-      // Run was moved outside the standard 7 days — still show it
-      runsByDay[run.date] = [run]
-    }
+    if (runsByDay[run.date]) runsByDay[run.date].push(run)
+    else runsByDay[run.date] = [run]
   }
 
   const startLabel = new Date(week.startDate + 'T12:00:00Z')
@@ -275,25 +328,16 @@ function WeekSection({ week, actuals, editMode, isCurrent, overrides }: WeekSect
     <div className="mb-8">
       {/* Week header */}
       <div className="flex items-center gap-2 mb-3">
-        <span
-          className="text-sm font-bold"
-          style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}
-        >
+        <span className="text-sm font-bold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}>
           Week {week.weekNumber}
         </span>
         {isCurrent && (
-          <span
-            className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-            style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}
-          >
+          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}>
             Current
           </span>
         )}
         {week.isCutback && (
-          <span
-            className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-            style={{ background: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' }}
-          >
+          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' }}>
             Cutback
           </span>
         )}
@@ -302,9 +346,25 @@ function WeekSection({ week, actuals, editMode, isCurrent, overrides }: WeekSect
         </span>
       </div>
 
-      {/* 7-column grid — horizontally scrollable on mobile */}
-      <div className="overflow-x-auto -mx-6 px-6 pb-1">
-        <div className="grid grid-cols-7 gap-1" style={{ minWidth: 460 }}>
+      {isMobile ? (
+        /* ── Agenda list (mobile) ── */
+        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+          {days.map((date, i) => (
+            <DayRow
+              key={date}
+              date={date}
+              dayIndex={i}
+              runs={runsByDay[date] ?? []}
+              actuals={actuals}
+              editMode={editMode}
+              today={date === today}
+              overrides={overrides}
+            />
+          ))}
+        </div>
+      ) : (
+        /* ── Calendar grid (desktop) ── */
+        <div className="grid grid-cols-7 gap-1.5">
           {days.map((date, i) => (
             <DayColumn
               key={date}
@@ -318,7 +378,7 @@ function WeekSection({ week, actuals, editMode, isCurrent, overrides }: WeekSect
             />
           ))}
         </div>
-      </div>
+      )}
 
       {/* Week notes */}
       {week.notes && (
@@ -330,12 +390,12 @@ function WeekSection({ week, actuals, editMode, isCurrent, overrides }: WeekSect
   )
 }
 
-// ─── Main Modal ───────────────────────────────────────────────────────────────
+// ─── Main modal ───────────────────────────────────────────────────────────────
 
 interface Props {
   onClose:           () => void
   planId:            string
-  weeks:             Week[]         // base weeks — no overrides applied
+  weeks:             Week[]
   actualRuns:        ActualRun[]
   currentWeek:       number
   overrides:         RunOverride[]
@@ -347,8 +407,17 @@ export default function UpcomingWeeksModal({
 }: Props) {
   const [editMode,  setEditMode]  = useState(false)
   const [activeRun, setActiveRun] = useState<PlannedRun | null>(null)
+  const [isMobile,  setIsMobile]  = useState(false)
 
-  // Escape key to close / exit edit mode
+  // Detect viewport
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Escape key
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -366,7 +435,6 @@ export default function UpcomingWeeksModal({
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  // Apply overrides to base weeks for display
   const displayedWeeks = applyOverrides(weeks, overrides)
 
   const sensors = useSensors(
@@ -382,23 +450,20 @@ export default function UpcomingWeeksModal({
     const { active, over } = event
     if (!over) return
 
-    const newDate = over.id as string
-    // active.id is always `${originalDate}::${runType}` — original date, never the moved date
+    // Mobile droppable IDs are prefixed with "mobile::"
+    const rawOverId = over.id as string
+    const newDate = rawOverId.startsWith('mobile::') ? rawOverId.slice(8) : rawOverId
+
     const [originalDate, runType] = (active.id as string).split('::')
 
-    // Validate: original run must exist in base weeks
     const runWeek = weeks.find((w) =>
       w.runs.some((r) => r.date === originalDate && r.type === runType)
     )
     if (!runWeek) return
 
-    // Validate: target date must be in the same week
-    const targetWeek = weeks.find(
-      (w) => newDate >= w.startDate && newDate <= w.endDate
-    )
+    const targetWeek = weeks.find((w) => newDate >= w.startDate && newDate <= w.endDate)
     if (!targetWeek || targetWeek.weekNumber !== runWeek.weekNumber) return
 
-    // No-op: dropped on the date where the run currently sits
     const existingOverride = overrides.find(
       (o) => o.originalDate === originalDate && o.runType === runType
     )
@@ -409,7 +474,6 @@ export default function UpcomingWeeksModal({
     const isReset = newDate === originalDate
 
     if (isReset) {
-      // Dropped back on original date — remove override
       const next = overrides.filter(
         (o) => !(o.originalDate === originalDate && o.runType === runType)
       )
@@ -421,12 +485,10 @@ export default function UpcomingWeeksModal({
         })
       } catch { onOverridesChange(prevOverrides) }
     } else {
-      // Moved to a new date — upsert override
       const without = overrides.filter(
         (o) => !(o.originalDate === originalDate && o.runType === runType)
       )
-      const next = [...without, { originalDate, runType, newDate }]
-      onOverridesChange(next)
+      onOverridesChange([...without, { originalDate, runType, newDate }])
       try {
         await fetch('/api/plan-overrides', {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -440,83 +502,76 @@ export default function UpcomingWeeksModal({
     actualRuns.filter((r) => r.runDate >= week.startDate && r.runDate <= week.endDate)
 
   return (
+    /* Full-screen panel — no backdrop, no margins */
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-hidden"
-      style={{ background: 'rgba(30,22,17,0.60)', backdropFilter: 'blur(4px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{ background: 'var(--bg-base)' }}
     >
+      {/* Header */}
       <div
-        className="w-full max-w-3xl mx-4 my-8 rounded-2xl flex flex-col"
-        style={{
-          background: 'var(--bg-base)',
-          maxHeight:  'calc(100vh - 4rem)',
-          overflowY:  'hidden',
-        }}
+        className="flex items-center justify-between px-5 py-4 shrink-0"
+        style={{ borderBottom: '1px solid var(--border)' }}
       >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-5 py-4 shrink-0"
-          style={{ borderBottom: '1px solid var(--border)' }}
-        >
-          <div>
-            <h2
-              className="text-base font-semibold"
-              style={{ fontFamily: 'Nohemi, Inter, sans-serif', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}
-            >
-              Upcoming weeks
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>
-              This week and next
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setEditMode((e) => !e)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-              style={
-                editMode
-                  ? { background: 'var(--accent)', color: '#fff' }
-                  : { background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
-              }
-            >
-              {editMode ? (
-                <>✓ Done</>
-              ) : (
-                <>
-                  <svg viewBox="0 0 24 24" className="w-3 h-3 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                  Edit schedule
-                </>
-              )}
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}
-              aria-label="Close"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Edit mode hint */}
-        {editMode && (
-          <div
-            className="px-5 py-2 text-xs font-medium shrink-0"
-            style={{ background: 'rgba(238,107,23,0.06)', borderBottom: '1px solid rgba(238,107,23,0.15)', color: 'var(--accent)' }}
+        <div>
+          <h2
+            className="text-lg font-semibold"
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}
           >
-            ⠿ Drag trainings to a different day within the same week.
-          </div>
-        )}
+            Upcoming weeks
+          </h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>
+            This week and next
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setEditMode((e) => !e)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors"
+            style={
+              editMode
+                ? { background: 'var(--accent)', color: '#fff' }
+                : { background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
+            }
+          >
+            {editMode ? (
+              <>✓ Done</>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit schedule
+              </>
+            )}
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}
+            aria-label="Close"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+      {/* Edit mode hint */}
+      {editMode && (
+        <div
+          className="px-5 py-2 text-xs font-medium shrink-0"
+          style={{ background: 'rgba(238,107,23,0.06)', borderBottom: '1px solid rgba(238,107,23,0.15)', color: 'var(--accent)' }}
+        >
+          ⠿ Drag trainings to a different day within the same week.
+        </div>
+      )}
+
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto px-5 py-6">
           <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
             {displayedWeeks.map((week) => (
               <WeekSection
@@ -526,6 +581,7 @@ export default function UpcomingWeeksModal({
                 editMode={editMode}
                 isCurrent={week.weekNumber === currentWeek}
                 overrides={overrides}
+                isMobile={isMobile}
               />
             ))}
             <DragOverlay>
