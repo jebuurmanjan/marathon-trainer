@@ -190,7 +190,7 @@ export default function PlanPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {currentWeek > 0 && (
+            {plan.length > 0 && (
               <button
                 onClick={() => setUpcomingOpen(true)}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors"
@@ -361,9 +361,10 @@ export default function PlanPage() {
         <UpcomingWeeksModal
           onClose={() => setUpcomingOpen(false)}
           planId={planId}
-          weeks={plan.filter((w) =>
-            w.weekNumber === currentWeek || w.weekNumber === currentWeek + 1
-          )}
+          weeks={plan.filter((w) => {
+            const base = currentWeek > 0 ? currentWeek : 1
+            return w.weekNumber === base || w.weekNumber === base + 1
+          })}
           actualRuns={actualRuns}
           currentWeek={currentWeek}
         />
