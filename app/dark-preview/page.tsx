@@ -7,24 +7,24 @@ import { useState } from 'react'
 // Once approved, these become the [data-theme="dark"] CSS variables.
 
 const DARK = {
-  bgBase:       '#141509',   // page background
-  surface:      '#1E2110',   // cards, week cards, drawers
-  surface2:     '#252B13',   // progress bar bg, subtle wells
-  surface3:     '#2B3117',   // active tab, deepest surface (= current tooltip bg)
-  textPrimary:  '#EDE9DE',   // headlines, body (= current light bg, inverted)
-  textSecondary:'#8A9E55',   // labels, descriptions
-  textDim:      '#5E6E3A',   // timestamps, hints
-  textMuted:    '#4A5A28',   // section headers (uppercase labels)
-  accent:       '#EE6B17',   // orange — unchanged, pops on dark
+  bgBase:       '#111111',   // page background
+  surface:      '#1B1313',   // cards, week cards, drawers
+  surface2:     '#252420',   // progress bar bg, subtle wells
+  surface3:     '#2B1F0B',   // active tab, deepest surface
+  textPrimary:  '#EDE9DE',   // headlines, body
+  textSecondary:'#9E8E7A',   // labels, descriptions
+  textDim:      '#6E5E4A',   // timestamps, hints
+  textMuted:    '#4A3A28',   // section headers (uppercase labels)
+  accent:       '#EE4917',   // orange — slightly deeper/warmer on dark
   accentViolet: '#A89FEF',   // slightly lighter violet for dark bg
   accentGreen:  '#7A9A3A',   // completed, success
-  border:       'rgba(245,243,236,0.08)',
-  borderMid:    'rgba(245,243,236,0.12)',
-  borderStrong: 'rgba(245,243,236,0.20)',
-  // semi-transparent accent tints — mostly unchanged since they use accent colors
-  orangeTint:   'rgba(238,107,23,0.12)',
-  violetTint:   'rgba(136,121,225,0.12)',
-  greenTint:    'rgba(74,84,39,0.15)',
+  border:       'rgba(237,233,222,0.08)',
+  borderMid:    'rgba(237,233,222,0.12)',
+  borderStrong: 'rgba(237,233,222,0.20)',
+  // semi-transparent accent tints
+  orangeTint:   'rgba(238,73,23,0.14)',
+  violetTint:   'rgba(136,121,225,0.14)',
+  greenTint:    'rgba(122,154,58,0.14)',
   redTint:      'rgba(220,38,38,0.10)',
 }
 
@@ -56,7 +56,7 @@ export default function DarkPreviewPage() {
   const t = mode === 'dark' ? DARK : LIGHT
 
   return (
-    <div style={{ minHeight: '100vh', background: '#111', padding: '24px 0' }}>
+    <div style={{ minHeight: '100vh', background: t.bgBase, padding: '24px 0', transition: 'background 0.2s' }}>
 
       {/* ── Mode toggle ── */}
       <div className="flex justify-center mb-6 gap-3 items-center">
