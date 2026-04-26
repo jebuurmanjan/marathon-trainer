@@ -161,16 +161,16 @@ export default function PlanPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight:'100vh', background:'#F5F3EC' }}>
+      <div style={{ minHeight:'100vh', background:'var(--bg-base)' }}>
         <div className="flex items-center justify-center h-screen">
-          <div className="text-sm" style={{ color:'#736554' }}>Loading your plan…</div>
+          <div className="text-sm" style={{ color:'var(--text-dim)' }}>Loading your plan…</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
@@ -179,11 +179,11 @@ export default function PlanPage() {
           <div>
             <h1
               className="text-2xl"
-              style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'#1E1611' }}
+              style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'var(--text-primary)' }}
             >
               Marathon Plan
             </h1>
-            <p className="text-sm mt-1" style={{ color:'#4A5427' }}>
+            <p className="text-sm mt-1" style={{ color:'var(--text-secondary)' }}>
               {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'} · {u}
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function PlanPage() {
             <button
               onClick={() => setEditingGoal(true)}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
-              style={{ background:'#EDE9DE', border:'1px solid rgba(43,49,23,0.10)', color:'#4A5427' }}
+              style={{ background:'var(--surface)', border:'1px solid rgba(var(--tint),0.10)', color:'var(--text-secondary)' }}
             >
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -211,8 +211,8 @@ export default function PlanPage() {
               key={stat.label}
               className="rounded-xl p-4 relative overflow-hidden"
               style={{
-                background: '#EDE9DE',
-                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(43,49,23,0.08)',
+                background: 'var(--surface)',
+                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(var(--tint),0.08)',
               }}
             >
               {stat.accent && (
@@ -221,16 +221,16 @@ export default function PlanPage() {
                   style={{ background:'radial-gradient(circle at top right, rgba(238,107,23,0.06) 0%, transparent 70%)' }}
                 />
               )}
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color:'#4A5427' }}>
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color:'var(--text-secondary)' }}>
                 {stat.label}
               </div>
               <div
                 className="text-3xl leading-none mb-1"
-                style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.04em', color: stat.accent ? '#EE6B17' : '#1E1611' }}
+                style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.04em', color: stat.accent ? 'var(--accent)' : 'var(--text-primary)' }}
               >
                 {stat.value}
               </div>
-              <div className="text-[11px]" style={{ color:'#736554' }}>{stat.sub}</div>
+              <div className="text-[11px]" style={{ color:'var(--text-dim)' }}>{stat.sub}</div>
             </div>
           ))}
         </div>
@@ -239,7 +239,7 @@ export default function PlanPage() {
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div
             className="flex gap-0.5 p-1 rounded-lg"
-            style={{ background:'#EDE9DE', border:'1px solid rgba(43,49,23,0.08)' }}
+            style={{ background:'var(--surface)', border:'1px solid rgba(var(--tint),0.08)' }}
           >
             {(['upcoming','all','past'] as Filter[]).map((f) => (
               <button
@@ -248,8 +248,8 @@ export default function PlanPage() {
                 className="px-3.5 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors"
                 style={
                   filter === f
-                    ? { background:'#E3D2B4', color:'#1E1611', boxShadow:'0 1px 3px rgba(43,49,23,0.10)' }
-                    : { color:'#4A5427', background:'transparent' }
+                    ? { background:'var(--surface-3)', color:'var(--text-primary)', boxShadow:'0 1px 3px rgba(var(--tint),0.10)' }
+                    : { color:'var(--text-secondary)', background:'transparent' }
                 }
               >
                 {f}
@@ -259,7 +259,7 @@ export default function PlanPage() {
 
           <div className="flex items-center gap-2">
             {syncMessage && (
-              <span className="text-sm font-medium" style={{ color: syncMessage.startsWith('✓') ? '#4A5427' : '#EE6B17' }}>
+              <span className="text-sm font-medium" style={{ color: syncMessage.startsWith('✓') ? 'var(--text-secondary)' : 'var(--accent)' }}>
                 {syncMessage}
               </span>
             )}
@@ -267,7 +267,7 @@ export default function PlanPage() {
               href="/api/ical"
               download="marathon-training-plan.ics"
               className="flex items-center gap-2 font-semibold px-4 py-2 rounded-lg text-sm transition-all border"
-              style={{ color:'#4A5427', background:'#EDE9DE', borderColor:'rgba(43,49,23,0.14)' }}
+              style={{ color:'var(--text-secondary)', background:'var(--surface)', borderColor:'rgba(var(--tint),0.14)' }}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -279,7 +279,7 @@ export default function PlanPage() {
               onClick={handleSync}
               disabled={syncing}
               className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
-              style={{ background:'#EE6B17' }}
+              style={{ background:'var(--accent)' }}
             >
               <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-none stroke-current stroke-2 ${syncing ? 'animate-spin' : ''}`}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -293,7 +293,7 @@ export default function PlanPage() {
         {currentWeek > 0 && currentWeek <= plan.length && filter !== 'past' && currentPhase && (
           <div
             className="flex items-center gap-2.5 rounded-lg px-4 py-3 mb-4 text-sm font-medium"
-            style={{ background:'rgba(238,107,23,0.10)', border:'1px solid rgba(238,107,23,0.25)', color:'#EE6B17' }}
+            style={{ background:'rgba(238,107,23,0.10)', border:'1px solid rgba(238,107,23,0.25)', color:'var(--accent)' }}
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
@@ -324,7 +324,7 @@ export default function PlanPage() {
         </div>
 
         {visibleWeeks.length === 0 && (
-          <div className="text-center py-20 text-sm" style={{ color:'#736554' }}>No weeks to show.</div>
+          <div className="text-center py-20 text-sm" style={{ color:'var(--text-dim)' }}>No weeks to show.</div>
         )}
       </main>
 

@@ -65,16 +65,16 @@ export default function PlansPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
         <div className="flex items-center justify-center h-screen">
-          <div className="text-sm" style={{ color: '#736554' }}>Loading…</div>
+          <div className="text-sm" style={{ color: 'var(--text-dim)' }}>Loading…</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-2xl mx-auto px-4 py-6">
@@ -82,11 +82,11 @@ export default function PlansPage() {
         <div className="mb-6">
           <h1
             className="text-2xl"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}
           >
             My Plans
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
             Switch between plans or start a new one
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function PlansPage() {
           href="/onboarding"
           className="flex items-center gap-3 w-full rounded-xl p-4 mb-4 text-sm font-semibold transition-colors"
           style={{
-            background:   '#EE6B17',
+            background:   'var(--accent)',
             color:        '#fff',
           }}
         >
@@ -117,7 +117,7 @@ export default function PlansPage() {
         {plans.length === 0 ? (
           <div
             className="rounded-xl p-6 text-center text-sm"
-            style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)', color: '#736554' }}
+            style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)', color: 'var(--text-dim)' }}
           >
             No plans yet. Start by setting up your first plan.
           </div>
@@ -128,17 +128,17 @@ export default function PlansPage() {
                 key={plan.id}
                 className="rounded-xl p-4"
                 style={{
-                  background: '#EDE9DE',
+                  background: 'var(--surface)',
                   border:     plan.isActive
                     ? '1px solid rgba(238,107,23,0.35)'
-                    : '1px solid rgba(43,49,23,0.08)',
+                    : '1px solid rgba(var(--tint),0.08)',
                 }}
               >
                 <div className="flex items-start gap-3">
                   {/* Status dot */}
                   <div
                     className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                    style={{ background: plan.isActive ? '#EE6B17' : 'rgba(43,49,23,0.20)' }}
+                    style={{ background: plan.isActive ? 'var(--accent)' : 'rgba(var(--tint),0.20)' }}
                   />
 
                   {/* Plan info */}
@@ -146,20 +146,20 @@ export default function PlansPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <span
                         className="text-sm font-semibold"
-                        style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}
+                        style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}
                       >
                         {plan.name}
                       </span>
                       {plan.isActive && (
                         <span
                           className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                          style={{ background: 'rgba(238,107,23,0.12)', color: '#EE6B17' }}
+                          style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}
                         >
                           Active
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs" style={{ color: '#736554' }}>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs" style={{ color: 'var(--text-dim)' }}>
                       <span>📅 {formatRaceDate(plan.raceDate)}</span>
                       <span>🎯 {formatGoalTime(plan.goalSeconds)}</span>
                       <span>📏 {plan.weeklyKm} km/week</span>
@@ -173,8 +173,8 @@ export default function PlansPage() {
                       disabled={switching === plan.id}
                       className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                       style={{
-                        background:   'rgba(43,49,23,0.08)',
-                        color:        '#4A5427',
+                        background:   'rgba(var(--tint),0.08)',
+                        color:        'var(--text-secondary)',
                       }}
                     >
                       {switching === plan.id ? 'Switching…' : 'Switch'}
@@ -191,7 +191,7 @@ export default function PlansPage() {
           <a
             href="/plan"
             className="text-sm font-medium"
-            style={{ color: '#736554' }}
+            style={{ color: 'var(--text-dim)' }}
           >
             ← Back to plan
           </a>

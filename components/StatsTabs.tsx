@@ -18,7 +18,7 @@ export default function StatsTabs({ activeTab }: { activeTab: string }) {
   return (
     <div
       className="flex gap-1 p-1 rounded-xl mb-6"
-      style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+      style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
     >
       {TABS.map((t) => (
         <button
@@ -27,8 +27,8 @@ export default function StatsTabs({ activeTab }: { activeTab: string }) {
           className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors"
           style={
             activeTab === t.key
-              ? { background: '#E3D2B4', color: '#1E1611', boxShadow: '0 1px 3px rgba(43,49,23,0.10)' }
-              : { color: '#4A5427', background: 'transparent' }
+              ? { background: 'var(--surface-3)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(var(--tint),0.10)' }
+              : { color: 'var(--text-secondary)', background: 'transparent' }
           }
         >
           {t.label}

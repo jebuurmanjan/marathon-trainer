@@ -5,11 +5,11 @@ import { PHASE_LABELS, formatDistance, formatDistanceExact } from '@/lib/trainin
 import { calcWeekScore, scoreColor, scoreLabel } from '@/lib/score'
 
 const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
-  base:    { bg: 'rgba(227,210,180,0.50)', color: '#736554' },
-  build:   { bg: 'rgba(136,121,225,0.12)', color: '#8879E1' },
-  peak:    { bg: 'rgba(238,107,23,0.12)',  color: '#EE6B17' },
-  sharpen: { bg: 'rgba(238,107,23,0.12)',  color: '#EE6B17' },
-  taper:   { bg: 'rgba(74,84,39,0.10)',    color: '#4A5427' },
+  base:    { bg: 'rgba(227,210,180,0.50)', color: 'var(--text-dim)' },
+  build:   { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' },
+  peak:    { bg: 'rgba(238,107,23,0.12)',  color: 'var(--accent)' },
+  sharpen: { bg: 'rgba(238,107,23,0.12)',  color: 'var(--accent)' },
+  taper:   { bg: 'rgba(74,84,39,0.10)',    color: 'var(--text-secondary)' },
 }
 
 interface WeekCardProps {
@@ -50,7 +50,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
     day: 'numeric', month: 'short',
   })
 
-  const badge = PHASE_BADGE[week.phase] ?? { bg: 'rgba(43,49,23,0.08)', color: '#736554' }
+  const badge = PHASE_BADGE[week.phase] ?? { bg: 'rgba(var(--tint),0.08)', color: 'var(--text-dim)' }
 
   // Performance score — computed for past + current weeks only
   const showScore = isCurrentWeek || isPastWeek
@@ -72,10 +72,10 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
       id={`week-${week.weekNumber}`}
       className="rounded-xl overflow-hidden transition-all"
       style={{
-        background: '#EDE9DE',
+        background: 'var(--surface)',
         border: isCurrentWeek
           ? '1px solid rgba(238,107,23,0.30)'
-          : '1px solid rgba(43,49,23,0.08)',
+          : '1px solid rgba(var(--tint),0.08)',
       }}
     >
       {/* <details> wraps everything — current week open by default */}
@@ -90,7 +90,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
               style={{
                 fontFamily: 'Nohemi, Inter, sans-serif',
                 fontWeight: 600,
-                color: isCurrentWeek ? '#EE6B17' : '#736554',
+                color: isCurrentWeek ? 'var(--accent)' : 'var(--text-dim)',
               }}
             >
               W{week.weekNumber}
@@ -113,12 +113,12 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                   fontFamily: 'Nohemi, Inter, sans-serif',
                   fontWeight: 600,
                   letterSpacing: '-0.01em',
-                  color: '#1E1611',
+                  color: 'var(--text-primary)',
                 }}
               >
                 {week.notes}
               </div>
-              <div className="text-[11px] mt-0.5" style={{ color: '#4A5427' }}>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                 {startLabel} – {endLabel}
               </div>
             </div>
@@ -131,14 +131,14 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                   fontFamily: 'Nohemi, Inter, sans-serif',
                   fontWeight: 600,
                   letterSpacing: '-0.03em',
-                  color: '#1E1611',
+                  color: 'var(--text-primary)',
                 }}
               >
                 {formatDistance(week.targetKm, units)}
               </div>
 
               {(isCurrentWeek || isPastWeek) && (
-                <div className="text-[11px] mt-0.5 font-semibold" style={{ color: '#4A5427' }}>
+                <div className="text-[11px] mt-0.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
                   {formatDistanceExact(totalKmActual, units)} logged
                 </div>
               )}
@@ -155,7 +155,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                   <div className="relative group inline-flex items-center">
                     <span
                       className="flex items-center justify-center w-3.5 h-3.5 rounded-full text-[9px] font-bold cursor-help select-none"
-                      style={{ background: 'rgba(43,49,23,0.10)', color: '#736554', lineHeight: 1 }}
+                      style={{ background: 'rgba(var(--tint),0.10)', color: 'var(--text-dim)', lineHeight: 1 }}
                     >
                       i
                     </span>
@@ -163,37 +163,37 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                     {/* Tooltip */}
                     <div
                       className="absolute bottom-full right-0 mb-2 w-60 rounded-lg px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30"
-                      style={{ background: '#2B3117', color: '#F5F3EC', boxShadow: '0 8px 24px rgba(0,0,0,0.28)' }}
+                      style={{ background: 'var(--surface-overlay)', color: 'var(--bg-base)', boxShadow: '0 8px 24px rgba(0,0,0,0.28)' }}
                     >
                       {/* Arrow */}
-                      <div className="absolute -bottom-1.5 right-3 w-3 h-3 rotate-45" style={{ background: '#2B3117' }} />
+                      <div className="absolute -bottom-1.5 right-3 w-3 h-3 rotate-45" style={{ background: 'var(--surface-overlay)' }} />
 
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#E3D2B4' }}>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--surface-3)' }}>
                         Performance score
                       </p>
-                      <p className="text-[11px] mb-2.5 leading-relaxed" style={{ color: '#C8BFA8' }}>
+                      <p className="text-[11px] mb-2.5 leading-relaxed" style={{ color: 'var(--text-overlay-body)' }}>
                         Each week is rated 0–100 across three factors:
                       </p>
 
                       <div className="space-y-1.5 text-[11px]">
                         <div className="flex justify-between items-center gap-2">
-                          <span style={{ color: '#C8BFA8' }}>Mileage — actual vs planned km</span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: '#F5F3EC' }}>
+                          <span style={{ color: 'var(--text-overlay-body)' }}>Mileage — actual vs planned km</span>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--bg-base)' }}>
                             {score.mileage}/40
                           </span>
                         </div>
                         <div className="flex justify-between items-center gap-2">
-                          <span style={{ color: '#C8BFA8' }}>Pace — closeness to target</span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: '#F5F3EC' }}>
+                          <span style={{ color: 'var(--text-overlay-body)' }}>Pace — closeness to target</span>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--bg-base)' }}>
                             {score.pace}/35
                           </span>
                         </div>
                         <div className="flex justify-between items-center gap-2">
-                          <span style={{ color: '#C8BFA8' }}>
+                          <span style={{ color: 'var(--text-overlay-body)' }}>
                             HR — zone efficiency
                             {!score.hrHasData && <span style={{ opacity: 0.6 }}> (est.)</span>}
                           </span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: '#F5F3EC' }}>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--bg-base)' }}>
                             {score.hr}/25
                           </span>
                         </div>
@@ -203,7 +203,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                         className="mt-2.5 pt-2 flex justify-between items-center text-[11px] border-t"
                         style={{ borderColor: 'rgba(255,255,255,0.12)' }}
                       >
-                        <span style={{ color: '#C8BFA8' }}>Total</span>
+                        <span style={{ color: 'var(--text-overlay-body)' }}>Total</span>
                         <span className="font-bold" style={{ color: scoreColor(score.total) }}>
                           {score.isPartial ? '~' : ''}{score.total} — {scoreLabel(score.total)}
                           {score.isPartial && <span className="font-normal" style={{ opacity: 0.6 }}> (in progress)</span>}
@@ -216,10 +216,10 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
               {/* Past week with zero runs logged */}
               {score && score.total === null && isPastWeek && (
-                <div className="text-[11px] mt-1" style={{ color: '#A09880' }}>no data</div>
+                <div className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>no data</div>
               )}
 
-              <div className="text-[10px] mt-0.5" style={{ color: '#736554' }}>
+              <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-dim)' }}>
                 {summaryHint.includes('expand') ? '▸ expand' : '▾ collapse'}
               </div>
             </div>
@@ -227,12 +227,12 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
           {/* Progress bar (past + current weeks) */}
           {(isCurrentWeek || isPastWeek) && (
-            <div style={{ height: '2px', background: '#F5F4F2' }}>
+            <div style={{ height: '2px', background: 'var(--surface-2)' }}>
               <div
                 style={{
                   height: '2px',
                   width: `${pct}%`,
-                  background: pct >= 90 ? '#4A5427' : '#EE6B17',
+                  background: pct >= 90 ? 'var(--accent-green)' : 'var(--accent)',
                   borderRadius: '1px',
                   transition: 'width 0.4s',
                 }}

@@ -10,17 +10,93 @@
   font-display: swap;
 }
 
+/* ─── Design tokens ──────────────────────────────────────────────────────────── */
+
 :root {
   color-scheme: light;
+
+  --bg-base:    #F5F3EC;
+  --surface:    #EDE9DE;
+  --surface-2:  #F5F4F2;
+  --surface-3:  #E3D2B4;
+
+  --text-primary:   #1E1611;
+  --text-secondary: #4A5427;
+  --text-dim:       #736554;
+  --text-muted:     #A09880;
+
+  --accent:        #EE6B17;
+  --accent-violet: #8879E1;
+  --accent-green:  #4A5427;
+
+  /* rgba() tint base — swap for dark so overlays read correctly */
+  --tint: 43,49,23;
+
+  --border:        rgba(43,49,23,0.08);
+  --border-mid:    rgba(43,49,23,0.12);
+  --border-strong: rgba(43,49,23,0.20);
+
+  /* Sticky nav blurred background */
+  --nav-bg: rgba(245,243,236,0.92);
+
+  /* Tooltip / overlay panel (dark card on light bg, light card on dark bg) */
+  --surface-overlay:    #2B3117;
+  --text-overlay:       #F5F3EC;
+  --text-overlay-body:  #C8BFA8;
+
+  /* Workout row card states */
+  --card-base:         #F5F4F2;
+  --card-done:         rgba(74,84,39,0.08);
+  --card-done-border:  rgba(74,84,39,0.20);
+  --card-missed:       rgba(238,107,23,0.06);
+  --card-missed-border:rgba(220,38,38,0.18);
 }
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-base:    #111111;
+  --surface:    #1F1919;
+  --surface-2:  #252420;
+  --surface-3:  #2B1F0B;
+
+  --text-primary:   #EDE9DE;
+  --text-secondary: #9E8E7A;
+  --text-dim:       #6E5E4A;
+  --text-muted:     #4A3A28;
+
+  --accent:        #EE4917;
+  --accent-violet: #A89FEF;
+  --accent-green:  #7A9A3A;
+
+  --tint: 237,233,222;
+
+  --border:        rgba(237,233,222,0.08);
+  --border-mid:    rgba(237,233,222,0.12);
+  --border-strong: rgba(237,233,222,0.20);
+
+  --nav-bg: rgba(17,17,17,0.92);
+
+  --surface-overlay:   #EDE9DE;
+  --text-overlay:      #1E1611;
+  --text-overlay-body: #4A5427;
+
+  --card-base:          #1B1A18;
+  --card-done:          #1E2219;
+  --card-done-border:   rgba(122,154,58,0.20);
+  --card-missed:        #221A18;
+  --card-missed-border: rgba(220,38,38,0.20);
+}
+
+/* ─── Base styles ────────────────────────────────────────────────────────────── */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #F5F3EC;
-  color: #1E1611;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   font-family: 'Satoshi', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -32,5 +108,5 @@ h1, h2, h3, .font-display {
 }
 
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #F5F3EC; }
-::-webkit-scrollbar-thumb { background: #E3D2B4; border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }

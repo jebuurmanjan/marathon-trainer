@@ -36,7 +36,7 @@ function WeeklyChart({ weekly }: { weekly: WeeklyZoneRow[] }) {
         const y = CB - (h / maxHours) * CH
         return (
           <g key={h}>
-            <line x1={CL} y1={y} x2={VW - 4} y2={y} stroke="rgba(43,49,23,0.06)" strokeWidth="1"/>
+            <line x1={CL} y1={y} x2={VW - 4} y2={y} stroke="rgba(var(--tint),0.06)" strokeWidth="1"/>
             <text x={CL - 5} y={y + 3.5} textAnchor="end" fontSize="9" fill="#A09880" fontFamily="system-ui,sans-serif">
               {h % 1 === 0 ? `${h}h` : `${h * 60}m`}
             </text>
@@ -80,7 +80,7 @@ function WeeklyChart({ weekly }: { weekly: WeeklyZoneRow[] }) {
       })}
 
       {/* Axis line */}
-      <line x1={CL} y1={CB} x2={VW - 4} y2={CB} stroke="rgba(43,49,23,0.12)" strokeWidth="1"/>
+      <line x1={CL} y1={CB} x2={VW - 4} y2={CB} stroke="rgba(var(--tint),0.12)" strokeWidth="1"/>
     </svg>
   )
 }
@@ -119,9 +119,9 @@ function ZoneEditor({
   return (
     <div
       className="rounded-lg p-4 mb-4"
-      style={{ background: '#F5F4F2', border: '1px solid rgba(43,49,23,0.10)' }}
+      style={{ background: 'var(--surface-2)', border: '1px solid rgba(var(--tint),0.10)' }}
     >
-      <p className="text-xs font-semibold mb-3" style={{ color: '#4A5427' }}>
+      <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
         Edit zone boundaries — enter the <strong>upper bpm limit</strong> of each zone.
         Zone 6 (Anaerobic Power) is everything above Zone 5.
       </p>
@@ -129,7 +129,7 @@ function ZoneEditor({
       <div className="grid grid-cols-2 gap-2 mb-3">
         {keys.map((key, i) => (
           <div key={key}>
-            <label className="block text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: '#736554' }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--text-dim)' }}>
               {zoneNames[i]}
               <span
                 className="ml-1.5 inline-block w-2 h-2 rounded-full align-middle"
@@ -144,32 +144,32 @@ function ZoneEditor({
                 onChange={(e) => setVals((v) => ({ ...v, [key]: parseInt(e.target.value) || 0 }))}
                 className="w-20 px-2 py-1.5 rounded-lg text-sm text-center font-semibold border outline-none"
                 style={{
-                  background: '#EDE9DE',
-                  borderColor: 'rgba(43,49,23,0.12)',
-                  color: '#1E1611',
+                  background: 'var(--surface)',
+                  borderColor: 'rgba(var(--tint),0.12)',
+                  color: 'var(--text-primary)',
                 }}
               />
-              <span className="text-xs" style={{ color: '#736554' }}>bpm max</span>
+              <span className="text-xs" style={{ color: 'var(--text-dim)' }}>bpm max</span>
             </div>
           </div>
         ))}
       </div>
 
-      {err && <p className="text-xs mb-2" style={{ color: '#EE6B17' }}>{err}</p>}
+      {err && <p className="text-xs mb-2" style={{ color: 'var(--accent)' }}>{err}</p>}
 
       <div className="flex gap-2">
         <button
           onClick={handleSave}
           disabled={saving}
           className="px-4 py-1.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
-          style={{ background: '#EE6B17' }}
+          style={{ background: 'var(--accent)' }}
         >
           {saving ? 'Saving…' : 'Save zones'}
         </button>
         <button
           onClick={onCancel}
           className="px-4 py-1.5 rounded-lg text-sm font-medium"
-          style={{ color: '#736554' }}
+          style={{ color: 'var(--text-dim)' }}
         >
           Cancel
         </button>
@@ -253,7 +253,7 @@ export default function ZonesTab() {
       onClick={handleSync}
       disabled={syncing}
       className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-60 shrink-0"
-      style={{ background: '#EE6B17' }}
+      style={{ background: 'var(--accent)' }}
     >
       <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-none stroke-current stroke-2 ${syncing ? 'animate-spin' : ''}`}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
@@ -268,7 +268,7 @@ export default function ZonesTab() {
 
   if (status === 'loading') {
     return (
-      <div className="text-center py-20 text-sm" style={{ color: '#736554' }}>
+      <div className="text-center py-20 text-sm" style={{ color: 'var(--text-dim)' }}>
         Loading…
       </div>
     )
@@ -278,16 +278,16 @@ export default function ZonesTab() {
     return (
       <div
         className="rounded-xl p-8 text-center"
-        style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+        style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
       >
         <div className="text-4xl mb-3">💓</div>
-        <p className="font-semibold mb-1" style={{ color: '#1E1611' }}>No HR zone data yet</p>
-        <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: '#736554' }}>
+        <p className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>No HR zone data yet</p>
+        <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: 'var(--text-dim)' }}>
           Sync your Strava activities to pull heart rate streams and calculate time in each zone.
           {data && data.totalCount > 0 && ` ${data.totalCount} activities found.`}
         </p>
         {syncing && syncLeft !== null && (
-          <p className="text-sm mb-3 font-medium" style={{ color: '#EE6B17' }}>
+          <p className="text-sm mb-3 font-medium" style={{ color: 'var(--accent)' }}>
             Processing {syncDone} activities… {syncLeft} remaining
           </p>
         )}
@@ -303,7 +303,7 @@ export default function ZonesTab() {
 
       {/* Controls row */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="text-xs" style={{ color: '#736554' }}>
+        <div className="text-xs" style={{ color: 'var(--text-dim)' }}>
           {syncedCount} of {totalCount} activities with HR data
         </div>
         <div className="flex items-center gap-2">
@@ -311,9 +311,9 @@ export default function ZonesTab() {
             onClick={() => setEditingZones((v) => !v)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border"
             style={{
-              color: '#4A5427',
-              background: editingZones ? '#EDE9DE' : 'transparent',
-              borderColor: 'rgba(43,49,23,0.14)',
+              color: 'var(--text-secondary)',
+              background: editingZones ? 'var(--surface)' : 'transparent',
+              borderColor: 'rgba(var(--tint),0.14)',
             }}
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
@@ -323,7 +323,7 @@ export default function ZonesTab() {
             Edit HR zones
           </button>
           {syncing && syncLeft !== null && (
-            <span className="text-xs font-medium" style={{ color: '#EE6B17' }}>
+            <span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
               {syncDone} done, {syncLeft} left…
             </span>
           )}
@@ -343,11 +343,11 @@ export default function ZonesTab() {
       {/* ── Zone distribution ── */}
       <div
         className="rounded-xl p-5"
-        style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+        style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
       >
         <h3
           className="text-base font-semibold mb-4"
-          style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}
+          style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: 'var(--text-primary)' }}
         >
           Zone distribution
         </h3>
@@ -363,14 +363,14 @@ export default function ZonesTab() {
 
                 {/* Name + range */}
                 <div className="w-44 shrink-0">
-                  <div className="text-xs font-semibold" style={{ color: '#1E1611' }}>{meta.name}</div>
-                  <div className="text-[10px]" style={{ color: '#736554' }}>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{meta.name}</div>
+                  <div className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
                     {zoneBoundaryLabel(i, config)}
                   </div>
                 </div>
 
                 {/* Bar */}
-                <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(43,49,23,0.08)' }}>
+                <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(var(--tint),0.08)' }}>
                   <div
                     className="h-2.5 rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, background: meta.color }}
@@ -378,12 +378,12 @@ export default function ZonesTab() {
                 </div>
 
                 {/* Time */}
-                <div className="text-xs font-semibold tabular-nums w-14 text-right shrink-0" style={{ color: '#1E1611' }}>
+                <div className="text-xs font-semibold tabular-nums w-14 text-right shrink-0" style={{ color: 'var(--text-primary)' }}>
                   {fmtZoneTime(zSec)}
                 </div>
 
                 {/* Pct */}
-                <div className="text-xs tabular-nums w-8 text-right shrink-0" style={{ color: '#736554' }}>
+                <div className="text-xs tabular-nums w-8 text-right shrink-0" style={{ color: 'var(--text-dim)' }}>
                   {pct}%
                 </div>
               </div>
@@ -394,10 +394,10 @@ export default function ZonesTab() {
         {/* Total */}
         <div
           className="mt-4 pt-3 flex justify-between text-xs border-t"
-          style={{ borderColor: 'rgba(43,49,23,0.08)', color: '#736554' }}
+          style={{ borderColor: 'rgba(var(--tint),0.08)', color: 'var(--text-dim)' }}
         >
           <span>Total training time</span>
-          <span className="font-semibold" style={{ color: '#1E1611' }}>{fmtZoneTime(totalSeconds)}</span>
+          <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{fmtZoneTime(totalSeconds)}</span>
         </div>
       </div>
 
@@ -405,22 +405,22 @@ export default function ZonesTab() {
       {weekly.length > 0 && (
         <div
           className="rounded-xl p-5"
-          style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+          style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
         >
           <h3
             className="text-base font-semibold mb-1"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: 'var(--text-primary)' }}
           >
             Weekly zone breakdown
           </h3>
-          <p className="text-xs mb-4" style={{ color: '#736554' }}>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-dim)' }}>
             Stacked by zone — height = total training time that week
           </p>
 
           {/* Legend */}
           <div className="flex flex-wrap gap-x-3 gap-y-1 mb-4">
             {ZONE_META.map((meta, i) => (
-              <span key={i} className="flex items-center gap-1 text-[10px]" style={{ color: '#736554' }}>
+              <span key={i} className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-dim)' }}>
                 <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: meta.color }} />
                 Z{i + 1} {meta.name}
               </span>

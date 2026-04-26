@@ -26,9 +26,9 @@ export default function Navigation({ userName, profilePhotoUrl }: NavigationProp
       <header
         className="sticky top-0 z-50 border-b"
         style={{
-          background: 'rgba(245,243,236,0.92)',
+          background: 'var(--nav-bg)',
           backdropFilter: 'blur(14px)',
-          borderColor: 'rgba(43,49,23,0.08)',
+          borderColor: 'rgba(var(--tint),0.08)',
         }}
       >
         {/* Use relative + absolute centering so the title is always truly centred
@@ -41,7 +41,7 @@ export default function Navigation({ userName, profilePhotoUrl }: NavigationProp
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
               className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-black/5"
-              style={{ color: '#4A5427' }}
+              style={{ color: 'var(--text-secondary)' }}
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-2" strokeLinecap="round">
                 <line x1="3" y1="6"  x2="21" y2="6"/>
@@ -60,7 +60,7 @@ export default function Navigation({ userName, profilePhotoUrl }: NavigationProp
             >
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
-                style={{ background: '#EE6B17', fontSize: '26px', lineHeight: 1 }}
+                style={{ background: 'var(--accent)', fontSize: '26px', lineHeight: 1 }}
               >
                 ⏱
               </div>
@@ -70,11 +70,11 @@ export default function Navigation({ userName, profilePhotoUrl }: NavigationProp
                   fontWeight: 600,
                   fontSize: '28px',
                   letterSpacing: '-0.045em',
-                  color: '#1E1611',
+                  color: 'var(--text-primary)',
                   lineHeight: 1,
                 }}
               >
-                Sub <span style={{ color: '#EE6B17' }}>3:30</span>
+                Sub <span style={{ color: 'var(--accent)' }}>3:30</span>
               </span>
             </Link>
           </div>
@@ -85,7 +85,7 @@ export default function Navigation({ userName, profilePhotoUrl }: NavigationProp
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
               className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white shadow-sm"
-              style={profilePhotoUrl ? undefined : { background: '#EE6B17' }}
+              style={profilePhotoUrl ? undefined : { background: 'var(--accent)' }}
             >
               {profilePhotoUrl
                 ? <img src={profilePhotoUrl} alt={userName} className="w-full h-full object-cover" />

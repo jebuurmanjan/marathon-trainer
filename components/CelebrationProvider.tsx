@@ -84,7 +84,7 @@ export default function CelebrationProvider({
   const fireConfetti = useCallback(async () => {
     try {
       const confetti = (await import('canvas-confetti')).default
-      const colors   = ['#EE6B17', '#E8C02E', '#4A5427', '#EDE9DE', '#D63232', '#39C57B']
+      const colors   = ['var(--accent)', '#E8C02E', 'var(--text-secondary)', 'var(--surface)', '#D63232', '#39C57B']
 
       // Main burst from bottom-right
       confetti({ particleCount: 120, spread: 80, origin: { x: 0.85, y: 0.75 }, colors, scalar: 1.1 })
@@ -187,7 +187,7 @@ export default function CelebrationProvider({
         >
           <div
             style={{
-              background:   '#F5F3EC',
+              background:   'var(--bg-base)',
               border:       '1.5px solid rgba(238,107,23,0.28)',
               borderRadius: '20px',
               padding:      '16px',
@@ -201,7 +201,7 @@ export default function CelebrationProvider({
                   width:          '42px',
                   height:         '42px',
                   borderRadius:   '13px',
-                  background:     '#EE6B17',
+                  background:     'var(--accent)',
                   display:        'flex',
                   alignItems:     'center',
                   justifyContent: 'center',
@@ -219,7 +219,7 @@ export default function CelebrationProvider({
                     fontFamily:    'Nohemi, Inter, sans-serif',
                     fontWeight:    600,
                     fontSize:      '14px',
-                    color:         '#1E1611',
+                    color:         'var(--text-primary)',
                     letterSpacing: '-0.02em',
                     lineHeight:    1.3,
                   }}
@@ -229,7 +229,7 @@ export default function CelebrationProvider({
                 <div
                   style={{
                     fontSize:   '12px',
-                    color:      '#736554',
+                    color:      'var(--text-dim)',
                     marginTop:  '4px',
                     lineHeight: 1.55,
                   }}
@@ -250,7 +250,7 @@ export default function CelebrationProvider({
                   justifyContent: 'center',
                   borderRadius: '8px',
                   flexShrink: 0,
-                  color:      '#A09880',
+                  color:      'var(--text-muted)',
                   marginTop:  '1px',
                   background: 'transparent',
                   border:     'none',
@@ -299,7 +299,7 @@ function DrainBar({ active, duration }: { active: boolean; duration: number }) {
         marginTop:    '14px',
         height:       '3px',
         borderRadius: '99px',
-        background:   'rgba(43,49,23,0.08)',
+        background:   'rgba(var(--tint),0.08)',
         overflow:     'hidden',
       }}
     >
@@ -308,7 +308,7 @@ function DrainBar({ active, duration }: { active: boolean; duration: number }) {
           height:     '100%',
           width,
           borderRadius: '99px',
-          background:   '#EE6B17',
+          background:   'var(--accent)',
           transition:   active ? `width ${duration}ms linear` : 'none',
         }}
       />

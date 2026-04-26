@@ -33,7 +33,7 @@ export default function SyncButton() {
       {msg && (
         <span
           className="text-sm font-medium"
-          style={{ color: msg.startsWith('✓') ? '#4A5427' : '#EE6B17' }}
+          style={{ color: msg.startsWith('✓') ? 'var(--text-secondary)' : 'var(--accent)' }}
         >
           {msg}
         </span>
@@ -42,7 +42,7 @@ export default function SyncButton() {
         onClick={handleSync}
         disabled={syncing}
         className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
-        style={{ background: '#EE6B17' }}
+        style={{ background: 'var(--accent)' }}
       >
         <svg
           viewBox="0 0 24 24"

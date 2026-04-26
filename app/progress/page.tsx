@@ -73,7 +73,7 @@ export default async function ProgressPage() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
@@ -81,11 +81,11 @@ export default async function ProgressPage() {
         <div className="mb-5">
           <h1
             className="text-2xl"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}
           >
             Marathon Plan
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>{plan.length} weeks · sub {formatGoalTime(config.goalSeconds)} goal</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{plan.length} weeks · sub {formatGoalTime(config.goalSeconds)} goal</p>
         </div>
 
         <PlanTabs />
@@ -97,20 +97,20 @@ export default async function ProgressPage() {
               key={stat.label}
               className="rounded-xl p-4 relative overflow-hidden"
               style={{
-                background: '#EDE9DE',
-                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(43,49,23,0.08)',
+                background: 'var(--surface)',
+                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(var(--tint),0.08)',
               }}
             >
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                 {stat.label}
               </div>
               <div
                 className="text-3xl leading-none mb-1"
-                style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: stat.accent ? '#EE6B17' : '#1E1611' }}
+                style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: stat.accent ? 'var(--accent)' : 'var(--text-primary)' }}
               >
                 {stat.value}
               </div>
-              <div className="text-[11px]" style={{ color: '#736554' }}>{stat.sub}</div>
+              <div className="text-[11px]" style={{ color: 'var(--text-dim)' }}>{stat.sub}</div>
             </div>
           ))}
         </div>
@@ -118,61 +118,61 @@ export default async function ProgressPage() {
         {/* Weekly volume chart */}
         <div
           className="rounded-xl p-5 mb-6"
-          style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+          style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
         >
           <h2
             className="text-base font-semibold mb-4"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: 'var(--text-primary)' }}
           >
             Weekly volume — planned vs actual
           </h2>
           <div className="space-y-2.5">
             {weekSummaries.map(({ week, plannedKm, actualKm, completedCount, plannedCount, avgPace, pct }) => (
               <div key={week.weekNumber} className="flex items-center gap-3">
-                <div className="text-xs w-8 shrink-0 font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#736554' }}>
+                <div className="text-xs w-8 shrink-0 font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-dim)' }}>
                   W{week.weekNumber}
                 </div>
-                <div className="flex-1 relative h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(43,49,23,0.08)' }}>
+                <div className="flex-1 relative h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(var(--tint),0.08)' }}>
                   <div
                     className="absolute inset-y-0 left-0 rounded-lg transition-all"
-                    style={{ width: `${pct}%`, background: pct >= 90 ? '#4A5427' : pct >= 60 ? '#EE6B17' : 'rgba(238,107,23,0.5)' }}
+                    style={{ width: `${pct}%`, background: pct >= 90 ? 'var(--accent-green)' : pct >= 60 ? 'var(--accent)' : 'rgba(238,107,23,0.5)' }}
                   />
                   <div className="absolute inset-0 flex items-center px-2">
-                    <span className="text-xs font-semibold" style={{ color: pct > 20 ? '#F5F3EC' : '#1E1611' }}>
+                    <span className="text-xs font-semibold" style={{ color: pct > 20 ? '#fff' : 'var(--text-primary)' }}>
                       {actualKm} km
                     </span>
                   </div>
                 </div>
-                <div className="text-xs w-28 shrink-0 text-right" style={{ color: '#736554' }}>
+                <div className="text-xs w-28 shrink-0 text-right" style={{ color: 'var(--text-dim)' }}>
                   {plannedKm} km · {completedCount}/{plannedCount}
                 </div>
-                <div className="text-xs w-16 shrink-0 text-right" style={{ color: '#736554' }}>
+                <div className="text-xs w-16 shrink-0 text-right" style={{ color: 'var(--text-dim)' }}>
                   {avgPace ? formatPaceDisplay(avgPace) : '—'}
                 </div>
               </div>
             ))}
             {weekSummaries.length === 0 && (
-              <p className="text-sm text-center py-4" style={{ color: '#736554' }}>No completed weeks yet. Start running!</p>
+              <p className="text-sm text-center py-4" style={{ color: 'var(--text-dim)' }}>No completed weeks yet. Start running!</p>
             )}
           </div>
         </div>
 
         {/* Runs table */}
-        <div className="rounded-xl overflow-hidden" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
-          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(43,49,23,0.08)' }}>
-            <h2 className="text-base font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}>
+          <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(var(--tint),0.08)' }}>
+            <h2 className="text-base font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: 'var(--text-primary)' }}>
               All runs ({allRuns.length})
             </h2>
           </div>
           {allRuns.length === 0 ? (
-            <p className="px-5 py-6 text-sm" style={{ color: '#736554' }}>No runs synced yet. Go to Plan and click "Sync Strava".</p>
+            <p className="px-5 py-6 text-sm" style={{ color: 'var(--text-dim)' }}>No runs synced yet. Go to Plan and click "Sync Strava".</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#F5F4F2', borderBottom: '1px solid rgba(43,49,23,0.08)' }}>
+                  <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid rgba(var(--tint),0.08)' }}>
                     {['Date','Name','km','Pace','HR'].map((h, i) => (
-                      <th key={h} className={`py-3 px-4 text-[10px] font-semibold uppercase tracking-wider ${i >= 2 ? 'text-right' : 'text-left'}`} style={{ color: '#4A5427' }}>
+                      <th key={h} className={`py-3 px-4 text-[10px] font-semibold uppercase tracking-wider ${i >= 2 ? 'text-right' : 'text-left'}`} style={{ color: 'var(--text-secondary)' }}>
                         {h}
                       </th>
                     ))}
@@ -180,14 +180,14 @@ export default async function ProgressPage() {
                 </thead>
                 <tbody>
                   {[...allRuns].reverse().map((run) => (
-                    <tr key={run.id} className="transition-colors" style={{ borderBottom: '1px solid rgba(43,49,23,0.05)' }}>
-                      <td className="py-3 px-4 text-xs" style={{ color: '#4A5427' }}>
+                    <tr key={run.id} className="transition-colors" style={{ borderBottom: '1px solid rgba(var(--tint),0.05)' }}>
+                      <td className="py-3 px-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {new Date(run.runDate + 'T00:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short' })}
                       </td>
-                      <td className="py-3 px-4 max-w-[180px] truncate text-xs" style={{ color: '#1E1611' }}>{run.name}</td>
-                      <td className="py-3 px-4 text-right font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>{run.distanceKm}</td>
-                      <td className="py-3 px-4 text-right font-semibold text-xs" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>{formatPaceDisplay(run.paceMinPerKm)}</td>
-                      <td className="py-3 px-4 text-right text-xs" style={{ color: '#736554' }}>{run.averageHeartrate ? Math.round(run.averageHeartrate) : '—'}</td>
+                      <td className="py-3 px-4 max-w-[180px] truncate text-xs" style={{ color: 'var(--text-primary)' }}>{run.name}</td>
+                      <td className="py-3 px-4 text-right font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}>{run.distanceKm}</td>
+                      <td className="py-3 px-4 text-right font-semibold text-xs" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}>{formatPaceDisplay(run.paceMinPerKm)}</td>
+                      <td className="py-3 px-4 text-right text-xs" style={{ color: 'var(--text-dim)' }}>{run.averageHeartrate ? Math.round(run.averageHeartrate) : '—'}</td>
                     </tr>
                   ))}
                 </tbody>

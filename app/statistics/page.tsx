@@ -99,66 +99,66 @@ export default async function StatisticsPage({
       <>
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="rounded-xl p-4" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
-            <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>Current</div>
-            <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: '#1E1611' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Current</div>
+            <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
               {totalKm.toLocaleString('en')}
             </div>
-            <div className="text-[11px]" style={{ color: '#736554' }}>km this year</div>
+            <div className="text-[11px]" style={{ color: 'var(--text-dim)' }}>km this year</div>
           </div>
 
-          <div className="rounded-xl p-4" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
-            <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>To Go</div>
-            <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: '#1E1611' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>To Go</div>
+            <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
               {toGoKm > 0 ? toGoKm.toLocaleString('en') : '🏁'}
             </div>
-            <div className="text-[11px]" style={{ color: '#736554' }}>{toGoKm > 0 ? `of ${GOAL_KM.toLocaleString('en')} km goal` : 'Goal reached!'}</div>
+            <div className="text-[11px]" style={{ color: 'var(--text-dim)' }}>{toGoKm > 0 ? `of ${GOAL_KM.toLocaleString('en')} km goal` : 'Goal reached!'}</div>
           </div>
 
-          <div className="rounded-xl p-4" style={{ background: '#EDE9DE', border: isAhead ? '1px solid rgba(74,84,39,0.20)' : '1px solid rgba(238,107,23,0.25)' }}>
-            <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#4A5427' }}>{isAhead ? 'Ahead of plan' : 'Behind plan'}</div>
-            <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: isAhead ? '#4A5427' : '#EE6B17' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: isAhead ? '1px solid rgba(74,84,39,0.20)' : '1px solid rgba(238,107,23,0.25)' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>{isAhead ? 'Ahead of plan' : 'Behind plan'}</div>
+            <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: isAhead ? 'var(--text-secondary)' : 'var(--accent)' }}>
               {Math.abs(diffKm)}
             </div>
-            <div className="text-[11px]" style={{ color: '#736554' }}>km vs expected pace</div>
+            <div className="text-[11px]" style={{ color: 'var(--text-dim)' }}>km vs expected pace</div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="rounded-xl p-5 mb-5" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+        <div className="rounded-xl p-5 mb-5" style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}>Goal: {GOAL_KM.toLocaleString('en')} km</span>
-            <span className="text-sm font-bold tabular-nums" style={{ color: pctDone >= 100 ? '#4A5427' : '#EE6B17' }}>{pctDone}%</span>
+            <span className="text-sm font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}>Goal: {GOAL_KM.toLocaleString('en')} km</span>
+            <span className="text-sm font-bold tabular-nums" style={{ color: pctDone >= 100 ? 'var(--accent-green)' : 'var(--accent)' }}>{pctDone}%</span>
           </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(43,49,23,0.08)' }}>
-            <div className="h-2 rounded-full transition-all" style={{ width: `${pctDone}%`, background: pctDone >= 100 ? '#4A5427' : '#EE6B17' }} />
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(var(--tint),0.08)' }}>
+            <div className="h-2 rounded-full transition-all" style={{ width: `${pctDone}%`, background: pctDone >= 100 ? 'var(--accent-green)' : 'var(--accent)' }} />
           </div>
-          <div className="flex justify-between mt-2 text-[10px]" style={{ color: '#736554' }}>
+          <div className="flex justify-between mt-2 text-[10px]" style={{ color: 'var(--text-dim)' }}>
             <span>Jan 1</span><span>Dec 31</span>
           </div>
         </div>
 
         {/* Distance chart */}
-        <div className="rounded-xl p-5" style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}>
+        <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: '#1E1611' }}>
+            <h2 className="text-base font-semibold" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: 'var(--text-primary)' }}>
               Distance over {YEAR}
             </h2>
-            <div className="flex items-center gap-3 text-[10px]" style={{ color: '#736554' }}>
-              <span className="flex items-center gap-1"><span className="inline-block w-4 h-0.5 rounded" style={{ background: '#EE6B17' }} />Actual</span>
-              <span className="flex items-center gap-1"><span className="inline-block w-4 h-0 border-t border-dashed" style={{ borderColor: '#A09880' }} />Goal pace</span>
+            <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-dim)' }}>
+              <span className="flex items-center gap-1"><span className="inline-block w-4 h-0.5 rounded" style={{ background: 'var(--accent)' }} />Actual</span>
+              <span className="flex items-center gap-1"><span className="inline-block w-4 h-0 border-t border-dashed" style={{ borderColor: 'var(--text-muted)' }} />Goal pace</span>
             </div>
           </div>
           <svg viewBox="0 0 624 175" className="w-full" style={{ overflow: 'visible' }}>
             {MONTHS.map(({ label, day }) => (
               <g key={label}>
-                <line x1={dx(day)} y1={C.top} x2={dx(day)} y2={C.bottom} stroke="rgba(43,49,23,0.06)" strokeWidth="1"/>
+                <line x1={dx(day)} y1={C.top} x2={dx(day)} y2={C.bottom} stroke="rgba(var(--tint),0.06)" strokeWidth="1"/>
                 <text x={dx(day)} y={C.bottom + 16} textAnchor="middle" fontSize="9" fill="#A09880" fontFamily="system-ui,sans-serif">{label}</text>
               </g>
             ))}
             {yLabels.map((v) => (
               <g key={v}>
-                <line x1={C.left} y1={dy(v, maxY)} x2={C.right} y2={dy(v, maxY)} stroke="rgba(43,49,23,0.05)" strokeWidth="1"/>
+                <line x1={C.left} y1={dy(v, maxY)} x2={C.right} y2={dy(v, maxY)} stroke="rgba(var(--tint),0.05)" strokeWidth="1"/>
                 <text x={C.left - 6} y={dy(v, maxY) + 3.5} textAnchor="end" fontSize="9" fill="#A09880" fontFamily="system-ui,sans-serif">{v}</text>
               </g>
             ))}
@@ -167,11 +167,11 @@ export default async function StatisticsPage({
             {totalKm > 0 && <path d={actualLinePath} fill="none" stroke="#EE6B17" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>}
             {totalKm > 0 && (<><circle cx={dotX} cy={dotY} r="6" fill="rgba(238,107,23,0.20)"/><circle cx={dotX} cy={dotY} r="3.5" fill="#EE6B17"/></>)}
             {totalKm === 0 && <text x={(C.left + C.right) / 2} y={(C.top + C.bottom) / 2} textAnchor="middle" fontSize="12" fill="#C4B99A" fontFamily="system-ui,sans-serif">No runs synced yet</text>}
-            <rect x={C.left} y={C.top} width={CW} height={CH} fill="none" stroke="rgba(43,49,23,0.06)" strokeWidth="1" rx="2"/>
+            <rect x={C.left} y={C.top} width={CW} height={CH} fill="none" stroke="rgba(var(--tint),0.06)" strokeWidth="1" rx="2"/>
           </svg>
         </div>
 
-        <p className="text-center text-xs mt-4" style={{ color: '#A09880' }}>
+        <p className="text-center text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
           Based on runs synced from Strava · Goal: {GOAL_KM.toLocaleString('en')} km by 31 Dec {YEAR}
         </p>
       </>
@@ -179,7 +179,7 @@ export default async function StatisticsPage({
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
@@ -188,11 +188,11 @@ export default async function StatisticsPage({
           <div>
             <h1
               className="text-2xl"
-              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}
             >
               Statistics
             </h1>
-            <p className="text-sm mt-1" style={{ color: '#4A5427' }}>{YEAR} · Your training data</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{YEAR} · Your training data</p>
           </div>
           {activeTab === 'distance' && <SyncButton />}
         </div>

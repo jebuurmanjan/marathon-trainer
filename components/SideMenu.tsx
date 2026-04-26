@@ -109,7 +109,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
     <div
       className="rounded-lg px-3 py-2.5"
       style={{
-        background: plan.isActive ? 'rgba(238,107,23,0.08)' : 'rgba(43,49,23,0.04)',
+        background: plan.isActive ? 'rgba(238,107,23,0.08)' : 'rgba(var(--tint),0.04)',
         border:     plan.isActive ? '1px solid rgba(238,107,23,0.20)' : '1px solid transparent',
       }}
     >
@@ -117,18 +117,18 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
       <div className="flex items-center gap-2 mb-1.5">
         <span
           className="w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ background: plan.isActive ? '#EE6B17' : 'rgba(43,49,23,0.25)' }}
+          style={{ background: plan.isActive ? 'var(--accent)' : 'rgba(var(--tint),0.25)' }}
         />
         <span
           className="text-xs font-semibold flex-1 truncate"
-          style={{ color: plan.isActive ? '#1E1611' : '#4A5427' }}
+          style={{ color: plan.isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}
         >
           {plan.name}
         </span>
         {plan.isActive && (
           <span
             className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
-            style={{ background: 'rgba(238,107,23,0.15)', color: '#EE6B17' }}
+            style={{ background: 'rgba(238,107,23,0.15)', color: 'var(--accent)' }}
           >
             Active
           </span>
@@ -138,11 +138,11 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
       {/* Action row */}
       {confirmDelete ? (
         <div className="flex items-center gap-2">
-          <span className="text-[11px] flex-1" style={{ color: '#736554' }}>Delete permanently?</span>
+          <span className="text-[11px] flex-1" style={{ color: 'var(--text-dim)' }}>Delete permanently?</span>
           <button
             onClick={() => setConfirmDelete(false)}
             className="text-[11px] px-2 py-1 rounded-lg font-medium"
-            style={{ color: '#736554', background: 'rgba(43,49,23,0.08)' }}
+            style={{ color: 'var(--text-dim)', background: 'rgba(var(--tint),0.08)' }}
           >
             Cancel
           </button>
@@ -163,7 +163,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
               onClick={() => onActivate(plan.id)}
               disabled={isBusy}
               className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors disabled:opacity-50"
-              style={{ background: '#EE6B17', color: '#fff' }}
+              style={{ background: 'var(--accent)', color: '#fff' }}
             >
               {isBusy ? '…' : 'Activate'}
             </button>
@@ -175,7 +175,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
               onClick={() => onRestore(plan.id)}
               disabled={isBusy}
               className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors disabled:opacity-50"
-              style={{ background: 'rgba(74,84,39,0.12)', color: '#4A5427' }}
+              style={{ background: 'rgba(74,84,39,0.12)', color: 'var(--text-secondary)' }}
             >
               {isBusy ? '…' : 'Restore'}
             </button>
@@ -187,7 +187,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
               onClick={() => onArchive(plan.id)}
               disabled={isBusy}
               className="text-[11px] px-2 py-1 rounded-lg font-medium transition-colors disabled:opacity-50"
-              style={{ color: '#736554', background: 'rgba(43,49,23,0.08)' }}
+              style={{ color: 'var(--text-dim)', background: 'rgba(var(--tint),0.08)' }}
             >
               {isBusy ? '…' : 'Archive'}
             </button>
@@ -338,8 +338,8 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
       <div
         className="fixed top-0 left-0 bottom-0 z-50 flex flex-col w-72 transition-transform duration-300 ease-out"
         style={{
-          background:   '#F5F3EC',
-          borderRight:  '1px solid rgba(43,49,23,0.10)',
+          background:   'var(--bg-base)',
+          borderRight:  '1px solid rgba(var(--tint),0.10)',
           boxShadow:    '8px 0 32px rgba(30,22,17,0.14)',
           transform:    isOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
@@ -347,26 +347,26 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
         {/* Drawer header */}
         <div
           className="flex items-center justify-between px-5 h-14 shrink-0 border-b"
-          style={{ borderColor: 'rgba(43,49,23,0.08)' }}
+          style={{ borderColor: 'rgba(var(--tint),0.08)' }}
         >
           <div className="flex items-center gap-2.5">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
-              style={{ background: '#EE6B17' }}
+              style={{ background: 'var(--accent)' }}
             >
               ⏱
             </div>
             <span
               className="text-base font-semibold"
-              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.025em', color: '#1E1611' }}
+              style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.025em', color: 'var(--text-primary)' }}
             >
-              Sub <span style={{ color: '#EE6B17' }}>3:30</span>
+              Sub <span style={{ color: 'var(--accent)' }}>3:30</span>
             </span>
           </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg"
-            style={{ color: '#736554' }}
+            style={{ color: 'var(--text-dim)' }}
             aria-label="Close menu"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-2" strokeLinecap="round">
@@ -378,11 +378,11 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
         {/* ── Plan selector ── */}
         <div
           className="px-3 py-3 border-b shrink-0"
-          style={{ borderColor: 'rgba(43,49,23,0.08)' }}
+          style={{ borderColor: 'rgba(var(--tint),0.08)' }}
         >
           <p
             className="text-[10px] font-bold uppercase tracking-widest px-1 mb-1.5"
-            style={{ color: '#A09880' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             Active Plan
           </p>
@@ -391,11 +391,11 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
           <button
             onClick={() => setSelectorOpen((o) => !o)}
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors"
-            style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)', color: '#1E1611' }}
+            style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)', color: 'var(--text-primary)' }}
           >
             <span
               className="w-2 h-2 rounded-full shrink-0"
-              style={{ background: '#EE6B17' }}
+              style={{ background: 'var(--accent)' }}
             />
             <span className="flex-1 truncate">
               {loadingPlans ? 'Loading…' : (activePlan?.name ?? 'No active plan')}
@@ -403,7 +403,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
             <svg
               viewBox="0 0 24 24"
               className="w-3.5 h-3.5 fill-none stroke-current stroke-2 shrink-0 transition-transform"
-              style={{ color: '#736554', transform: selectorOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              style={{ color: 'var(--text-dim)', transform: selectorOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
               strokeLinecap="round" strokeLinejoin="round"
             >
               <polyline points="6 9 12 15 18 9"/>
@@ -417,7 +417,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               {planError && (
                 <div
                   className="rounded-lg px-3 py-2 text-xs"
-                  style={{ background: 'rgba(238,107,23,0.10)', color: '#EE6B17' }}
+                  style={{ background: 'rgba(238,107,23,0.10)', color: 'var(--accent)' }}
                 >
                   {planError}
                 </div>
@@ -425,7 +425,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
 
               {/* Regular (non-archived) plans */}
               {regularPlans.length === 0 && !loadingPlans && (
-                <p className="text-xs px-1" style={{ color: '#A09880' }}>No plans yet.</p>
+                <p className="text-xs px-1" style={{ color: 'var(--text-muted)' }}>No plans yet.</p>
               )}
               {regularPlans.map((plan) => (
                 <PlanItem
@@ -445,7 +445,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
                   <button
                     onClick={() => setShowArchived((s) => !s)}
                     className="flex items-center gap-1.5 w-full px-1 py-1 text-[11px] font-medium"
-                    style={{ color: '#A09880' }}
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -480,7 +480,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               <a
                 href="/onboarding"
                 className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
-                style={{ background: 'rgba(238,107,23,0.10)', color: '#EE6B17' }}
+                style={{ background: 'rgba(238,107,23,0.10)', color: 'var(--accent)' }}
               >
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 5v14M5 12h14"/>
@@ -497,7 +497,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
             <div key={section.title} className="mb-6">
               <p
                 className="text-[10px] font-bold uppercase tracking-widest px-3 mb-1.5"
-                style={{ color: '#A09880' }}
+                style={{ color: 'var(--text-muted)' }}
               >
                 {section.title}
               </p>
@@ -511,16 +511,16 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-0.5"
                     style={
                       active
-                        ? { background: '#EDE9DE', color: '#1E1611', boxShadow: '0 1px 3px rgba(43,49,23,0.08)' }
-                        : { color: '#4A5427' }
+                        ? { background: 'var(--surface)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(var(--tint),0.08)' }
+                        : { color: 'var(--text-secondary)' }
                     }
                   >
-                    <span style={{ color: active ? '#EE6B17' : '#736554' }}>{item.icon}</span>
+                    <span style={{ color: active ? 'var(--accent)' : 'var(--text-dim)' }}>{item.icon}</span>
                     {item.label}
                     {active && (
                       <span
                         className="ml-auto w-1.5 h-1.5 rounded-full shrink-0"
-                        style={{ background: '#EE6B17' }}
+                        style={{ background: 'var(--accent)' }}
                       />
                     )}
                   </Link>
@@ -535,9 +535,9 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
           <button
             onClick={() => { triggerTest(); onClose() }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            style={{ color: '#4A5427' }}
+            style={{ color: 'var(--text-secondary)' }}
           >
-            <span style={{ color: '#736554', fontSize: '16px' }}>🎉</span>
+            <span style={{ color: 'var(--text-dim)', fontSize: '16px' }}>🎉</span>
             Test celebration
           </button>
         </div>
@@ -545,20 +545,20 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
         {/* Footer: user + settings + logout */}
         <div
           className="px-5 py-4 border-t shrink-0"
-          style={{ borderColor: 'rgba(43,49,23,0.08)' }}
+          style={{ borderColor: 'rgba(var(--tint),0.08)' }}
         >
           {/* User identity row */}
           <div className="flex items-center gap-3 mb-3">
             <div
               className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white shrink-0"
-              style={profilePhotoUrl ? undefined : { background: '#EE6B17' }}
+              style={profilePhotoUrl ? undefined : { background: 'var(--accent)' }}
             >
               {profilePhotoUrl
                 ? <img src={profilePhotoUrl} alt={userName} className="w-full h-full object-cover" />
                 : initials
               }
             </div>
-            <span className="text-sm font-medium flex-1 truncate" style={{ color: '#1E1611' }}>
+            <span className="text-sm font-medium flex-1 truncate" style={{ color: 'var(--text-primary)' }}>
               {userName || 'Athlete'}
             </span>
           </div>
@@ -568,7 +568,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               href="/settings"
               onClick={onClose}
               className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors font-medium"
-              style={{ color: '#4A5427', borderColor: 'rgba(43,49,23,0.12)', background: '#EDE9DE' }}
+              style={{ color: 'var(--text-secondary)', borderColor: 'rgba(var(--tint),0.12)', background: 'var(--surface)' }}
             >
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -578,7 +578,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
             <a
               href="/api/logout"
               className="flex-1 flex items-center justify-center text-xs px-3 py-2 rounded-lg border transition-colors font-medium"
-              style={{ color: '#736554', borderColor: 'rgba(43,49,23,0.12)' }}
+              style={{ color: 'var(--text-dim)', borderColor: 'rgba(var(--tint),0.12)' }}
             >
               Log out
             </a>

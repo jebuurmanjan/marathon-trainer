@@ -25,7 +25,7 @@ function PillToggle<T extends string>({
   return (
     <div
       className="flex gap-0.5 p-1 rounded-lg w-fit"
-      style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+      style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
     >
       {options.map((o) => (
         <button
@@ -34,8 +34,8 @@ function PillToggle<T extends string>({
           className="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
           style={
             value === o.value
-              ? { background: '#EE6B17', color: '#fff' }
-              : { color: '#4A5427', background: 'transparent' }
+              ? { background: 'var(--accent)', color: '#fff' }
+              : { color: 'var(--text-secondary)', background: 'transparent' }
           }
         >
           {o.label}
@@ -52,15 +52,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <section className="mb-6">
       <h2
         className="text-[10px] font-bold uppercase tracking-widest mb-3"
-        style={{ color: '#A09880' }}
+        style={{ color: 'var(--text-muted)' }}
       >
         {title}
       </h2>
       <div
-        className="rounded-xl divide-y divide-[rgba(43,49,23,0.06)]"
+        className="rounded-xl divide-y divide-[rgba(var(--tint),0.06)]"
         style={{
-          background: '#EDE9DE',
-          border:     '1px solid rgba(43,49,23,0.08)',
+          background: 'var(--surface)',
+          border:     '1px solid rgba(var(--tint),0.08)',
         }}
       >
         {children}
@@ -72,7 +72,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 px-5 py-4">
-      <span className="text-sm font-medium" style={{ color: '#1E1611' }}>{label}</span>
+      <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</span>
       <div className="shrink-0">{children}</div>
     </div>
   )
@@ -170,8 +170,8 @@ export default function SettingsPage() {
 
   if (loading || !settings) {
     return (
-      <div style={{ minHeight: '100vh', background: '#F5F3EC' }} className="flex items-center justify-center">
-        <div className="text-sm" style={{ color: '#736554' }}>Loading settings…</div>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }} className="flex items-center justify-center">
+        <div className="text-sm" style={{ color: 'var(--text-dim)' }}>Loading settings…</div>
       </div>
     )
   }
@@ -180,18 +180,18 @@ export default function SettingsPage() {
     .split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Navigation userName={settings.effectiveName} profilePhotoUrl={settings.profilePhotoUrl} />
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
           <h1
             className="text-2xl"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}
           >
             Account settings
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#736554' }}>Manage your profile and preferences</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-dim)' }}>Manage your profile and preferences</p>
         </div>
 
         {/* ── Profile ── */}
@@ -200,7 +200,7 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4 px-5 py-4">
             <div
               className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-lg font-bold text-white shrink-0"
-              style={settings.profilePhotoUrl ? undefined : { background: '#EE6B17' }}
+              style={settings.profilePhotoUrl ? undefined : { background: 'var(--accent)' }}
             >
               {settings.profilePhotoUrl
                 ? <img src={settings.profilePhotoUrl} alt={settings.effectiveName} className="w-full h-full object-cover" />
@@ -208,19 +208,19 @@ export default function SettingsPage() {
               }
             </div>
             <div>
-              <div className="text-sm font-semibold" style={{ color: '#1E1611' }}>{settings.effectiveName}</div>
+              <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{settings.effectiveName}</div>
               {settings.displayName && (
-                <div className="text-xs mt-0.5" style={{ color: '#A09880' }}>Strava: {settings.stravaName}</div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Strava: {settings.stravaName}</div>
               )}
             </div>
           </div>
 
           {/* Display name */}
-          <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(43,49,23,0.06)' }}>
-            <label className="text-sm font-medium block mb-2" style={{ color: '#1E1611' }}>
+          <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(var(--tint),0.06)' }}>
+            <label className="text-sm font-medium block mb-2" style={{ color: 'var(--text-primary)' }}>
               Display name
             </label>
-            <p className="text-xs mb-3" style={{ color: '#736554' }}>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
               Override your Strava name. Leave blank to use your Strava name.
             </p>
             <div className="flex gap-2">
@@ -233,19 +233,19 @@ export default function SettingsPage() {
                 placeholder={settings.stravaName}
                 maxLength={60}
                 className="flex-1 px-4 py-2.5 rounded-lg text-sm outline-none"
-                style={{ background: '#F5F3EC', border: '1px solid rgba(43,49,23,0.12)', color: '#1E1611' }}
+                style={{ background: 'var(--bg-base)', border: '1px solid rgba(var(--tint),0.12)', color: 'var(--text-primary)' }}
               />
               <button
                 onClick={saveDisplayName}
                 disabled={nameSaving}
                 className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60 shrink-0"
-                style={{ background: '#EE6B17' }}
+                style={{ background: 'var(--accent)' }}
               >
                 {nameSaving ? 'Saving…' : nameSaved ? '✓ Saved' : 'Save'}
               </button>
             </div>
             {nameError && (
-              <p className="text-xs mt-2" style={{ color: '#EE6B17' }}>{nameError}</p>
+              <p className="text-xs mt-2" style={{ color: 'var(--accent)' }}>{nameError}</p>
             )}
           </div>
         </Section>
@@ -259,7 +259,7 @@ export default function SettingsPage() {
               onChange={handleUnits}
             />
           </Row>
-          <div style={{ borderTop: '1px solid rgba(43,49,23,0.06)' }}>
+          <div style={{ borderTop: '1px solid rgba(var(--tint),0.06)' }}>
             <Row label="Appearance">
               <PillToggle
                 value={settings.theme}
@@ -268,26 +268,18 @@ export default function SettingsPage() {
               />
             </Row>
           </div>
-          {settings.theme === 'dark' && (
-            <div
-              className="mx-4 mb-4 px-3 py-2.5 rounded-lg text-xs"
-              style={{ background: 'rgba(238,107,23,0.08)', color: '#736554' }}
-            >
-              Full dark theme is coming soon — preference is saved for when it lands.
-            </div>
-          )}
         </Section>
 
         {/* ── Training zones ── */}
         <Section title="Training zones">
           <div className="px-5 py-4">
-            <p className="text-sm mb-3" style={{ color: '#736554' }}>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-dim)' }}>
               Customise your heart rate zone boundaries. Used to score your training quality.
             </p>
             <a
               href="/statistics?tab=zones"
               className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg"
-              style={{ background: '#F5F3EC', border: '1px solid rgba(43,49,23,0.12)', color: '#4A5427' }}
+              style={{ background: 'var(--bg-base)', border: '1px solid rgba(var(--tint),0.12)', color: 'var(--text-secondary)' }}
             >
               Open zone settings →
             </a>
@@ -297,7 +289,7 @@ export default function SettingsPage() {
         {/* ── Danger zone ── */}
         <Section title="Danger zone">
           <div className="px-5 py-4">
-            <p className="text-sm mb-3" style={{ color: '#736554' }}>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-dim)' }}>
               Permanently deletes your account, all training plans, and all synced runs. This cannot be undone.
             </p>
             <button
@@ -320,19 +312,19 @@ export default function SettingsPage() {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-6"
-            style={{ background: '#F5F3EC' }}
+            style={{ background: 'var(--bg-base)' }}
           >
             <div className="text-center mb-5">
               <div className="text-3xl mb-3">⚠️</div>
               <h3
                 className="text-lg font-semibold mb-2"
-                style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: '#1E1611' }}
+                style={{ fontFamily: 'Nohemi, Inter, sans-serif', color: 'var(--text-primary)' }}
               >
                 Delete your account?
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: '#736554' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-dim)' }}>
                 This will permanently delete your account, all training plans, and all synced Strava runs.
-                <strong className="block mt-1" style={{ color: '#1E1611' }}>This cannot be undone.</strong>
+                <strong className="block mt-1" style={{ color: 'var(--text-primary)' }}>This cannot be undone.</strong>
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -348,7 +340,7 @@ export default function SettingsPage() {
                 onClick={() => setDeleteOpen(false)}
                 disabled={deleting}
                 className="w-full py-3 rounded-lg text-sm font-semibold"
-                style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.10)', color: '#4A5427' }}
+                style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.10)', color: 'var(--text-secondary)' }}
               >
                 Cancel
               </button>

@@ -17,7 +17,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: '#F5F3EC' }}
+      style={{ background: 'var(--bg-base)' }}
     >
       {/* Ambient glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -31,7 +31,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
         {/* Brand mark */}
         <div
           className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm"
-          style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+          style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
         >
           🏃
         </div>
@@ -42,15 +42,15 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
             fontFamily:    'Nohemi, Inter, sans-serif',
             fontWeight:    600,
             letterSpacing: '-0.045em',
-            color:         '#1E1611',
+            color:         'var(--text-primary)',
           }}
         >
-          Run<span style={{ color: '#EE6B17' }}>Buddy</span>
+          Run<span style={{ color: 'var(--accent)' }}>Buddy</span>
         </h1>
-        <p className="text-base mb-3" style={{ color: '#736554' }}>
+        <p className="text-base mb-3" style={{ color: 'var(--text-dim)' }}>
           Your personal marathon training plan
         </p>
-        <p className="text-sm mb-10 leading-relaxed" style={{ color: '#A09880' }}>
+        <p className="text-sm mb-10 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Connect your Strava, set your goal, and get a personalised plan built around your race date and training level.
         </p>
 
@@ -61,7 +61,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
             style={{
               background: 'rgba(238,107,23,0.10)',
               border:     '1px solid rgba(238,107,23,0.25)',
-              color:      '#EE6B17',
+              color:      'var(--accent)',
             }}
           >
             {errorMessage}
@@ -72,7 +72,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
         <a
           href="/api/strava/auth?mode=guest"
           className="flex items-center justify-center gap-2.5 w-full text-white font-bold py-3.5 px-6 rounded-xl transition-opacity hover:opacity-90 text-base mb-4"
-          style={{ background: '#EE6B17' }}
+          style={{ background: 'var(--accent)' }}
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
             <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
@@ -83,7 +83,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
         {/* Feature bullets */}
         <div
           className="rounded-xl p-4 text-left space-y-2.5"
-          style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+          style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
         >
           {[
             { icon: '📅', text: 'Plan length tailored to your race date — 12 to 27 weeks' },
@@ -92,14 +92,14 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
             { icon: '🔄', text: 'Strava synced — track completed vs. planned runs' },
             { icon: '📁', text: 'Start multiple plans, switch between them anytime' },
           ].map(({ icon, text }) => (
-            <div key={text} className="flex items-start gap-2.5 text-sm" style={{ color: '#4A5427' }}>
+            <div key={text} className="flex items-start gap-2.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <span className="shrink-0 mt-0.5">{icon}</span>
               <span>{text}</span>
             </div>
           ))}
         </div>
 
-        <p className="text-xs mt-5 leading-relaxed" style={{ color: '#A09880' }}>
+        <p className="text-xs mt-5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           We only read your running activities from Strava.<br />
           No posting, no sharing.
         </p>

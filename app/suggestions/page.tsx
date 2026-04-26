@@ -57,7 +57,7 @@ export default function SuggestionsPage() {
   const olderSuggestions = suggestions.slice(1)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EC' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Navigation userName={userName} profilePhotoUrl={profilePhotoUrl} />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
@@ -65,18 +65,18 @@ export default function SuggestionsPage() {
         <div className="mb-5">
           <h1
             className="text-2xl"
-            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: '#1E1611' }}
+            style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}
           >
             Marathon Plan
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#4A5427' }}>Marathon plan</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Marathon plan</p>
         </div>
 
         <PlanTabs />
 
         {/* AI Coach action row */}
         <div className="flex items-center justify-between mb-6 gap-4">
-          <p className="text-sm" style={{ color: '#4A5427' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Claude analyses your training data and suggests adjustments.
             {currentWeek > 0 && ` Week ${currentWeek}.`}
           </p>
@@ -84,7 +84,7 @@ export default function SuggestionsPage() {
             onClick={handleGenerate}
             disabled={generating || currentWeek < 1}
             className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-all disabled:opacity-50 shrink-0"
-            style={{ background: '#EE6B17' }}
+            style={{ background: 'var(--accent)' }}
           >
             {generating ? (
               <><span className="animate-spin">⟳</span> Thinking…</>
@@ -97,19 +97,19 @@ export default function SuggestionsPage() {
         {error && (
           <div
             className="mb-4 rounded-lg px-4 py-3 text-sm"
-            style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: '#EE6B17' }}
+            style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: 'var(--accent)' }}
           >
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-20 text-sm" style={{ color: '#736554' }}>Loading…</div>
+          <div className="text-center py-20 text-sm" style={{ color: 'var(--text-dim)' }}>Loading…</div>
         ) : suggestions.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🤖</div>
-            <p className="font-semibold mb-2" style={{ color: '#1E1611' }}>No coaching advice yet</p>
-            <p className="text-sm max-w-sm mx-auto mb-6" style={{ color: '#736554' }}>
+            <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No coaching advice yet</p>
+            <p className="text-sm max-w-sm mx-auto mb-6" style={{ color: 'var(--text-dim)' }}>
               Click the button above to get your first AI coaching suggestion. Sync your Strava runs first for the most accurate advice.
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function SuggestionsPage() {
             {latestSuggestion && <SuggestionCard suggestion={latestSuggestion} isLatest />}
             {olderSuggestions.length > 0 && (
               <>
-                <h2 className="text-xs font-semibold uppercase tracking-wider pt-2" style={{ color: '#736554' }}>
+                <h2 className="text-xs font-semibold uppercase tracking-wider pt-2" style={{ color: 'var(--text-dim)' }}>
                   Previous advice
                 </h2>
                 {olderSuggestions.map((s) => (
@@ -132,10 +132,10 @@ export default function SuggestionsPage() {
         {/* How it works */}
         <div
           className="mt-10 rounded-xl p-5"
-          style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+          style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
         >
-          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1E1611' }}>How it works</h3>
-          <ul className="text-sm space-y-1.5" style={{ color: '#736554' }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>How it works</h3>
+          <ul className="text-sm space-y-1.5" style={{ color: 'var(--text-dim)' }}>
             <li>• Claude looks at your planned runs for the last 2 weeks</li>
             <li>• It compares them against what you actually ran (distance, pace, HR)</li>
             <li>• It suggests 1–2 concrete adjustments for the coming week</li>

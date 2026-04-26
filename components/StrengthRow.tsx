@@ -51,10 +51,8 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
     <div
       className="rounded-lg px-3 py-2.5 transition-all"
       style={{
-        background: completed ? 'rgba(74,84,39,0.08)' : '#F5F4F2',
-        border: completed
-          ? '1px solid rgba(74,84,39,0.20)'
-          : '1px solid rgba(43,49,23,0.08)',
+        background: completed ? 'var(--card-done)'        : 'var(--card-base)',
+        border:     completed ? '1px solid var(--card-done-border)' : '1px solid var(--border)',
         opacity: loading ? 0.7 : 1,
       }}
     >
@@ -63,31 +61,31 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
         {/* Icon dot — purple for strength */}
         <span
           className="w-2 h-2 rounded-full shrink-0"
-          style={{ background: '#8879E1' }}
+          style={{ background: 'var(--accent-violet)' }}
         />
 
         {/* Day */}
-        <span className="text-[10px] font-semibold min-w-[24px]" style={{ color: '#4A5427' }}>
+        <span className="text-[10px] font-semibold min-w-[24px]" style={{ color: 'var(--text-secondary)' }}>
           {run.dayOfWeek.slice(0, 3).toUpperCase()}
         </span>
 
         {/* Type badge */}
         <span
           className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
-          style={{ background: 'rgba(136,121,225,0.12)', color: '#8879E1' }}
+          style={{ background: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' }}
         >
           Strength
         </span>
 
         {/* Label */}
-        <span className="flex-1 text-xs truncate" style={{ color: '#1E1611' }}>
+        <span className="flex-1 text-xs truncate" style={{ color: 'var(--text-primary)' }}>
           {run.description || `Strength session — ${duration} min`}
         </span>
 
         {/* Duration */}
         <span
           className="text-xs font-semibold shrink-0"
-          style={{ color: '#736554' }}
+          style={{ color: 'var(--text-dim)' }}
         >
           {duration} min
         </span>
@@ -97,7 +95,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
           <button
             onClick={() => setExpanded((e) => !e)}
             className="text-[10px] shrink-0 px-1.5 py-0.5 rounded-lg"
-            style={{ color: '#736554', background: 'rgba(43,49,23,0.06)' }}
+            style={{ color: 'var(--text-dim)', background: 'rgba(var(--tint),0.06)' }}
           >
             {expanded ? '▲' : '▼'}
           </button>
@@ -111,9 +109,9 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
           title={completed ? 'Mark as not done' : 'Mark as done'}
         >
           {completed ? (
-            <span style={{ color: '#4A5427' }}>✓</span>
+            <span style={{ color: 'var(--accent-green)' }}>✓</span>
           ) : (
-            <span style={{ color: '#E3D2B4' }}>○</span>
+            <span style={{ color: 'var(--surface-3)' }}>○</span>
           )}
         </button>
       </div>
@@ -122,11 +120,11 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
       {expanded && run.exercises && run.exercises.length > 0 && (
         <div
           className="mt-2 pt-2 space-y-1"
-          style={{ borderTop: '1px solid rgba(43,49,23,0.08)' }}
+          style={{ borderTop: '1px solid rgba(var(--tint),0.08)' }}
         >
           {run.exercises.map((ex, i) => (
-            <div key={i} className="flex items-start gap-2 text-xs" style={{ color: '#736554' }}>
-              <span style={{ color: '#8879E1', flexShrink: 0 }}>·</span>
+            <div key={i} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-dim)' }}>
+              <span style={{ color: 'var(--accent-violet)', flexShrink: 0 }}>·</span>
               <span>{ex}</span>
             </div>
           ))}

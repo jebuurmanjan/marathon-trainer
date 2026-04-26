@@ -15,7 +15,7 @@ export default function PlanTabs() {
   return (
     <div
       className="flex gap-1 p-1 rounded-xl mb-6"
-      style={{ background: '#EDE9DE', border: '1px solid rgba(43,49,23,0.08)' }}
+      style={{ background: 'var(--surface)', border: '1px solid rgba(var(--tint),0.08)' }}
     >
       {LINKS.map((link) => (
         <Link
@@ -24,8 +24,8 @@ export default function PlanTabs() {
           className="flex-1 text-center py-2.5 rounded-lg text-sm font-semibold transition-colors"
           style={
             pathname === link.href
-              ? { background: '#E3D2B4', color: '#1E1611', boxShadow: '0 1px 3px rgba(43,49,23,0.10)' }
-              : { color: '#4A5427' }
+              ? { background: 'var(--surface-3)', color: 'var(--text-primary)', boxShadow: '0 1px 3px rgba(var(--tint),0.10)' }
+              : { color: 'var(--text-secondary)' }
           }
         >
           {link.label}

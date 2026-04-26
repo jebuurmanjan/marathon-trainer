@@ -14,9 +14,9 @@ export default function SuggestionCard({ suggestion, isLatest }: SuggestionCardP
     <div
       className="rounded-xl overflow-hidden"
       style={{
-        background: '#EDE9DE',
-        border: '1px solid rgba(43,49,23,0.08)',
-        borderLeft: `3px solid ${isLatest ? '#EE6B17' : '#8879E1'}`,
+        background: 'var(--surface)',
+        border: '1px solid rgba(var(--tint),0.08)',
+        borderLeft: `3px solid ${isLatest ? 'var(--accent)' : 'var(--accent-violet)'}`,
       }}
     >
       <div className="px-5 py-4">
@@ -25,24 +25,24 @@ export default function SuggestionCard({ suggestion, isLatest }: SuggestionCardP
             {isLatest && (
               <span
                 className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(238,107,23,0.12)', color: '#EE6B17' }}
+                style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}
               >
                 Latest
               </span>
             )}
             <span
               className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(43,49,23,0.08)', color: '#736554' }}
+              style={{ background: 'rgba(var(--tint),0.08)', color: 'var(--text-dim)' }}
             >
               Week {suggestion.weekNumber}
             </span>
           </div>
-          <span className="text-xs shrink-0" style={{ color: '#736554' }}>{date}</span>
+          <span className="text-xs shrink-0" style={{ color: 'var(--text-dim)' }}>{date}</span>
         </div>
 
         <div
           className="text-sm leading-relaxed whitespace-pre-wrap"
-          style={{ color: '#1E1611' }}
+          style={{ color: 'var(--text-primary)' }}
         >
           {suggestion.suggestion}
         </div>

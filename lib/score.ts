@@ -111,10 +111,10 @@ export function calcWeekScore(
 }
 
 export function scoreColor(total: number): string {
-  if (total >= 85) return '#4A5427'  // green — Excellent
-  if (total >= 65) return '#EE6B17'  // orange — Good
-  if (total >= 40) return '#A08B6E'  // amber — Partial
-  return '#736554'                   // dim — Missed
+  if (total >= 85) return 'var(--accent-green)'  // Excellent
+  if (total >= 65) return 'var(--accent)'         // Good
+  if (total >= 40) return '#A08B6E'               // Partial — no token, stays fixed
+  return 'var(--text-dim)'                        // Missed
 }
 
 export function scoreLabel(total: number): string {
