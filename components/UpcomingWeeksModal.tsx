@@ -126,7 +126,7 @@ function RunChip({ run, actual, editMode, dragId, isPast, compact = false }: Chi
         </div>
         <div className="mt-1 font-semibold" style={{ color: 'var(--text-dim)', fontSize: 10 }}>{stat}</div>
         {run.description && (
-          <div className="mt-0.5 truncate" style={{ color: 'var(--text-secondary)', fontSize: 9 }}>
+          <div className="mt-0.5 leading-snug" style={{ color: 'var(--text-secondary)', fontSize: 9 }}>
             {run.description}
           </div>
         )}
@@ -157,7 +157,7 @@ function RunChip({ run, actual, editMode, dragId, isPast, compact = false }: Chi
           {!actual && isPast && <span style={{ color: 'var(--accent)', fontSize: 10 }}>✗</span>}
         </div>
         {run.description && (
-          <div className="truncate" style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
+          <div className="leading-snug mt-0.5" style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
             {run.description}
           </div>
         )}
@@ -205,12 +205,12 @@ function DayRow({ date, dayIndex, runs, actuals, editMode, today, overrides }: D
   return (
     <div
       ref={setNodeRef}
-      className="flex gap-3 py-2.5 transition-colors"
+      className="flex gap-3 px-3 py-3 transition-colors"
       style={{
         borderBottom: '1px solid var(--border)',
-        background: isOver && editMode ? 'rgba(238,107,23,0.05)' : 'transparent',
-        borderLeft: isOver && editMode ? '2px solid var(--accent)' : '2px solid transparent',
-        paddingLeft: isOver && editMode ? '0.5rem' : '0',
+        background:   isOver && editMode ? 'rgba(238,107,23,0.05)' : 'transparent',
+        // Fixed-width left accent — never shifts content
+        boxShadow:    isOver && editMode ? 'inset 3px 0 0 var(--accent)' : 'none',
       }}
     >
       {/* Day label */}
