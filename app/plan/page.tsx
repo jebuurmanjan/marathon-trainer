@@ -6,6 +6,7 @@ import Navigation from '@/components/Navigation'
 import PlanTabs from '@/components/PlanTabs'
 import WeekCard from '@/components/WeekCard'
 import EditGoalModal from '@/components/EditGoalModal'
+import UpcomingWeeksModal from '@/components/UpcomingWeeksModal'
 import { ActualRun, Week } from '@/types'
 import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
 import { formatDistance, formatDistanceExact } from '@/lib/training-plan'
@@ -33,6 +34,7 @@ export default function PlanPage() {
   const [userName,     setUserName]    = useState('')
   const [loading,          setLoading]         = useState(true)
   const [editingGoal,      setEditingGoal]     = useState(false)
+  const [upcomingOpen,     setUpcomingOpen]    = useState(false)
   const [profilePhotoUrl,  setProfilePhotoUrl] = useState<string | null>(null)
   const [preferredUnits,   setPreferredUnits]  = useState<'km' | 'miles'>('km')
 
@@ -187,19 +189,30 @@ export default function PlanPage() {
               {plan.length} weeks · {goalLabel ? `sub ${goalLabel} goal` : 'your goal'} · {u}
             </p>
           </div>
-          {config && (
-            <button
-              onClick={() => setEditingGoal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0"
-              style={{ background:'var(--surface)', border:'1px solid rgba(var(--tint),0.10)', color:'var(--text-secondary)' }}
-            >
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              Edit goal
-            </button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {currentWeek > 0 && (
+              <button
+                onClick={() => setUpcomingOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors"
+                style={{ background:'var(--surface)', border:'1px solid rgba(var(--tint),0.10)', color:'var(--text-secondary)' }}
+              >
+                Upcoming weeks →
+              </button>
+            )}
+            {config && (
+              <button
+                onClick={() => setEditingGoal(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors"
+                style={{ background:'var(--surface)', border:'1px solid rgba(var(--tint),0.10)', color:'var(--text-secondary)' }}
+              >
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit goal
+              </button>
+            )}
+          </div>
         </div>
 
         <PlanTabs />
@@ -340,6 +353,19 @@ export default function PlanPage() {
             await fetchPlan()
             setLoading(false)
           }}
+        />
+      )}
+
+      {/* Upcoming weeks modal */}
+      {upcomingOpen && planId && (
+        <UpcomingWeeksModal
+          onClose={() => setUpcomingOpen(false)}
+          planId={planId}
+          weeks={plan.filter((w) =>
+            w.weekNumber === currentWeek || w.weekNumber === currentWeek + 1
+          )}
+          actualRuns={actualRuns}
+          currentWeek={currentWeek}
         />
       )}
     </div>

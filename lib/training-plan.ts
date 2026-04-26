@@ -1,5 +1,33 @@
 import { Week, PlannedRun, Phase, RunType } from '@/types'
 
+// ─── Run override type ────────────────────────────────────────────────────────
+
+export interface RunOverride {
+  originalDate: string  // ISO YYYY-MM-DD
+  runType:      string
+  newDate:      string  // ISO YYYY-MM-DD
+}
+
+/**
+ * Apply saved drag-and-drop overrides to a set of weeks.
+ * Returns new Week/PlannedRun objects — does not mutate inputs.
+ */
+export function applyOverrides(weeks: Week[], overrides: RunOverride[]): Week[] {
+  if (overrides.length === 0) return weeks
+  return weeks.map((week) => {
+    const runs = week.runs.map((run) => {
+      const override = overrides.find(
+        (o) => o.originalDate === run.date && o.runType === run.type
+      )
+      if (!override) return run
+      const newDate = new Date(override.newDate + 'T12:00:00Z')
+      const dayName = newDate.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' })
+      return { ...run, date: override.newDate, dayOfWeek: dayName }
+    })
+    return { ...week, runs }
+  })
+}
+
 // Week 1 starts Monday April 27, 2026
 // Race day: Sunday November 1, 2026 (27 weeks later)
 export const PLAN_START_DATE = '2026-04-27'
