@@ -1,5 +1,7 @@
 export type Phase = 'base' | 'build' | 'peak' | 'sharpen' | 'taper'
 export type RunType = 'easy' | 'quality' | 'medium_long' | 'long' | 'race' | 'strength'
+export type WorkoutCategory = 'core_stability' | 'plyometrics' | 'legs' | 'upper_body'
+export type WorkoutEquipment = 'home' | 'gym'
 
 export interface PlannedRun {
   weekNumber:         number
@@ -14,6 +16,31 @@ export interface PlannedRun {
   // Strength-specific
   durationMinutes?:   number
   exercises?:         string[]        // e.g. ["Glute Bridge — 3×15", ...]
+  // Workout library fields (populated when user swaps, or via category rotation)
+  workoutId?:         string
+  workoutCategory?:   WorkoutCategory
+  workoutName?:       string
+}
+
+export interface StrengthWorkout {
+  id:               string
+  slug:             string
+  name:             string
+  equipment:        WorkoutEquipment
+  category:         WorkoutCategory
+  phases:           string[]
+  duration_minutes: number
+  exercises:        string[]
+}
+
+export interface StrengthOverride {
+  sessionDate:     string           // ISO YYYY-MM-DD (original scheduled date)
+  weekNumber:      number
+  workoutId:       string
+  workoutName:     string
+  workoutCategory: WorkoutCategory
+  exercises:       string[]
+  durationMinutes: number
 }
 
 export interface Week {

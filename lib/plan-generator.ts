@@ -1,4 +1,4 @@
-import { Week, PlannedRun, Phase, RunType } from '@/types'
+import { Week, PlannedRun, Phase, RunType, WorkoutCategory } from '@/types'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -472,13 +472,24 @@ function resolveEquipment(equipmentType: EquipmentType, weekNumber: number): 'bw
   return weekNumber % 2 === 1 ? 'gym' : 'bw'  // 'both': alternate
 }
 
+// Category rotation — slotIndex 0 and 1 in the same week are always 2 apart,
+// guaranteeing two sessions per week are never the same category.
+const CATEGORY_ROTATION: WorkoutCategory[] = [
+  'core_stability', 'legs', 'plyometrics', 'upper_body',
+]
+function resolveCategory(weekNumber: number, slotIndex: number): WorkoutCategory {
+  return CATEGORY_ROTATION[(weekNumber - 1 + slotIndex * 2) % 4]
+}
+
 function buildStrengthSession(
   wk: number, phase: Phase, date: string,
   equipmentType: EquipmentType, isRaceWeek: boolean,
+  slotIndex: number,
 ): PlannedRun | null {
   if (isRaceWeek) return null
-  const eq = resolveEquipment(equipmentType, wk)
-  const s  = STRENGTH[phase][eq]
+  const eq       = resolveEquipment(equipmentType, wk)
+  const s        = STRENGTH[phase][eq]
+  const category = resolveCategory(wk, slotIndex)
   return {
     weekNumber: wk, phase, date,
     dayOfWeek: dowLabel(date),
@@ -488,6 +499,7 @@ function buildStrengthSession(
     description: strengthDescription(phase),
     durationMinutes: s.duration,
     exercises: s.exercises,
+    workoutCategory: category,
   }
 }
 
@@ -687,8 +699,8 @@ export function generatePlan(config: UserPlanConfig): Week[] {
     }
 
     // ── Strength sessions ─────────────────────────────────────────────────────
-    for (const offset of sOffsets) {
-      const session = buildStrengthSession(wk, tmpl.phase, addDays(weekStart, offset), eqType, isRaceWeek)
+    for (let idx = 0; idx < sOffsets.length; idx++) {
+      const session = buildStrengthSession(wk, tmpl.phase, addDays(weekStart, sOffsets[idx]), eqType, isRaceWeek, idx)
       if (session) runs.push(session)
     }
 

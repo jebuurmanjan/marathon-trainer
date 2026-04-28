@@ -1,4 +1,4 @@
-import { Week, PlannedRun, Phase, RunType } from '@/types'
+import { Week, PlannedRun, Phase, RunType, StrengthOverride } from '@/types'
 
 // ─── Run override type ────────────────────────────────────────────────────────
 
@@ -6,6 +6,34 @@ export interface RunOverride {
   originalDate: string  // ISO YYYY-MM-DD
   runType:      string
   newDate:      string  // ISO YYYY-MM-DD
+}
+
+// Re-export so plan page can import from one place
+export type { StrengthOverride }
+
+/**
+ * Apply workout-swap overrides to strength sessions.
+ * Must be called BEFORE applyOverrides() so session_date keys match original dates.
+ * Returns new Week/PlannedRun objects — does not mutate inputs.
+ */
+export function applyStrengthOverrides(weeks: Week[], overrides: StrengthOverride[]): Week[] {
+  if (overrides.length === 0) return weeks
+  return weeks.map((week) => {
+    const runs = week.runs.map((run) => {
+      if (run.type !== 'strength') return run
+      const o = overrides.find((o) => o.sessionDate === run.date)
+      if (!o) return run
+      return {
+        ...run,
+        workoutId:       o.workoutId,
+        workoutName:     o.workoutName,
+        workoutCategory: o.workoutCategory,
+        exercises:       o.exercises,
+        durationMinutes: o.durationMinutes,
+      }
+    })
+    return { ...week, runs }
+  })
 }
 
 /**

@@ -13,16 +13,17 @@ const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
 }
 
 interface WeekCardProps {
-  week:                 Week
-  actualRuns:           ActualRun[]
-  isCurrentWeek:        boolean
-  isPastWeek:           boolean
-  strengthCompletions?: string[]
-  planId?:              string
-  units?:               'km' | 'miles'
+  week:                      Week
+  actualRuns:                ActualRun[]
+  isCurrentWeek:             boolean
+  isPastWeek:                boolean
+  strengthCompletions?:      string[]
+  planId?:                   string
+  units?:                    'km' | 'miles'
+  onStrengthSwapRequest?:    (run: import('@/types').PlannedRun) => void
 }
 
-export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, strengthCompletions = [], planId = '', units = 'km' }: WeekCardProps) {
+export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, strengthCompletions = [], planId = '', units = 'km', onStrengthSwapRequest }: WeekCardProps) {
   const today = new Date().toISOString().slice(0, 10)
 
   function findActual(plannedDate: string): ActualRun | undefined {
@@ -251,6 +252,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                   run={run}
                   isCompleted={strengthCompletions.includes(run.date)}
                   planId={planId}
+                  onSwapRequest={onStrengthSwapRequest}
                 />
               )
             }

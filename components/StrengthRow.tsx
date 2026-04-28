@@ -1,15 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { PlannedRun } from '@/types'
+import { PlannedRun, WorkoutCategory } from '@/types'
 
-interface StrengthRowProps {
-  run:          PlannedRun
-  isCompleted:  boolean
-  planId:       string
+const CATEGORY_LABELS: Record<WorkoutCategory, string> = {
+  core_stability: 'Core & Stability',
+  legs:           'Legs',
+  plyometrics:    'Plyometrics',
+  upper_body:     'Upper Body',
 }
 
-export default function StrengthRow({ run, isCompleted: initialCompleted, planId }: StrengthRowProps) {
+interface StrengthRowProps {
+  run:             PlannedRun
+  isCompleted:     boolean
+  planId:          string
+  onSwapRequest?:  (run: PlannedRun) => void
+}
+
+export default function StrengthRow({ run, isCompleted: initialCompleted, planId, onSwapRequest }: StrengthRowProps) {
   const [completed,  setCompleted]  = useState(initialCompleted)
   const [expanded,   setExpanded]   = useState(false)
   const [loading,    setLoading]    = useState(false)
@@ -77,10 +85,17 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
           Strength
         </span>
 
-        {/* Label */}
-        <span className="flex-1 text-xs truncate" style={{ color: 'var(--text-primary)' }}>
-          {run.description || `Strength session — ${duration} min`}
-        </span>
+        {/* Label + workout name */}
+        <div className="flex-1 min-w-0">
+          <span className="text-xs block truncate" style={{ color: 'var(--text-primary)' }}>
+            {run.workoutName ?? (run.description || `Strength session — ${duration} min`)}
+          </span>
+          {run.workoutCategory && (
+            <span className="text-[10px]" style={{ color: 'var(--accent-violet)' }}>
+              {CATEGORY_LABELS[run.workoutCategory]}
+            </span>
+          )}
+        </div>
 
         {/* Duration */}
         <span
@@ -89,6 +104,17 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
         >
           {duration} min
         </span>
+
+        {/* Edit / swap button */}
+        {onSwapRequest && (
+          <button
+            onClick={() => onSwapRequest(run)}
+            className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium"
+            style={{ color: 'var(--accent)', background: 'rgba(238,107,23,0.08)' }}
+          >
+            Edit
+          </button>
+        )}
 
         {/* Expand toggle (only if exercises) */}
         {run.exercises && run.exercises.length > 0 && (

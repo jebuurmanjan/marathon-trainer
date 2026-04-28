@@ -54,6 +54,15 @@ const SECTIONS: Section[] = [
         ),
       },
       {
+        href: '/workouts',
+        label: 'Workouts',
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 4v16M18 4v16M3 8h3M18 8h3M3 16h3M18 16h3M6 12h12"/>
+          </svg>
+        ),
+      },
+      {
         href: '/suggestions',
         label: 'AI Coach',
         icon: (

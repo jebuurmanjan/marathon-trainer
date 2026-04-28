@@ -7,9 +7,10 @@ import PlanTabs from '@/components/PlanTabs'
 import WeekCard from '@/components/WeekCard'
 import EditGoalModal from '@/components/EditGoalModal'
 import UpcomingWeeksModal from '@/components/UpcomingWeeksModal'
-import { ActualRun, Week } from '@/types'
+import WorkoutSwapModal from '@/components/WorkoutSwapModal'
+import { ActualRun, Week, PlannedRun, StrengthWorkout, StrengthOverride } from '@/types'
 import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
-import { formatDistance, formatDistanceExact, applyOverrides, RunOverride } from '@/lib/training-plan'
+import { formatDistance, formatDistanceExact, applyOverrides, applyStrengthOverrides, RunOverride } from '@/lib/training-plan'
 
 type Filter = 'upcoming' | 'all' | 'past'
 
@@ -37,7 +38,10 @@ export default function PlanPage() {
   const [upcomingOpen,     setUpcomingOpen]    = useState(false)
   const [profilePhotoUrl,  setProfilePhotoUrl] = useState<string | null>(null)
   const [preferredUnits,   setPreferredUnits]  = useState<'km' | 'miles'>('km')
-  const [overrides,        setOverrides]       = useState<RunOverride[]>([])
+  const [overrides,          setOverrides]          = useState<RunOverride[]>([])
+  const [strengthOverrides,  setStrengthOverrides]  = useState<StrengthOverride[]>([])
+  const [workouts,           setWorkouts]           = useState<StrengthWorkout[]>([])
+  const [swappingRun,        setSwappingRun]        = useState<PlannedRun | null>(null)
 
   // ── Fetch plan + runs ────────────────────────────────────────────────────
 
@@ -66,6 +70,14 @@ export default function PlanPage() {
       fetch(`/api/plan-overrides?planId=${id}`)
         .then((r) => r.ok ? r.json() : { overrides: [] })
         .then((data) => setOverrides(data.overrides ?? []))
+        .catch(() => {})
+      fetch(`/api/plan-strength-overrides?planId=${id}`)
+        .then((r) => r.ok ? r.json() : { overrides: [] })
+        .then((data) => setStrengthOverrides(data.overrides ?? []))
+        .catch(() => {})
+      fetch('/api/workouts')
+        .then((r) => r.ok ? r.json() : { workouts: [] })
+        .then((data) => setWorkouts(data.workouts ?? []))
         .catch(() => {})
     }
   }, [router])
@@ -115,8 +127,8 @@ export default function PlanPage() {
 
   // ── Derived values ────────────────────────────────────────────────────────
 
-  // Apply drag-and-drop overrides to the plan for display
-  const displayedPlan = applyOverrides(plan, overrides)
+  // Apply strength swaps first (uses original dates), then date overrides
+  const displayedPlan = applyOverrides(applyStrengthOverrides(plan, strengthOverrides), overrides)
 
   const visibleWeeks = displayedPlan.filter((week) => {
     if (filter === 'all')  return true
@@ -338,6 +350,7 @@ export default function PlanPage() {
                 strengthCompletions={strengthCompletions}
                 planId={planId}
                 units={preferredUnits}
+                onStrengthSwapRequest={setSwappingRun}
               />
             )
           })}
@@ -359,6 +372,28 @@ export default function PlanPage() {
             setLoading(true)
             await fetchPlan()
             setLoading(false)
+          }}
+        />
+      )}
+
+      {/* Workout swap modal */}
+      {swappingRun && (
+        <WorkoutSwapModal
+          run={swappingRun}
+          planId={planId}
+          workouts={workouts}
+          currentOverride={strengthOverrides.find((o) => o.sessionDate === swappingRun.date)}
+          onClose={() => setSwappingRun(null)}
+          onSwapped={(override) => {
+            setStrengthOverrides((prev) => [
+              ...prev.filter((o) => o.sessionDate !== override.sessionDate),
+              override,
+            ])
+            setSwappingRun(null)
+          }}
+          onReset={() => {
+            setStrengthOverrides((prev) => prev.filter((o) => o.sessionDate !== swappingRun.date))
+            setSwappingRun(null)
           }}
         />
       )}
