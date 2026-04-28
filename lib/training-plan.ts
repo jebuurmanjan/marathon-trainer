@@ -24,6 +24,7 @@ export function applyOverrides(weeks: Week[], overrides: RunOverride[]): Week[] 
       const dayName = newDate.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' })
       return { ...run, date: override.newDate, dayOfWeek: dayName }
     })
+    runs.sort((a, b) => a.date.localeCompare(b.date))
     return { ...week, runs }
   })
 }
