@@ -36,18 +36,26 @@ export async function POST() {
 
   const context = buildContext(planWeeks, actualRuns, currentWeek)
 
-  const message = await anthropic.messages.create({
-    model:      'claude-opus-4-6',
-    max_tokens: 600,
-    system: `You are an expert marathon coach helping an athlete prepare for a ${goalLabel} marathon (target pace: ${mpLabel}).
+  let message
+  try {
+    message = await anthropic.messages.create({
+      model:      'claude-opus-4-5',
+      max_tokens: 600,
+      system: `You are an expert marathon coach helping an athlete prepare for a ${goalLabel} marathon (target pace: ${mpLabel}).
 They are following a 27-week training plan. Be direct, specific, and encouraging.
 Give one or two concrete adjustments for the coming week based on the data.
 Format your response as 2–3 short paragraphs. No bullet points. No greetings.`,
-    messages: [{
-      role:    'user',
-      content: `Here is my training data for the past ${planWeeks.length} week(s):\n\n${context}\n\nBased on this, what adjustments should I make to my training this week?`,
-    }],
-  })
+      messages: [{
+        role:    'user',
+        content: `Here is my training data for the past ${planWeeks.length} week(s):\n\n${context}\n\nBased on this, what adjustments should I make to my training this week?`,
+      }],
+    })
+  } catch (err: unknown) {
+    const status = (err as { status?: number }).status ?? 500
+    const msg    = (err as { message?: string }).message ?? 'AI service unavailable'
+    console.error('Anthropic API error:', err)
+    return NextResponse.json({ error: msg }, { status: status >= 400 && status < 600 ? status : 500 })
+  }
 
   const suggestion = message.content[0].type === 'text' ? message.content[0].text : ''
 
