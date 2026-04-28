@@ -1,4 +1,4 @@
-import { Week, PlannedRun, Phase, RunType, StrengthOverride } from '@/types'
+import { Week, PlannedRun, Phase, RunType, StrengthOverride, StrengthWorkout } from '@/types'
 
 // ─── Run override type ────────────────────────────────────────────────────────
 
@@ -10,6 +10,60 @@ export interface RunOverride {
 
 // Re-export so plan page can import from one place
 export type { StrengthOverride }
+
+/**
+ * Map un-swapped strength sessions to matching library workouts.
+ * Matches by workoutCategory + equipment (derived from equipmentType + weekNumber) + phase.
+ * Sessions that already have a workoutId (user override) are left untouched.
+ * Call this BEFORE applyStrengthOverrides() so explicit swaps still win.
+ */
+export function applyDefaultWorkouts(
+  weeks:         Week[],
+  workouts:      StrengthWorkout[],
+  equipmentType: string,   // 'gym' | 'bodyweight' | 'both'
+): Week[] {
+  if (workouts.length === 0) return weeks
+
+  function resolvedEquipment(weekNumber: number): 'home' | 'gym' {
+    if (equipmentType === 'gym')       return 'gym'
+    if (equipmentType === 'bodyweight') return 'home'
+    return weekNumber % 2 === 1 ? 'gym' : 'home'  // 'both': alternate (mirrors plan-generator)
+  }
+
+  return weeks.map((week) => {
+    const equipment = resolvedEquipment(week.weekNumber)
+    const runs = week.runs.map((run) => {
+      if (run.type !== 'strength') return run
+      if (run.workoutId)           return run  // already has a user override
+      if (!run.workoutCategory)    return run
+
+      // Best match: same category + equipment + phase listed
+      const match =
+        workouts.find(
+          (w) => w.category === run.workoutCategory &&
+                 w.equipment === equipment &&
+                 w.phases.includes(run.phase)
+        ) ??
+        // Fallback: same category + equipment (ignore phase)
+        workouts.find(
+          (w) => w.category === run.workoutCategory && w.equipment === equipment
+        ) ??
+        // Last resort: same category only
+        workouts.find((w) => w.category === run.workoutCategory)
+
+      if (!match) return run
+
+      return {
+        ...run,
+        workoutId:       match.id,
+        workoutName:     match.name,
+        exercises:       match.exercises,
+        durationMinutes: match.duration_minutes,
+      }
+    })
+    return { ...week, runs }
+  })
+}
 
 /**
  * Apply workout-swap overrides to strength sessions.

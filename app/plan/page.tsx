@@ -10,7 +10,7 @@ import UpcomingWeeksModal from '@/components/UpcomingWeeksModal'
 import WorkoutSwapModal from '@/components/WorkoutSwapModal'
 import { ActualRun, Week, PlannedRun, StrengthWorkout, StrengthOverride } from '@/types'
 import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
-import { formatDistance, formatDistanceExact, applyOverrides, applyStrengthOverrides, RunOverride } from '@/lib/training-plan'
+import { formatDistance, formatDistanceExact, applyOverrides, applyStrengthOverrides, applyDefaultWorkouts, RunOverride } from '@/lib/training-plan'
 
 type Filter = 'upcoming' | 'all' | 'past'
 
@@ -127,8 +127,16 @@ export default function PlanPage() {
 
   // ── Derived values ────────────────────────────────────────────────────────
 
-  // Apply strength swaps first (uses original dates), then date overrides
-  const displayedPlan = applyOverrides(applyStrengthOverrides(plan, strengthOverrides), overrides)
+  // 1. Fill un-swapped sessions with matching library workout (by category + equipment)
+  // 2. Apply explicit user swaps on top
+  // 3. Apply date-move overrides last
+  const displayedPlan = applyOverrides(
+    applyStrengthOverrides(
+      applyDefaultWorkouts(plan, workouts, config?.equipmentType ?? 'bodyweight'),
+      strengthOverrides,
+    ),
+    overrides,
+  )
 
   const visibleWeeks = displayedPlan.filter((week) => {
     if (filter === 'all')  return true
