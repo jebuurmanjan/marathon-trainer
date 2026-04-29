@@ -61,24 +61,28 @@ export default function PlanPage() {
     setPreferredUnits(d.preferredUnits ?? 'km')
     const id: string = d.planId ?? ''
     setPlanId(id)
-    // Fetch strength completions and run overrides once we have the planId
+    // Await all secondary fetches so state is set before the plan renders.
+    // Previously these were fire-and-forget, causing StrengthRow to mount
+    // with isCompleted=false before completions arrived (useState never reinitialises).
     if (id) {
-      fetch(`/api/strength?planId=${id}`)
-        .then((r) => r.ok ? r.json() : { completions: [] })
-        .then((data) => setStrengthCompletions(data.completions ?? []))
-        .catch(() => {})
-      fetch(`/api/plan-overrides?planId=${id}`)
-        .then((r) => r.ok ? r.json() : { overrides: [] })
-        .then((data) => setOverrides(data.overrides ?? []))
-        .catch(() => {})
-      fetch(`/api/plan-strength-overrides?planId=${id}`)
-        .then((r) => r.ok ? r.json() : { overrides: [] })
-        .then((data) => setStrengthOverrides(data.overrides ?? []))
-        .catch(() => {})
-      fetch('/api/workouts')
-        .then((r) => r.ok ? r.json() : { workouts: [] })
-        .then((data) => setWorkouts(data.workouts ?? []))
-        .catch(() => {})
+      const [strengthData, overridesData, strengthOverridesData, workoutsData] = await Promise.all([
+        fetch(`/api/strength?planId=${id}`)
+          .then((r) => r.ok ? r.json() : { completions: [] })
+          .catch(() => ({ completions: [] })),
+        fetch(`/api/plan-overrides?planId=${id}`)
+          .then((r) => r.ok ? r.json() : { overrides: [] })
+          .catch(() => ({ overrides: [] })),
+        fetch(`/api/plan-strength-overrides?planId=${id}`)
+          .then((r) => r.ok ? r.json() : { overrides: [] })
+          .catch(() => ({ overrides: [] })),
+        fetch('/api/workouts')
+          .then((r) => r.ok ? r.json() : { workouts: [] })
+          .catch(() => ({ workouts: [] })),
+      ])
+      setStrengthCompletions(strengthData.completions ?? [])
+      setOverrides(overridesData.overrides ?? [])
+      setStrengthOverrides(strengthOverridesData.overrides ?? [])
+      setWorkouts(workoutsData.workouts ?? [])
     }
   }, [router])
 
