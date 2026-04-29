@@ -47,8 +47,13 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
           body:    JSON.stringify({ planId, sessionDate: run.date }),
         })
       }
-      if (!res.ok) setCompleted(!next) // revert on HTTP error
-    } catch {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        console.error('Strength completion save failed', res.status, body)
+        setCompleted(!next) // revert on HTTP error
+      }
+    } catch (err) {
+      console.error('Strength completion network error', err)
       setCompleted(!next) // revert on network failure
     } finally {
       setLoading(false)
