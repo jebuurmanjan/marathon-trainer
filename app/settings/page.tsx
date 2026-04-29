@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Navigation from '@/components/Navigation'
+import PoweredByStrava from '@/components/PoweredByStrava'
 
 interface Settings {
   stravaName:      string
@@ -301,6 +302,14 @@ export default function SettingsPage() {
             </button>
           </div>
         </Section>
+
+        {/* Powered by Strava */}
+        <div className="flex justify-center pt-2 pb-6">
+          <PoweredByStrava
+            className="h-4 w-auto opacity-40"
+            style={{ color: 'var(--text-muted)' }}
+          />
+        </div>
       </main>
 
       {/* ── Delete confirmation modal ── */}

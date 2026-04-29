@@ -29,8 +29,9 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
     setCompleted(next) // optimistic
 
     try {
+      let res: Response
       if (next) {
-        await fetch('/api/strength', {
+        res = await fetch('/api/strength', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({
@@ -40,14 +41,15 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
           }),
         })
       } else {
-        await fetch('/api/strength', {
+        res = await fetch('/api/strength', {
           method:  'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ planId, sessionDate: run.date }),
         })
       }
+      if (!res.ok) setCompleted(!next) // revert on HTTP error
     } catch {
-      setCompleted(!next) // revert on failure
+      setCompleted(!next) // revert on network failure
     } finally {
       setLoading(false)
     }

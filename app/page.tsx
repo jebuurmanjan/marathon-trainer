@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/session'
+import PoweredByStrava from '@/components/PoweredByStrava'
 
 const ERROR_MESSAGES: Record<string, string> = {
   access_denied: 'Strava access was denied. Please try again.',
@@ -85,6 +86,14 @@ export default async function HomePage({ searchParams }: PageProps) {
           Connect your Strava account to get a personalised<br />
           plan built around your race date and training level.
         </p>
+      </div>
+
+      {/* Powered by Strava */}
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+        <PoweredByStrava
+          className="h-5 w-auto opacity-50"
+          style={{ color: 'var(--text-muted)' }}
+        />
       </div>
     </main>
   )
