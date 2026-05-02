@@ -195,9 +195,36 @@ export default function PlanPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight:'100vh', background:'var(--bg-base)' }}>
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-sm" style={{ color:'var(--text-dim)' }}>Loading your plan…</div>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
+        <div className="flex flex-col items-center justify-center h-screen gap-4">
+          <svg
+            viewBox="0 0 128 64"
+            width="200"
+            height="100"
+            style={{ color: 'var(--accent)' }}
+            aria-label="Loading"
+          >
+            <style>{`
+              @keyframes heartpulse {
+                0%   { stroke-dashoffset: 260; opacity: 1; }
+                100% { stroke-dashoffset: 0;   opacity: .5; }
+              }
+            `}</style>
+            <polyline
+              points="0,45.486 38.514,45.486 44.595,33.324 50.676,45.486 57.771,45.486 62.838,55.622 71.959,9 80.067,63.729 84.122,45.486 97.297,45.486 103.379,40.419 110.473,45.486 150,45.486"
+              fill="none" stroke="currentColor" strokeWidth="3"
+              strokeLinecap="round" strokeLinejoin="round"
+              opacity="0.12"
+            />
+            <polyline
+              points="0,45.486 38.514,45.486 44.595,33.324 50.676,45.486 57.771,45.486 62.838,55.622 71.959,9 80.067,63.729 84.122,45.486 97.297,45.486 103.379,40.419 110.473,45.486 150,45.486"
+              fill="none" stroke="currentColor" strokeWidth="3"
+              strokeLinecap="round" strokeLinejoin="round"
+              strokeDasharray="260" strokeDashoffset="260"
+              style={{ animation: 'heartpulse 1.4s linear infinite' }}
+            />
+          </svg>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Loading your plan…</p>
         </div>
       </div>
     )

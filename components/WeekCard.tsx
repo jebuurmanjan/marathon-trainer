@@ -71,7 +71,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
   return (
     <div
       id={`week-${week.weekNumber}`}
-      className="rounded-xl overflow-hidden transition-all"
+      className="rounded-xl transition-all"
       style={{
         background: 'var(--surface)',
         border: isCurrentWeek
@@ -163,13 +163,13 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
                     {/* Tooltip */}
                     <div
-                      className="absolute bottom-full right-0 mb-2 w-60 rounded-lg px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30"
-                      style={{ background: 'var(--surface-overlay)', color: 'var(--bg-base)', boxShadow: '0 8px 24px rgba(0,0,0,0.28)' }}
+                      className="absolute bottom-full right-0 mb-2 w-60 rounded-lg px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50"
+                      style={{ background: 'var(--surface-overlay)', boxShadow: '0 8px 24px rgba(0,0,0,0.32)' }}
                     >
                       {/* Arrow */}
                       <div className="absolute -bottom-1.5 right-3 w-3 h-3 rotate-45" style={{ background: 'var(--surface-overlay)' }} />
 
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--surface-3)' }}>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'rgba(246,247,249,0.45)' }}>
                         Performance score
                       </p>
                       <p className="text-[11px] mb-2.5 leading-relaxed" style={{ color: 'var(--text-overlay-body)' }}>
@@ -179,13 +179,13 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                       <div className="space-y-1.5 text-[11px]">
                         <div className="flex justify-between items-center gap-2">
                           <span style={{ color: 'var(--text-overlay-body)' }}>Mileage — actual vs planned km</span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--bg-base)' }}>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--text-overlay)' }}>
                             {score.mileage}/40
                           </span>
                         </div>
                         <div className="flex justify-between items-center gap-2">
                           <span style={{ color: 'var(--text-overlay-body)' }}>Pace — closeness to target</span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--bg-base)' }}>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--text-overlay)' }}>
                             {score.pace}/35
                           </span>
                         </div>
@@ -194,7 +194,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                             HR — zone efficiency
                             {!score.hrHasData && <span style={{ opacity: 0.6 }}> (est.)</span>}
                           </span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--bg-base)' }}>
+                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--text-overlay)' }}>
                             {score.hr}/25
                           </span>
                         </div>
@@ -202,7 +202,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
                       <div
                         className="mt-2.5 pt-2 flex justify-between items-center text-[11px] border-t"
-                        style={{ borderColor: 'rgba(255,255,255,0.12)' }}
+                        style={{ borderColor: 'rgba(246,247,249,0.10)' }}
                       >
                         <span style={{ color: 'var(--text-overlay-body)' }}>Total</span>
                         <span className="font-bold" style={{ color: scoreColor(score.total) }}>
