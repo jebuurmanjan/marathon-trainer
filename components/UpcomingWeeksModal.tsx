@@ -22,10 +22,10 @@ const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
   tempo:       { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',  dot: 'var(--accent)'        },
   interval:    { bg: 'rgba(251,188,85,0.18)',   color: 'var(--color-warning)',dot: 'var(--color-warning)' },
   quality:     { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',  dot: 'var(--accent)'        }, // legacy
-  medium_long: { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)',dot: 'var(--accent-violet)' },
+  medium_long: { bg: 'rgba(13,148,136,0.12)',  color: 'var(--accent-teal)',  dot: 'var(--accent-teal)'   },
   long:        { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)',dot: 'var(--accent-violet)' },
   race:        { bg: 'rgba(243,65,65,0.10)',    color: 'var(--color-error)',  dot: 'var(--color-error)'   },
-  strength:    { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)',dot: 'var(--accent-violet)' },
+  strength:    { bg: 'rgba(219,39,119,0.10)',  color: 'var(--accent-rose)',  dot: 'var(--accent-rose)'   },
 }
 
 const TYPE_LABELS: Record<string, string> = {

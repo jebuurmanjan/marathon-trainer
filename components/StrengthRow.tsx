@@ -73,10 +73,10 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
     >
       {/* Main row */}
       <div className="flex items-center gap-2.5">
-        {/* Icon dot — purple for strength */}
+        {/* Icon dot — rose for strength */}
         <span
           className="w-2 h-2 rounded-full shrink-0"
-          style={{ background: 'var(--accent-violet)' }}
+          style={{ background: 'var(--accent-rose)' }}
         />
 
         {/* Day */}
@@ -87,7 +87,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
         {/* Type badge */}
         <span
           className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
-          style={{ background: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' }}
+          style={{ background: 'rgba(219,39,119,0.10)', color: 'var(--accent-rose)' }}
         >
           Strength
         </span>
@@ -98,7 +98,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
             {run.workoutName ?? (run.description || `Strength session — ${duration} min`)}
           </span>
           {run.workoutCategory && (
-            <span className="text-[10px]" style={{ color: 'var(--accent-violet)' }}>
+            <span className="text-[10px]" style={{ color: 'var(--accent-rose)' }}>
               {CATEGORY_LABELS[run.workoutCategory]}
             </span>
           )}
@@ -157,7 +157,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
         >
           {run.exercises.map((ex, i) => (
             <div key={i} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-dim)' }}>
-              <span style={{ color: 'var(--accent-violet)', flexShrink: 0 }}>·</span>
+              <span style={{ color: 'var(--accent-rose)', flexShrink: 0 }}>·</span>
               <span>{ex}</span>
             </div>
           ))}

@@ -33,6 +33,8 @@
 
   /* Semantic accents */
   --accent-violet: #8879E1;
+  --accent-teal:   #0D9488;
+  --accent-rose:   #DB2777;
   --accent-green:  #2F9461;
 
   /* Semantic state colors */
@@ -97,6 +99,8 @@
 
   /* Semantic accents */
   --accent-violet: #A89FEF;
+  --accent-teal:   #2DD4BF;
+  --accent-rose:   #F472B6;
   --accent-green:  #6AD09D;
 
   /* Semantic state colors */
