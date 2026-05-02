@@ -42,7 +42,7 @@ export default function SyncButton() {
         onClick={handleSync}
         disabled={syncing}
         className="flex items-center gap-2 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all disabled:opacity-50"
-        style={{ background: 'var(--accent)' }}
+        style={{ background: '#FC5200' }}
       >
         <svg
           viewBox="0 0 24 24"

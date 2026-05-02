@@ -72,7 +72,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
         <a
           href="/api/strava/auth?mode=guest"
           className="flex items-center justify-center gap-2.5 w-full text-white font-bold py-3.5 px-6 rounded-xl transition-opacity hover:opacity-90 text-base mb-4"
-          style={{ background: 'var(--accent)' }}
+          style={{ background: '#FC5200' }}
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
             <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
