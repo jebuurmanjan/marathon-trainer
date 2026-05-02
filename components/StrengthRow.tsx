@@ -119,7 +119,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
             className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium"
             style={{ color: 'var(--accent)', background: 'rgba(var(--accent-rgb),0.08)' }}
           >
-            Edit
+            Swap
           </button>
         )}
 

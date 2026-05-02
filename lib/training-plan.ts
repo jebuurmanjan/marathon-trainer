@@ -542,9 +542,11 @@ export const PHASE_LABELS: Record<string, string> = {
 
 export const RUN_TYPE_LABELS: Record<string, string> = {
   easy:        'Easy',
-  quality:     'Quality',
-  medium_long: 'Medium Long',
+  tempo:       'Tempo',
+  interval:    'Interval',
+  quality:     'Tempo',       // legacy fallback for stored plans
+  medium_long: 'Mid-Long',
   long:        'Long Run',
-  race:        'RACE',
+  race:        'Race',
   strength:    'Strength',
 }

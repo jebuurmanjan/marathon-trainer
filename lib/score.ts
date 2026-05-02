@@ -120,6 +120,6 @@ export function scoreColor(total: number): string {
 export function scoreLabel(total: number): string {
   if (total >= 85) return 'Excellent'
   if (total >= 65) return 'Good'
-  if (total >= 40) return 'Partial'
-  return 'Missed'
+  if (total >= 40) return 'Fair'
+  return 'Poor'
 }

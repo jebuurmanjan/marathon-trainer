@@ -536,29 +536,29 @@ function buildThursdayRun(
     }
 
     case 'hills':
-      return mkRun(wk, phase, date, 'quality', km, paces.hill,
+      return mkRun(wk, phase, date, 'interval', km, paces.hill,
         `Hill workout ${km} km. Easy on flat sections (${fmtPace(paces.easy)}). On uphills, drive knees and run strong — 6–10 climbs of 60–90s each.`, optional)
 
     case 'tempo':
-      return mkRun(wk, phase, date, 'quality', km, paces.threshold,
+      return mkRun(wk, phase, date, 'tempo', km, paces.threshold,
         `Tempo ${km} km. ${wu} km easy warm-up → ${main} km at threshold pace (${fmtPace(paces.threshold)}) — comfortably hard, short phrases only → ${cd} km easy cool-down.`, optional)
 
     case 'fartlek':
-      return mkRun(wk, phase, date, 'easy', km, undefined,
+      return mkRun(wk, phase, date, 'interval', km, undefined,
         `Fartlek ${km} km. Mostly easy (${fmtPace(paces.easy)}) with 6–10 fast bursts of 60–90s scattered throughout. Pick landmarks, run hard, recover fully. Run by feel.`, optional)
 
     case 'mp':
-      return mkRun(wk, phase, date, 'quality', km, paces.mp,
+      return mkRun(wk, phase, date, 'tempo', km, paces.mp,
         `Marathon pace ${km} km. ${wu} km easy warm-up → ${main} km at marathon pace (${fmtPace(paces.mp)}) → ${cd} km easy cool-down. Should feel like a controlled 7/10 effort.`, optional)
 
     case 'race_sim': {
       const mpSec = Math.max(3, Math.round(main * 0.8))
-      return mkRun(wk, phase, date, 'quality', km, paces.mp,
+      return mkRun(wk, phase, date, 'tempo', km, paces.mp,
         `Race simulation ${km} km. ${wu} km easy → ${mpSec} km at marathon pace (${fmtPace(paces.mp)}) → ${cd} km cool-down. Practise race-day nutrition and gear. Most important workout of the plan.`, optional)
     }
 
     case 'dress_rehearsal':
-      return mkRun(wk, phase, date, 'quality', km, paces.mp,
+      return mkRun(wk, phase, date, 'tempo', km, paces.mp,
         `Dress rehearsal ${km} km. 15 min easy → 20 min at marathon pace (${fmtPace(paces.mp)}) → 15 min easy. Use exact race kit, shoes, and nutrition. Nothing new on race day.`, optional)
 
     case 'tune_up':

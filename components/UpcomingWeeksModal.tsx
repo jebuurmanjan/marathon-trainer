@@ -18,18 +18,22 @@ import { RunOverride, applyOverrides } from '@/lib/training-plan'
 // ─── Type styles ──────────────────────────────────────────────────────────────
 
 const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
-  easy:        { bg: 'rgba(47,148,97,0.10)',   color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
-  quality:     { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
-  medium_long: { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
-  long:        { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
-  race:        { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
-  strength:    { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
+  easy:        { bg: 'rgba(47,148,97,0.10)',    color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
+  tempo:       { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',  dot: 'var(--accent)'        },
+  interval:    { bg: 'rgba(251,188,85,0.18)',   color: 'var(--color-warning)',dot: 'var(--color-warning)' },
+  quality:     { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',  dot: 'var(--accent)'        }, // legacy
+  medium_long: { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)',dot: 'var(--accent-violet)' },
+  long:        { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)',dot: 'var(--accent-violet)' },
+  race:        { bg: 'rgba(243,65,65,0.10)',    color: 'var(--color-error)',  dot: 'var(--color-error)'   },
+  strength:    { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)',dot: 'var(--accent-violet)' },
 }
 
 const TYPE_LABELS: Record<string, string> = {
   easy:        'Easy',
-  quality:     'Quality',
-  medium_long: 'Med Long',
+  tempo:       'Tempo',
+  interval:    'Interval',
+  quality:     'Tempo',       // legacy
+  medium_long: 'Mid-Long',
   long:        'Long Run',
   race:        'Race',
   strength:    'Strength',

@@ -1,5 +1,5 @@
 export type Phase = 'base' | 'build' | 'peak' | 'sharpen' | 'taper'
-export type RunType = 'easy' | 'quality' | 'medium_long' | 'long' | 'race' | 'strength'
+export type RunType = 'easy' | 'tempo' | 'interval' | 'quality' | 'medium_long' | 'long' | 'race' | 'strength'
 export type WorkoutCategory = 'core_stability' | 'plyometrics' | 'legs' | 'upper_body'
 export type WorkoutEquipment = 'home' | 'gym'
 
