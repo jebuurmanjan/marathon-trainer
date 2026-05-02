@@ -234,7 +234,7 @@ export default function OnboardingPage() {
               <span>{maxWeeks} wk</span>
             </div>
 
-            <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: 'var(--text-dim)' }}>
+            <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--text-dim)' }}>
               {planWeeks <= 14 && 'Short block — Base + Build + combined Peak/Sharpen + 2-week taper. Every week counts.'}
               {planWeeks > 14 && planWeeks <= 20 && 'Moderate plan — all 5 phases compressed. Good balance of build-up and recovery.'}
               {planWeeks > 20 && planWeeks < 27 && 'Full plan structure with a bit less volume in the middle phases. Solid preparation.'}
@@ -290,7 +290,7 @@ export default function OnboardingPage() {
             <div className="flex justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
               <span>10 km</span><span>100 km</span>
             </div>
-            <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: 'var(--text-dim)' }}>
+            <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--text-dim)' }}>
               {weeklyKm < 30  && 'Good starting point — the plan builds safely from week 1 at your current load.'}
               {weeklyKm >= 30 && weeklyKm < 50 && 'Solid base. The plan will push your volume through the build and peak phases.'}
               {weeklyKm >= 50 && weeklyKm < 70 && "Strong base. You're well-placed to hit the peak training weeks comfortably."}
@@ -321,7 +321,7 @@ export default function OnboardingPage() {
               </OptionBtn>
             </div>
             {runsPerWeek && (
-              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: 'var(--text-dim)' }}>
+              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--text-dim)' }}>
                 {runsPerWeek === 3 && "3 focused sessions with good recovery. Perfect alongside strength training or if managing injury risk."}
                 {runsPerWeek === 4 && 'The sweet spot for most marathon runners — enough volume without burning out.'}
                 {runsPerWeek === 5 && 'High frequency. The extra Wednesday easy run adds meaningful aerobic base. Prioritise recovery.'}
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
               </OptionBtn>
             </div>
             {strengthDays !== null && strengthDays > 0 && (
-              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: 'var(--text-dim)' }}>
+              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--text-dim)' }}>
                 Sessions sit on rest days for maximum recovery. 25–45 min per session, adapted per phase.
               </div>
             )}
@@ -381,7 +381,7 @@ export default function OnboardingPage() {
               </OptionBtn>
             </div>
             {equipmentType && (
-              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(238,107,23,0.08)', color: 'var(--text-dim)' }}>
+              <div className="mt-4 px-3 py-2.5 rounded-lg text-xs leading-relaxed" style={{ background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--text-dim)' }}>
                 {equipmentType === 'bodyweight' && 'Glutes, single-leg stability, and core — the stuff that keeps runners injury free.'}
                 {equipmentType === 'gym' && 'Compound lifts (squats, deadlifts, hip thrusts) that build real running strength.'}
                 {equipmentType === 'both' && 'Gym weeks and bodyweight weeks alternate, keeping variety without overloading any one stimulus.'}
@@ -394,7 +394,7 @@ export default function OnboardingPage() {
         {error && (
           <div
             className="mt-3 rounded-lg px-4 py-3 text-sm"
-            style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: 'var(--accent)' }}
+            style={{ background: 'rgba(var(--accent-rgb),0.10)', border: '1px solid rgba(var(--accent-rgb),0.25)', color: 'var(--accent)' }}
           >
             {error}
           </div>

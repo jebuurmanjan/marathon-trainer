@@ -98,7 +98,7 @@ export default async function ProgressPage() {
               className="rounded-xl p-4 relative overflow-hidden"
               style={{
                 background: 'var(--surface)',
-                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(var(--tint),0.08)',
+                border: stat.accent ? '1px solid rgba(var(--accent-rgb),0.30)' : '1px solid rgba(var(--tint),0.08)',
               }}
             >
               <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
@@ -135,7 +135,7 @@ export default async function ProgressPage() {
                 <div className="flex-1 relative h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(var(--tint),0.08)' }}>
                   <div
                     className="absolute inset-y-0 left-0 rounded-lg transition-all"
-                    style={{ width: `${pct}%`, background: pct >= 90 ? 'var(--accent-green)' : pct >= 60 ? 'var(--accent)' : 'rgba(238,107,23,0.5)' }}
+                    style={{ width: `${pct}%`, background: pct >= 90 ? 'var(--accent-green)' : pct >= 60 ? 'var(--accent)' : 'rgba(var(--accent-rgb),0.5)' }}
                   />
                   <div className="absolute inset-0 flex items-center px-2">
                     <span className="text-xs font-semibold" style={{ color: pct > 20 ? '#fff' : 'var(--text-primary)' }}>

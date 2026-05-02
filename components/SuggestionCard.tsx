@@ -25,7 +25,7 @@ export default function SuggestionCard({ suggestion, isLatest }: SuggestionCardP
             {isLatest && (
               <span
                 className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}
+                style={{ background: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)' }}
               >
                 Latest
               </span>

@@ -15,77 +15,121 @@
 :root {
   color-scheme: light;
 
-  --bg-base:    #F5F3EC;
-  --surface:    #EDE9DE;
-  --surface-2:  #F5F4F2;
-  --surface-3:  #E3D2B4;
+  /* Backgrounds */
+  --bg-base:    #FFFFFF;
+  --surface:    #F6F7F9;
+  --surface-2:  #FAFAFA;
+  --surface-3:  #E5E7EA;
 
-  --text-primary:   #1E1611;
-  --text-secondary: #4A5427;
-  --text-dim:       #736554;
-  --text-muted:     #A09880;
+  /* Text */
+  --text-primary:   #24292E;
+  --text-secondary: #596066;
+  --text-dim:       #676E76;
+  --text-muted:     #9EA5AD;
 
-  --accent:        #EE6B17;
+  /* Primary accent — Finesse blue */
+  --accent:     #2563EB;
+  --accent-rgb: 37,99,235;
+
+  /* Semantic accents */
   --accent-violet: #8879E1;
-  --accent-green:  #4A5427;
+  --accent-green:  #2F9461;
 
-  /* rgba() tint base — swap for dark so overlays read correctly */
-  --tint: 43,49,23;
+  /* Semantic state colors */
+  --color-error:   #F34141;
+  --color-warning: #FBBC55;
+  --color-success: #2F9461;
 
-  --border:        rgba(43,49,23,0.08);
-  --border-mid:    rgba(43,49,23,0.12);
-  --border-strong: rgba(43,49,23,0.20);
+  /* rgba() tint base */
+  --tint: 16,24,40;
+
+  /* Borders */
+  --border:        #E5E7EA;
+  --border-mid:    #CED2D6;
+  --border-strong: #9EA5AD;
 
   /* Sticky nav blurred background */
-  --nav-bg: rgba(245,243,236,0.92);
+  --nav-bg: rgba(255,255,255,0.92);
 
-  /* Tooltip / overlay panel (dark card on light bg, light card on dark bg) */
-  --surface-overlay:    #2B3117;
-  --text-overlay:       #F5F3EC;
-  --text-overlay-body:  #C8BFA8;
+  /* Tooltip / overlay panel */
+  --surface-overlay:   #24292E;
+  --text-overlay:      #F6F7F9;
+  --text-overlay-body: #9EA5AD;
 
   /* Workout row card states */
-  --card-base:         #F5F4F2;
-  --card-done:         rgba(74,84,39,0.08);
-  --card-done-border:  rgba(74,84,39,0.20);
-  --card-missed:       rgba(238,107,23,0.06);
-  --card-missed-border:rgba(220,38,38,0.18);
+  --card-base:          #FAFAFA;
+  --card-done:          #EFFDF6;
+  --card-done-border:   #D9F9E6;
+  --card-missed:        #FEF2F2;
+  --card-missed-border: #FDE9E9;
+
+  /* Shadows — Finesse tokens */
+  --shadow-xs: 0px 1px 2px rgba(16,24,40,0.05);
+  --shadow-sm: 0px 1px 3px rgba(16,24,40,0.1), 0px 1px 2px rgba(16,24,40,0.06);
+  --shadow-md: 0px 4px 8px -2px rgba(16,24,40,0.1), 0px 2px 4px -2px rgba(16,24,40,0.06);
+  --shadow-lg: 0px 12px 16px -4px rgba(16,24,40,0.08), 0px 4px 6px -2px rgba(16,24,40,0.03);
+
+  /* Border radius — Finesse tokens */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg-base:    #111111;
-  --surface:    #1F1919;
-  --surface-2:  #252420;
-  --surface-3:  #2B1F0B;
+  /* Backgrounds */
+  --bg-base:    #1A1D1F;
+  --surface:    #24292E;
+  --surface-2:  #383F45;
+  --surface-3:  #454C52;
 
-  --text-primary:   #EDE9DE;
-  --text-secondary: #9E8E7A;
-  --text-dim:       #6E5E4A;
-  --text-muted:     #4A3A28;
+  /* Text */
+  --text-primary:   #F6F7F9;
+  --text-secondary: #9EA5AD;
+  --text-dim:       #676E76;
+  --text-muted:     #454C52;
 
-  --accent:        #EE4917;
+  /* Primary accent — lighter blue for dark bg readability */
+  --accent:     #60A5FA;
+  --accent-rgb: 96,165,250;
+
+  /* Semantic accents */
   --accent-violet: #A89FEF;
-  --accent-green:  #7A9A3A;
+  --accent-green:  #6AD09D;
 
-  --tint: 237,233,222;
+  /* Semantic state colors */
+  --color-error:   #F37373;
+  --color-warning: #FFD16A;
+  --color-success: #6AD09D;
 
-  --border:        rgba(237,233,222,0.08);
-  --border-mid:    rgba(237,233,222,0.12);
-  --border-strong: rgba(237,233,222,0.20);
+  --tint: 246,247,249;
 
-  --nav-bg: rgba(17,17,17,0.92);
+  /* Borders */
+  --border:        #383F45;
+  --border-mid:    #454C52;
+  --border-strong: #596066;
 
-  --surface-overlay:   #EDE9DE;
-  --text-overlay:      #1E1611;
-  --text-overlay-body: #4A5427;
+  --nav-bg: rgba(26,29,31,0.92);
 
-  --card-base:          #1B1A18;
-  --card-done:          #1E2219;
-  --card-done-border:   rgba(122,154,58,0.20);
-  --card-missed:        #221A18;
-  --card-missed-border: rgba(220,38,38,0.20);
+  /* Tooltip / overlay panel */
+  --surface-overlay:   #383F45;
+  --text-overlay:      #F6F7F9;
+  --text-overlay-body: #9EA5AD;
+
+  /* Workout row card states */
+  --card-base:          #24292E;
+  --card-done:          rgba(106,208,157,0.08);
+  --card-done-border:   rgba(106,208,157,0.20);
+  --card-missed:        rgba(243,115,115,0.08);
+  --card-missed-border: rgba(243,65,65,0.20);
+
+  /* Shadows — reduced opacity for dark mode */
+  --shadow-xs: 0px 1px 2px rgba(0,0,0,0.15);
+  --shadow-sm: 0px 1px 3px rgba(0,0,0,0.20), 0px 1px 2px rgba(0,0,0,0.15);
+  --shadow-md: 0px 4px 8px -2px rgba(0,0,0,0.25), 0px 2px 4px -2px rgba(0,0,0,0.15);
+  --shadow-lg: 0px 12px 16px -4px rgba(0,0,0,0.30), 0px 4px 6px -2px rgba(0,0,0,0.20);
 }
 
 /* ─── Base styles ────────────────────────────────────────────────────────────── */
@@ -97,7 +141,7 @@ html {
 body {
   background-color: var(--bg-base);
   color: var(--text-primary);
-  font-family: 'Satoshi', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

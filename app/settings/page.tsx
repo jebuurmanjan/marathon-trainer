@@ -296,7 +296,7 @@ export default function SettingsPage() {
             <button
               onClick={() => setDeleteOpen(true)}
               className="px-4 py-2.5 rounded-lg text-sm font-semibold"
-              style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.20)', color: '#DC2626' }}
+              style={{ background: 'rgba(243,65,65,0.08)', border: '1px solid rgba(243,65,65,0.20)', color: 'var(--color-error)' }}
             >
               Delete account
             </button>
@@ -316,7 +316,7 @@ export default function SettingsPage() {
       {deleteOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(30,22,17,0.50)', backdropFilter: 'blur(4px)' }}
+          style={{ background: 'rgba(16,24,40,0.50)', backdropFilter: 'blur(4px)' }}
           onClick={(e) => { if (e.target === e.currentTarget && !deleting) setDeleteOpen(false) }}
         >
           <div
@@ -341,7 +341,7 @@ export default function SettingsPage() {
                 onClick={deleteAccount}
                 disabled={deleting}
                 className="w-full py-3 rounded-lg text-sm font-bold text-white disabled:opacity-60"
-                style={{ background: '#DC2626' }}
+                style={{ background: 'var(--color-error)' }}
               >
                 {deleting ? 'Deleting…' : 'Yes, delete everything'}
               </button>

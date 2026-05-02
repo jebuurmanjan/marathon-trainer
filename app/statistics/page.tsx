@@ -115,7 +115,7 @@ export default async function StatisticsPage({
             <div className="text-[11px]" style={{ color: 'var(--text-dim)' }}>{toGoKm > 0 ? `of ${GOAL_KM.toLocaleString('en')} km goal` : 'Goal reached!'}</div>
           </div>
 
-          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: isAhead ? '1px solid rgba(74,84,39,0.20)' : '1px solid rgba(238,107,23,0.25)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: isAhead ? '1px solid rgba(47,148,97,0.30)' : '1px solid rgba(var(--accent-rgb),0.25)' }}>
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>{isAhead ? 'Ahead of plan' : 'Behind plan'}</div>
             <div className="text-2xl leading-none mb-1 tabular-nums" style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, letterSpacing: '-0.04em', color: isAhead ? 'var(--text-secondary)' : 'var(--accent)' }}>
               {Math.abs(diffKm)}
@@ -163,9 +163,9 @@ export default async function StatisticsPage({
               </g>
             ))}
             <path d={plannedPath} fill="none" stroke="#C4B99A" strokeWidth="1.5" strokeDasharray="5 4"/>
-            {totalKm > 0 && <path d={areaPath} fill="rgba(238,107,23,0.08)"/>}
-            {totalKm > 0 && <path d={actualLinePath} fill="none" stroke="#EE6B17" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>}
-            {totalKm > 0 && (<><circle cx={dotX} cy={dotY} r="6" fill="rgba(238,107,23,0.20)"/><circle cx={dotX} cy={dotY} r="3.5" fill="#EE6B17"/></>)}
+            {totalKm > 0 && <path d={areaPath} fill="rgba(var(--accent-rgb),0.08)"/>}
+            {totalKm > 0 && <path d={actualLinePath} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>}
+            {totalKm > 0 && (<><circle cx={dotX} cy={dotY} r="6" fill="rgba(var(--accent-rgb),0.20)"/><circle cx={dotX} cy={dotY} r="3.5" fill="var(--accent)"/></>)}
             {totalKm === 0 && <text x={(C.left + C.right) / 2} y={(C.top + C.bottom) / 2} textAnchor="middle" fontSize="12" fill="#C4B99A" fontFamily="system-ui,sans-serif">No runs synced yet</text>}
             <rect x={C.left} y={C.top} width={CW} height={CH} fill="none" stroke="rgba(var(--tint),0.06)" strokeWidth="1" rx="2"/>
           </svg>

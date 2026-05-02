@@ -188,10 +188,10 @@ export default function CelebrationProvider({
           <div
             style={{
               background:   'var(--bg-base)',
-              border:       '1.5px solid rgba(238,107,23,0.28)',
+              border:       '1.5px solid rgba(var(--accent-rgb),0.28)',
               borderRadius: '20px',
               padding:      '16px',
-              boxShadow:    '0 8px 40px rgba(30,22,17,0.22), 0 0 0 1px rgba(238,107,23,0.08)',
+              boxShadow:    '0 8px 40px rgba(16,24,40,0.22), 0 0 0 1px rgba(var(--accent-rgb),0.08)',
             }}
           >
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>

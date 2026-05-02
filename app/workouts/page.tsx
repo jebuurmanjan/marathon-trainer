@@ -53,7 +53,7 @@ function WorkoutCard({ workout }: { workout: StrengthWorkout }) {
           </span>
           <span
             className="text-[10px] font-medium px-2 py-0.5 rounded-full ml-auto"
-            style={{ background: 'rgba(238,107,23,0.08)', color: 'var(--accent)' }}
+            style={{ background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--accent)' }}
           >
             {workout.duration_minutes} min
           </span>

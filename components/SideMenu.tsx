@@ -118,8 +118,8 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
     <div
       className="rounded-lg px-3 py-2.5"
       style={{
-        background: plan.isActive ? 'rgba(238,107,23,0.08)' : 'rgba(var(--tint),0.04)',
-        border:     plan.isActive ? '1px solid rgba(238,107,23,0.20)' : '1px solid transparent',
+        background: plan.isActive ? 'rgba(var(--accent-rgb),0.08)' : 'rgba(var(--tint),0.04)',
+        border:     plan.isActive ? '1px solid rgba(var(--accent-rgb),0.20)' : '1px solid transparent',
       }}
     >
       {/* Plan name row */}
@@ -137,7 +137,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
         {plan.isActive && (
           <span
             className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
-            style={{ background: 'rgba(238,107,23,0.15)', color: 'var(--accent)' }}
+            style={{ background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent)' }}
           >
             Active
           </span>
@@ -159,7 +159,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
             onClick={() => { setConfirmDelete(false); onDelete(plan.id) }}
             disabled={isBusy}
             className="text-[11px] px-2 py-1 rounded-lg font-semibold disabled:opacity-50"
-            style={{ background: 'rgba(220,38,38,0.12)', color: '#dc2626' }}
+            style={{ background: 'rgba(243,65,65,0.12)', color: 'var(--color-error)' }}
           >
             Delete
           </button>
@@ -184,7 +184,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
               onClick={() => onRestore(plan.id)}
               disabled={isBusy}
               className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors disabled:opacity-50"
-              style={{ background: 'rgba(74,84,39,0.12)', color: 'var(--text-secondary)' }}
+              style={{ background: 'rgba(var(--tint),0.08)', color: 'var(--text-secondary)' }}
             >
               {isBusy ? '…' : 'Restore'}
             </button>
@@ -207,7 +207,7 @@ function PlanItem({ plan, onActivate, onArchive, onRestore, onDelete, busy }: Pl
             onClick={() => setConfirmDelete(true)}
             disabled={isBusy}
             className="text-[11px] px-2 py-1 rounded-lg font-medium transition-colors disabled:opacity-50 ml-auto"
-            style={{ color: '#dc2626', background: 'rgba(220,38,38,0.06)' }}
+            style={{ color: 'var(--color-error)', background: 'rgba(243,65,65,0.06)' }}
           >
             Delete
           </button>
@@ -336,7 +336,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
         onClick={onClose}
         className="fixed inset-0 z-40 transition-opacity duration-300"
         style={{
-          background:   'rgba(30,22,17,0.45)',
+          background:   'rgba(16,24,40,0.45)',
           backdropFilter: 'blur(3px)',
           opacity:      isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',
@@ -349,7 +349,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
         style={{
           background:   'var(--bg-base)',
           borderRight:  '1px solid rgba(var(--tint),0.10)',
-          boxShadow:    '8px 0 32px rgba(30,22,17,0.14)',
+          boxShadow:    '8px 0 32px rgba(16,24,40,0.14)',
           transform:    isOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
       >
@@ -426,7 +426,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               {planError && (
                 <div
                   className="rounded-lg px-3 py-2 text-xs"
-                  style={{ background: 'rgba(238,107,23,0.10)', color: 'var(--accent)' }}
+                  style={{ background: 'rgba(var(--accent-rgb),0.10)', color: 'var(--accent)' }}
                 >
                   {planError}
                 </div>
@@ -489,7 +489,7 @@ export default function SideMenu({ isOpen, onClose, userName, profilePhotoUrl }:
               <a
                 href="/onboarding"
                 className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
-                style={{ background: 'rgba(238,107,23,0.10)', color: 'var(--accent)' }}
+                style={{ background: 'rgba(var(--accent-rgb),0.10)', color: 'var(--accent)' }}
               >
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 5v14M5 12h14"/>

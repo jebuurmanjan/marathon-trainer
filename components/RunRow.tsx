@@ -3,11 +3,11 @@ import { formatPaceDisplay, RUN_TYPE_LABELS } from '@/lib/training-plan'
 import { formatPace, formatTime } from '@/lib/strava'
 
 const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
-  easy:        { bg: 'rgba(74,84,39,0.10)',   color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
-  quality:     { bg: 'rgba(238,107,23,0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
+  easy:        { bg: 'rgba(47,148,97,0.10)',   color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
+  quality:     { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
   medium_long: { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
   long:        { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
-  race:        { bg: 'rgba(238,107,23,0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
+  race:        { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
 }
 
 interface RunRowProps {

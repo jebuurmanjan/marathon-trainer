@@ -5,11 +5,11 @@ import { PHASE_LABELS, formatDistance, formatDistanceExact } from '@/lib/trainin
 import { calcWeekScore, scoreColor, scoreLabel } from '@/lib/score'
 
 const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
-  base:    { bg: 'rgba(227,210,180,0.50)', color: 'var(--text-dim)' },
+  base:    { bg: 'rgba(206,210,214,0.40)', color: 'var(--text-dim)' },
   build:   { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' },
-  peak:    { bg: 'rgba(238,107,23,0.12)',  color: 'var(--accent)' },
-  sharpen: { bg: 'rgba(238,107,23,0.12)',  color: 'var(--accent)' },
-  taper:   { bg: 'rgba(74,84,39,0.10)',    color: 'var(--text-secondary)' },
+  peak:    { bg: 'rgba(var(--accent-rgb),0.12)',  color: 'var(--accent)' },
+  sharpen: { bg: 'rgba(var(--accent-rgb),0.12)',  color: 'var(--accent)' },
+  taper:   { bg: 'rgba(47,148,97,0.10)',    color: 'var(--text-secondary)' },
 }
 
 interface WeekCardProps {
@@ -75,7 +75,7 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
       style={{
         background: 'var(--surface)',
         border: isCurrentWeek
-          ? '1px solid rgba(238,107,23,0.30)'
+          ? '1px solid rgba(var(--accent-rgb),0.30)'
           : '1px solid rgba(var(--tint),0.08)',
       }}
     >

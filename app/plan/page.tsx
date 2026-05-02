@@ -256,13 +256,13 @@ export default function PlanPage() {
               className="rounded-xl p-4 relative overflow-hidden"
               style={{
                 background: 'var(--surface)',
-                border: stat.accent ? '1px solid rgba(238,107,23,0.30)' : '1px solid rgba(var(--tint),0.08)',
+                border: stat.accent ? '1px solid rgba(var(--accent-rgb),0.30)' : '1px solid rgba(var(--tint),0.08)',
               }}
             >
               {stat.accent && (
                 <div
                   className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
-                  style={{ background:'radial-gradient(circle at top right, rgba(238,107,23,0.06) 0%, transparent 70%)' }}
+                  style={{ background:'radial-gradient(circle at top right, rgba(var(--accent-rgb),0.06) 0%, transparent 70%)' }}
                 />
               )}
               <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color:'var(--text-secondary)' }}>
@@ -337,7 +337,7 @@ export default function PlanPage() {
         {currentWeek > 0 && currentWeek <= plan.length && filter !== 'past' && currentPhase && (
           <div
             className="flex items-center gap-2.5 rounded-lg px-4 py-3 mb-4 text-sm font-medium"
-            style={{ background:'rgba(238,107,23,0.10)', border:'1px solid rgba(238,107,23,0.25)', color:'var(--accent)' }}
+            style={{ background:'rgba(var(--accent-rgb),0.10)', border:'1px solid rgba(var(--accent-rgb),0.25)', color:'var(--accent)' }}
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>

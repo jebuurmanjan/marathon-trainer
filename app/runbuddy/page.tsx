@@ -23,7 +23,7 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl"
-          style={{ background: 'rgba(238,107,23,0.05)' }}
+          style={{ background: 'rgba(var(--accent-rgb),0.05)' }}
         />
       </div>
 
@@ -59,8 +59,8 @@ export default async function RunBuddyPage({ searchParams }: PageProps) {
           <div
             className="mb-6 rounded-lg px-4 py-3 text-sm text-left"
             style={{
-              background: 'rgba(238,107,23,0.10)',
-              border:     '1px solid rgba(238,107,23,0.25)',
+              background: 'rgba(var(--accent-rgb),0.10)',
+              border:     '1px solid rgba(var(--accent-rgb),0.25)',
               color:      'var(--accent)',
             }}
           >

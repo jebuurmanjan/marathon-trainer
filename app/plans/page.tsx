@@ -130,7 +130,7 @@ export default function PlansPage() {
                 style={{
                   background: 'var(--surface)',
                   border:     plan.isActive
-                    ? '1px solid rgba(238,107,23,0.35)'
+                    ? '1px solid rgba(var(--accent-rgb),0.35)'
                     : '1px solid rgba(var(--tint),0.08)',
                 }}
               >
@@ -153,7 +153,7 @@ export default function PlansPage() {
                       {plan.isActive && (
                         <span
                           className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                          style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}
+                          style={{ background: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)' }}
                         >
                           Active
                         </span>

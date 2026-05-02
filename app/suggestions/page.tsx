@@ -97,7 +97,7 @@ export default function SuggestionsPage() {
         {error && (
           <div
             className="mb-4 rounded-lg px-4 py-3 text-sm"
-            style={{ background: 'rgba(238,107,23,0.10)', border: '1px solid rgba(238,107,23,0.25)', color: 'var(--accent)' }}
+            style={{ background: 'rgba(var(--accent-rgb),0.10)', border: '1px solid rgba(var(--accent-rgb),0.25)', color: 'var(--accent)' }}
           >
             {error}
           </div>

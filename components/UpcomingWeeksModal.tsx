@@ -18,11 +18,11 @@ import { RunOverride, applyOverrides } from '@/lib/training-plan'
 // ─── Type styles ──────────────────────────────────────────────────────────────
 
 const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
-  easy:        { bg: 'rgba(74,84,39,0.10)',   color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
-  quality:     { bg: 'rgba(238,107,23,0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
+  easy:        { bg: 'rgba(47,148,97,0.10)',   color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
+  quality:     { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
   medium_long: { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
   long:        { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
-  race:        { bg: 'rgba(238,107,23,0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
+  race:        { bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)',        dot: 'var(--accent)'        },
   strength:    { bg: 'rgba(136,121,225,0.12)',color: 'var(--accent-violet)', dot: 'var(--accent-violet)' },
 }
 
@@ -208,7 +208,7 @@ function DayRow({ date, dayIndex, runs, actuals, editMode, today, overrides }: D
       className="flex gap-3 px-3 py-3 transition-colors"
       style={{
         borderBottom: '1px solid var(--border)',
-        background:   isOver && editMode ? 'rgba(238,107,23,0.05)' : 'transparent',
+        background:   isOver && editMode ? 'rgba(var(--accent-rgb),0.05)' : 'transparent',
         // Fixed-width left accent — never shifts content
         boxShadow:    isOver && editMode ? 'inset 3px 0 0 var(--accent)' : 'none',
       }}
@@ -281,8 +281,8 @@ function DayColumn({ date, dayIndex, runs, actuals, editMode, today, overrides }
       className="flex flex-col gap-1 rounded-lg p-1 transition-colors"
       style={{
         minHeight: 80,
-        background: isOver && editMode ? 'rgba(238,107,23,0.08)' : today ? 'var(--surface)' : 'transparent',
-        border: isOver && editMode ? '1px dashed rgba(238,107,23,0.40)' : today ? '1px solid var(--border)' : '1px solid transparent',
+        background: isOver && editMode ? 'rgba(var(--accent-rgb),0.08)' : today ? 'var(--surface)' : 'transparent',
+        border: isOver && editMode ? '1px dashed rgba(var(--accent-rgb),0.40)' : today ? '1px solid var(--border)' : '1px solid transparent',
       }}
     >
       {/* Day header */}
@@ -345,7 +345,7 @@ function WeekSection({ week, actuals, editMode, isCurrent, overrides, isMobile }
           Week {week.weekNumber}
         </span>
         {isCurrent && (
-          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(238,107,23,0.12)', color: 'var(--accent)' }}>
+          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)' }}>
             Current
           </span>
         )}
@@ -580,7 +580,7 @@ export default function UpcomingWeeksModal({
       {editMode && (
         <div
           className="px-5 py-2 text-xs font-medium shrink-0"
-          style={{ background: 'rgba(238,107,23,0.06)', borderBottom: '1px solid rgba(238,107,23,0.15)', color: 'var(--accent)' }}
+          style={{ background: 'rgba(var(--accent-rgb),0.06)', borderBottom: '1px solid rgba(var(--accent-rgb),0.15)', color: 'var(--accent)' }}
         >
           ⠿ Drag trainings to a different day within the same week.
         </div>

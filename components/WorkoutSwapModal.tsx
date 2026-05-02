@@ -35,9 +35,9 @@ function WorkoutOption({
     <div
       className="rounded-xl px-4 py-3 transition-all"
       style={{
-        background: isSelected ? 'rgba(238,107,23,0.08)' : 'var(--surface)',
+        background: isSelected ? 'rgba(var(--accent-rgb),0.08)' : 'var(--surface)',
         border: isSelected
-          ? '1px solid rgba(238,107,23,0.30)'
+          ? '1px solid rgba(var(--accent-rgb),0.30)'
           : '1px solid rgba(var(--tint),0.08)',
       }}
     >
@@ -89,7 +89,7 @@ function WorkoutOption({
             style={
               isSelected
                 ? { background: 'var(--accent)', color: '#fff' }
-                : { background: 'rgba(238,107,23,0.10)', color: 'var(--accent)' }
+                : { background: 'rgba(var(--accent-rgb),0.10)', color: 'var(--accent)' }
             }
           >
             {isSelected ? '✓ Selected' : 'Select'}
@@ -215,7 +215,7 @@ export default function WorkoutSwapModal({
     /* Backdrop */
     <div
       className="fixed inset-0 z-50 flex flex-col"
-      style={{ background: 'rgba(30,22,17,0.60)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(16,24,40,0.60)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget && !saving) onClose() }}
     >
       {/* Panel */}
