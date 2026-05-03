@@ -1,4 +1,4 @@
-import { Week, ActualRun } from '@/types'
+import { Week, ActualRun, PlannedRun } from '@/types'
 import RunRow from './RunRow'
 import StrengthRow from './StrengthRow'
 import { PHASE_LABELS, formatDistance, formatDistanceExact } from '@/lib/training-plan'
@@ -20,10 +20,33 @@ interface WeekCardProps {
   strengthCompletions?:      string[]
   planId?:                   string
   units?:                    'km' | 'miles'
-  onStrengthSwapRequest?:    (run: import('@/types').PlannedRun) => void
+  onStrengthSwapRequest?:    (run: PlannedRun) => void
 }
 
-export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, strengthCompletions = [], planId = '', units = 'km', onStrengthSwapRequest }: WeekCardProps) {
+/** Hairline divider with a day label centred between two rules */
+function DayDivider({ date, runs }: { date: string; runs: PlannedRun[] }) {
+  // Use dayOfWeek from the first run on this date (already stored on PlannedRun)
+  const dow = runs[0]?.dayOfWeek?.slice(0, 3).toUpperCase() ?? ''
+  const d   = new Date(date + 'T00:00:00')
+  const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  return (
+    <div className="flex items-center gap-2 px-1 my-0.5">
+      <div className="flex-1 h-px" style={{ background: 'rgba(var(--tint),0.08)' }} />
+      <span
+        className="text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap"
+        style={{ color: 'var(--text-dim)' }}
+      >
+        {dow} {dateStr}
+      </span>
+      <div className="flex-1 h-px" style={{ background: 'rgba(var(--tint),0.08)' }} />
+    </div>
+  )
+}
+
+export default function WeekCard({
+  week, actualRuns, isCurrentWeek, isPastWeek,
+  strengthCompletions = [], planId = '', units = 'km', onStrengthSwapRequest,
+}: WeekCardProps) {
   const today = new Date().toISOString().slice(0, 10)
 
   function findActual(plannedDate: string): ActualRun | undefined {
@@ -34,16 +57,10 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
     })
   }
 
-  // Separate running sessions from strength sessions
-  const runSessions      = week.runs.filter((r) => r.type !== 'strength')
-  const strengthSessions = week.runs.filter((r) => r.type === 'strength')
-
-  const completedRuns    = runSessions.filter((r) => findActual(r.date)).length
-  const completedStrength = strengthSessions.filter((r) => strengthCompletions.includes(r.date)).length
-
   const totalKmActual = actualRuns.reduce((sum, r) => sum + r.distanceKm, 0)
   const pct = Math.min(100, Math.round((totalKmActual / (week.targetKm || 1)) * 100))
 
+  // Date range labels — shown in expanded body, not header
   const startLabel = new Date(week.startDate + 'T00:00:00').toLocaleDateString('en-GB', {
     day: 'numeric', month: 'short',
   })
@@ -53,20 +70,16 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
   const badge = PHASE_BADGE[week.phase] ?? { bg: 'rgba(var(--tint),0.08)', color: 'var(--text-dim)' }
 
-  // Performance score — computed for past + current weeks only
+  // Performance score — past + current weeks only
   const showScore = isCurrentWeek || isPastWeek
-  const score = showScore ? calcWeekScore(week, actualRuns, isCurrentWeek) : null
+  const score     = showScore ? calcWeekScore(week, actualRuns, isCurrentWeek) : null
 
-  // Summary line shown in collapsed state
-  const strengthInfo = strengthSessions.length > 0
-    ? ` · ${strengthSessions.length > 1 ? completedStrength + '/' + strengthSessions.length : ''} strength`
-    : ''
-
-  const summaryHint = isPastWeek
-    ? `${completedRuns}/${runSessions.length} runs completed${strengthInfo} — click to expand`
-    : isCurrentWeek
-    ? `${runSessions.length} runs this week${strengthInfo} — click to collapse`
-    : `${runSessions.length} runs planned${strengthInfo} — click to expand`
+  // Group runs by date for day-separated rendering
+  const runsByDate = week.runs.reduce<Record<string, PlannedRun[]>>((acc, run) => {
+    ;(acc[run.date] ??= []).push(run)
+    return acc
+  }, {})
+  const sortedDates = Object.keys(runsByDate).sort()
 
   return (
     <div
@@ -79,18 +92,16 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
           : '1px solid rgba(var(--tint),0.08)',
       }}
     >
-      {/* <details> wraps everything — current week open by default */}
       <details open={isCurrentWeek}>
-        {/* The <summary> is the clickable header row */}
+        {/* ── Collapsed header ────────────────────────────────────────────── */}
         <summary className="list-none cursor-pointer select-none" style={{ outline: 'none' }}>
-          {/* Week header */}
-          <div className="flex items-center gap-3 px-5 py-4">
+          <div className="flex items-center gap-3 px-4 py-3.5">
+
             {/* Week number */}
             <span
-              className="text-xs font-semibold min-w-[28px]"
+              className="text-xs font-bold min-w-[26px] tabular-nums"
               style={{
                 fontFamily: 'Nohemi, Inter, sans-serif',
-                fontWeight: 600,
                 color: isCurrentWeek ? 'var(--accent)' : 'var(--text-dim)',
               }}
             >
@@ -99,14 +110,14 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
             {/* Phase badge */}
             <span
-              className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap"
+              className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
               style={{ background: badge.bg, color: badge.color }}
             >
               {PHASE_LABELS[week.phase]}
               {week.isCutback ? ' · Cutback' : ''}
             </span>
 
-            {/* Title + dates */}
+            {/* Title — flex-1 so it takes all available space */}
             <div className="flex-1 min-w-0">
               <div
                 className="text-sm font-semibold truncate"
@@ -119,122 +130,67 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
               >
                 {week.title ?? week.notes}
               </div>
-              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                {startLabel} – {endLabel}
-              </div>
             </div>
 
-            {/* KM + score + expand hint */}
-            <div className="text-right shrink-0">
-              <div
-                className="text-lg leading-none"
-                style={{
-                  fontFamily: 'Nohemi, Inter, sans-serif',
-                  fontWeight: 600,
-                  letterSpacing: '-0.03em',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {formatDistance(week.targetKm, units)}
-              </div>
-
-              {(isCurrentWeek || isPastWeek) && (
-                <div className="text-[11px] mt-0.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                  {formatDistanceExact(totalKmActual, units)} logged
+            {/* Right cluster: km · logged · score · chevron */}
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Target km + logged */}
+              <div className="text-right">
+                <div
+                  className="text-base leading-none tabular-nums"
+                  style={{
+                    fontFamily: 'Nohemi, Inter, sans-serif',
+                    fontWeight: 600,
+                    letterSpacing: '-0.03em',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {formatDistance(week.targetKm, units)}
                 </div>
-              )}
-
-              {/* Performance score */}
-              {score && score.total !== null && (
-                <div className="flex items-center justify-end gap-1 mt-1">
-                  <span className="text-[11px] font-bold tabular-nums" style={{ color: scoreColor(score.total) }}>
-                    {score.isPartial ? '~' : ''}{score.total}
-                    <span className="font-normal" style={{ opacity: 0.55 }}>/100</span>
-                  </span>
-
-                  {/* (i) icon — CSS-only hover tooltip */}
-                  <div className="relative group inline-flex items-center">
-                    <span
-                      className="flex items-center justify-center w-3.5 h-3.5 rounded-full text-[9px] font-bold cursor-help select-none"
-                      style={{ background: 'rgba(var(--tint),0.10)', color: 'var(--text-dim)', lineHeight: 1 }}
-                    >
-                      i
-                    </span>
-
-                    {/* Tooltip */}
-                    <div
-                      className="absolute bottom-full right-0 mb-2 w-60 rounded-lg px-3.5 py-3 text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50"
-                      style={{ background: 'var(--surface-overlay)', boxShadow: '0 8px 24px rgba(0,0,0,0.32)' }}
-                    >
-                      {/* Arrow */}
-                      <div className="absolute -bottom-1.5 right-3 w-3 h-3 rotate-45" style={{ background: 'var(--surface-overlay)' }} />
-
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'rgba(246,247,249,0.45)' }}>
-                        Performance score
-                      </p>
-                      <p className="text-[11px] mb-2.5 leading-relaxed" style={{ color: 'var(--text-overlay-body)' }}>
-                        Each week is rated 0–100 across three factors:
-                      </p>
-
-                      <div className="space-y-1.5 text-[11px]">
-                        <div className="flex justify-between items-center gap-2">
-                          <span style={{ color: 'var(--text-overlay-body)' }}>Mileage — actual vs planned km</span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--text-overlay)' }}>
-                            {score.mileage}/40
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center gap-2">
-                          <span style={{ color: 'var(--text-overlay-body)' }}>Pace — closeness to target</span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--text-overlay)' }}>
-                            {score.pace}/35
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center gap-2">
-                          <span style={{ color: 'var(--text-overlay-body)' }}>
-                            HR — zone efficiency
-                            {!score.hrHasData && <span style={{ opacity: 0.6 }}> (est.)</span>}
-                          </span>
-                          <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--text-overlay)' }}>
-                            {score.hr}/25
-                          </span>
-                        </div>
-                      </div>
-
-                      <div
-                        className="mt-2.5 pt-2 flex justify-between items-center text-[11px] border-t"
-                        style={{ borderColor: 'rgba(246,247,249,0.10)' }}
-                      >
-                        <span style={{ color: 'var(--text-overlay-body)' }}>Total</span>
-                        <span className="font-bold" style={{ color: scoreColor(score.total) }}>
-                          {score.isPartial ? '~' : ''}{score.total} — {scoreLabel(score.total)}
-                          {score.isPartial && <span className="font-normal" style={{ opacity: 0.6 }}> (in progress)</span>}
-                        </span>
-                      </div>
-                    </div>
+                {(isCurrentWeek || isPastWeek) && (
+                  <div className="text-[10px] mt-0.5 tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                    {formatDistanceExact(totalKmActual, units)} logged
                   </div>
-                </div>
-              )}
-
-              {/* Past week with zero runs logged */}
-              {score && score.total === null && isPastWeek && (
-                <div className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>no data</div>
-              )}
-
-              <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-dim)' }}>
-                {summaryHint.includes('expand') ? '▸ expand' : '▾ collapse'}
+                )}
               </div>
+
+              {/* Score — colored number only, breakdown lives in expanded body */}
+              {score && score.total !== null && (
+                <span
+                  className="text-sm font-bold tabular-nums"
+                  style={{ color: scoreColor(score.total), minWidth: '2.5rem', textAlign: 'right' }}
+                >
+                  {score.isPartial ? '~' : ''}{score.total}
+                </span>
+              )}
+              {score && score.total === null && isPastWeek && (
+                <span className="text-[11px]" style={{ color: 'var(--text-muted)', minWidth: '2.5rem', textAlign: 'right' }}>
+                  —
+                </span>
+              )}
+
+              {/* Chevron */}
+              <svg
+                viewBox="0 0 24 24"
+                className="w-3.5 h-3.5 shrink-0 transition-transform duration-200 [[open]_summary_&]:rotate-90"
+                fill="none" stroke="currentColor" strokeWidth="2.5"
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ color: 'var(--text-dim)' }}
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           </div>
 
-          {/* Progress bar (past + current weeks) */}
+          {/* Progress bar — 3px, past + current weeks */}
           {(isCurrentWeek || isPastWeek) && (
-            <div style={{ height: '2px', background: 'var(--surface-2)' }}>
+            <div style={{ height: '3px', background: 'var(--surface-2)' }}>
               <div
                 style={{
-                  height: '2px',
+                  height: '3px',
                   width: `${pct}%`,
                   background: pct >= 90 ? 'var(--accent-green)' : 'var(--accent)',
-                  borderRadius: '1px',
+                  borderRadius: '2px',
                   transition: 'width 0.4s',
                 }}
               />
@@ -242,9 +198,56 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
           )}
         </summary>
 
-        {/* Expanded run list — shown for ALL weeks when open */}
-        <div className="px-4 pb-4 pt-2 flex flex-col gap-2">
-          {/* Coaching note — shown when expanded */}
+        {/* ── Expanded body ────────────────────────────────────────────────── */}
+        <div className="px-4 pb-4 pt-3 flex flex-col gap-1.5">
+
+          {/* Date range */}
+          <div className="text-[11px] mb-1" style={{ color: 'var(--text-dim)' }}>
+            {startLabel} – {endLabel}
+          </div>
+
+          {/* Score breakdown — shown when we have data */}
+          {score && score.total !== null && (
+            <div
+              className="rounded-lg px-3.5 py-3 mb-1"
+              style={{ background: 'rgba(var(--tint),0.04)', border: '1px solid rgba(var(--tint),0.07)' }}
+            >
+              {/* Top row: label + total score */}
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>
+                  Performance
+                </span>
+                <span className="text-sm font-bold tabular-nums" style={{ color: scoreColor(score.total) }}>
+                  {score.isPartial ? '~' : ''}{score.total}
+                  <span className="text-[11px] font-normal" style={{ color: 'var(--text-dim)' }}>/100</span>
+                  {' '}
+                  <span className="text-[11px] font-semibold" style={{ color: scoreColor(score.total) }}>
+                    {scoreLabel(score.total)}
+                    {score.isPartial && <span className="font-normal" style={{ color: 'var(--text-dim)' }}> · in progress</span>}
+                  </span>
+                </span>
+              </div>
+              {/* Sub-scores */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                <span>
+                  Mileage{' '}
+                  <span className="font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>{score.mileage}/40</span>
+                </span>
+                <span style={{ color: 'var(--border-mid)' }}>·</span>
+                <span>
+                  Pace{' '}
+                  <span className="font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>{score.pace}/35</span>
+                </span>
+                <span style={{ color: 'var(--border-mid)' }}>·</span>
+                <span>
+                  HR{!score.hrHasData && <span style={{ color: 'var(--text-dim)' }}> est.</span>}{' '}
+                  <span className="font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>{score.hr}/25</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Coaching note */}
           {week.notes && (
             <div
               className="text-xs leading-relaxed px-3 py-2.5 rounded-lg mb-1"
@@ -257,29 +260,43 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
               {week.notes}
             </div>
           )}
-          {week.runs.map((run) => {
-            if (run.type === 'strength') {
+
+          {/* Day-grouped session list */}
+          <div className="flex flex-col gap-1 mt-0.5">
+            {sortedDates.map((date) => {
+              const runsOnDay = runsByDate[date]
               return (
-                <StrengthRow
-                  key={run.date}
-                  run={run}
-                  isCompleted={strengthCompletions.includes(run.date)}
-                  planId={planId}
-                  onSwapRequest={onStrengthSwapRequest}
-                />
+                <div key={date}>
+                  <DayDivider date={date} runs={runsOnDay} />
+                  <div className="flex flex-col gap-1.5 mt-1">
+                    {runsOnDay.map((run) => {
+                      if (run.type === 'strength') {
+                        return (
+                          <StrengthRow
+                            key={run.date + run.type}
+                            run={run}
+                            isCompleted={strengthCompletions.includes(run.date)}
+                            planId={planId}
+                            onSwapRequest={onStrengthSwapRequest}
+                          />
+                        )
+                      }
+                      const actual    = findActual(run.date)
+                      const runIsPast = run.date < today
+                      return (
+                        <RunRow
+                          key={run.date + run.type}
+                          run={run}
+                          actual={actual}
+                          isPast={runIsPast && !actual}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
               )
-            }
-            const actual = findActual(run.date)
-            const runIsPast = run.date < today
-            return (
-              <RunRow
-                key={run.date}
-                run={run}
-                actual={actual}
-                isPast={runIsPast && !actual}
-              />
-            )
-          })}
+            })}
+          </div>
         </div>
       </details>
     </div>
