@@ -117,8 +117,13 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
                   color: 'var(--text-primary)',
                 }}
               >
-                {week.notes}
+                {week.title ?? week.notes}
               </div>
+              {week.title && (
+                <div className="text-[10px] truncate mt-0.5" style={{ color: 'var(--text-dim)' }}>
+                  {week.notes}
+                </div>
+              )}
               <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                 {startLabel} – {endLabel}
               </div>

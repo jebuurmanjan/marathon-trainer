@@ -179,9 +179,18 @@ interface WeekTmpl {
   isCutback:  boolean
   quality:    QKey
   longStyle?: LongStyle
+  title:      string
   notes:      string
 }
 
+const BASE_TITLES = [
+  'Establish the Rhythm',
+  'First Step Up',
+  'Steady Base',
+  'Aerobic Engine',
+  'Final Base Push',
+  'Cutback Week',
+]
 const BASE_NOTES = [
   "First week of the plan. Establish the rhythm — all runs fully conversational. If you can't hold a conversation, slow down.",
   "10% rule in action — a small step up. Keep HR under 145 bpm throughout. Aerobic development happens even when it feels easy.",
@@ -191,6 +200,16 @@ const BASE_NOTES = [
   "Cutback week. Reduce volume by ~25%. Recovery is where adaptation happens.",
 ]
 
+const BUILD_TITLES = [
+  'Volume Returns',
+  'Fuelling Practice',
+  'Long Run Grows',
+  'Time on Feet',
+  'Peak Endurance',
+  'Cutback Week',
+  'Fresh Legs',
+  'Bridge Week',
+]
 const BUILD_NOTES = [
   "Volume returns. Thursday introduces a controlled progression finish — stay well within yourself.",
   "Volume ticks up. Practise fuelling every 40 min on the long run — this is a skill that needs training.",
@@ -202,6 +221,14 @@ const BUILD_NOTES = [
   "Bridge week into the next phase. Endurance fitness is peaking.",
 ]
 
+const PEAK_TITLES = [
+  'Hill Work',
+  'First Tempo',
+  'Fartlek Session',
+  'Hill Repeats',
+  'Quality Cutback',
+  'Race Simulation',
+]
 const PEAK_NOTES = [
   "Hill work begins. Strong legs mean better form and resilience in the late miles. Uphill fast, downhill easy.",
   "First tempo run. Comfortably hard — short phrases only, not free conversation. Builds lactate threshold.",
@@ -211,6 +238,13 @@ const PEAK_NOTES = [
   "Race simulation — the most demanding session of the plan. This week proves you are ready.",
 ]
 
+const SHARPEN_TITLES = [
+  'Race Prep Begins',
+  'Stay Sharp',
+  'Tune-Up Race',
+  'Back on Track',
+  'Last Big Session',
+]
 const SHARPEN_NOTES = [
   "Race preparation begins. Long runs now include sustained marathon-pace sections. Your body learns what race day demands.",
   "Tune-up race preparation. Stay sharp, nail the goal-pace section of the long run.",
@@ -219,6 +253,11 @@ const SHARPEN_NOTES = [
   "Last major quality session before the taper. Run it well — the hay is almost in the barn.",
 ]
 
+const TAPER_TITLES = [
+  'Taper Begins',
+  'Getting Sharp',
+  'Race Week',
+]
 const TAPER_NOTES = [
   "Taper begins. Volume drops sharply. One dress-rehearsal session. Do not add extra miles. Trust the process.",
   "Volume drops again. Short and sharp — one quality session, the rest easy. Legs start feeling bouncy. That's the taper working.",
@@ -238,7 +277,8 @@ function buildWeekTemplates(phases: PhaseBlock[]): WeekTmpl[] {
           const isCutback = i === cutbackAt
           tmpls.push({
             phase: 'base', isCutback, quality: 'none',
-            notes: isCutback ? BASE_NOTES[5] : BASE_NOTES[Math.min(i, 4)],
+            title: isCutback ? BASE_TITLES[5] : BASE_TITLES[Math.min(i, 4)],
+            notes: isCutback ? BASE_NOTES[5]  : BASE_NOTES[Math.min(i, 4)],
           })
         }
         break
@@ -251,7 +291,8 @@ function buildWeekTemplates(phases: PhaseBlock[]): WeekTmpl[] {
           const isCutback = i === cutbackAt
           tmpls.push({
             phase: 'build', isCutback, quality: 'progression',
-            notes: isCutback ? BUILD_NOTES[5] : BUILD_NOTES[Math.min(noteIdx++, 4)],
+            title: isCutback ? BUILD_TITLES[5] : BUILD_TITLES[Math.min(noteIdx, 4)],
+            notes: isCutback ? BUILD_NOTES[5]  : BUILD_NOTES[Math.min(noteIdx++, 4)],
           })
           if (isCutback) noteIdx-- // don't advance note on cutback
         }
@@ -277,7 +318,8 @@ function buildWeekTemplates(phases: PhaseBlock[]): WeekTmpl[] {
           }
           tmpls.push({
             phase: 'peak', isCutback, quality, longStyle,
-            notes: isCutback ? PEAK_NOTES[4] : PEAK_NOTES[Math.min(noteIdx++, 3)],
+            title: isLast ? PEAK_TITLES[5] : isCutback ? PEAK_TITLES[4] : PEAK_TITLES[Math.min(noteIdx, 3)],
+            notes: isLast ? PEAK_NOTES[5]  : isCutback ? PEAK_NOTES[4]  : PEAK_NOTES[Math.min(noteIdx++, 3)],
           })
           if (isCutback) noteIdx--
         }
@@ -300,6 +342,7 @@ function buildWeekTemplates(phases: PhaseBlock[]): WeekTmpl[] {
           }
           tmpls.push({
             phase: 'sharpen', isCutback, quality, longStyle,
+            title: SHARPEN_TITLES[Math.min(i, SHARPEN_TITLES.length - 1)],
             notes: SHARPEN_NOTES[Math.min(i, SHARPEN_NOTES.length - 1)],
           })
         }
@@ -319,6 +362,7 @@ function buildWeekTemplates(phases: PhaseBlock[]): WeekTmpl[] {
             phase: 'taper',
             isCutback: !isRaceWeek,
             quality: qualities[Math.min(i, qualities.length - 1)],
+            title:   TAPER_TITLES[Math.min(i + noteOffset, TAPER_TITLES.length - 1)],
             notes:   TAPER_NOTES[Math.min(i + noteOffset, TAPER_NOTES.length - 1)],
           })
         }
@@ -716,6 +760,7 @@ export function generatePlan(config: UserPlanConfig): Week[] {
       startDate:  weekStart,
       endDate:    weekEnd,
       targetKm:   Math.round(runKm),
+      title:      tmpl.title,
       notes:      tmpl.notes,
       runs,
       isCutback:  tmpl.isCutback,

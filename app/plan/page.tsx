@@ -158,7 +158,7 @@ export default function PlanPage() {
 
   const totalActualKm  = actualRuns.reduce((s, r) => s + r.distanceKm, 0)
   const totalPlannedKm = plan
-    .filter((w) => w.weekNumber < currentWeek)
+    .filter((w) => w.weekNumber <= currentWeek)
     .reduce((s, w) => s + w.targetKm, 0)
   const u = preferredUnits
 
@@ -199,8 +199,8 @@ export default function PlanPage() {
         <div className="flex flex-col items-center justify-center h-screen gap-4">
           <svg
             viewBox="0 0 128 64"
-            width="200"
-            height="100"
+            width="32"
+            height="16"
             style={{ color: 'var(--accent)' }}
             aria-label="Loading"
           >
@@ -301,7 +301,7 @@ export default function PlanPage() {
               >
                 {stat.value}
               </div>
-              <div className="text-[11px]" style={{ color:'var(--text-dim)' }}>{stat.sub}</div>
+              <div className="text-[11px]" style={{ color:'var(--text-secondary)' }}>{stat.sub}</div>
             </div>
           ))}
         </div>

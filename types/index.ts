@@ -49,7 +49,8 @@ export interface Week {
   startDate:  string   // ISO YYYY-MM-DD (Monday)
   endDate:    string   // ISO YYYY-MM-DD (Sunday)
   targetKm:   number   // running km only (strength sessions excluded)
-  notes:      string
+  title?:     string   // short 3–4 word heading (optional; fallback to notes)
+  notes:      string   // coaching notes shown as subtitle
   runs:       PlannedRun[]
   isCutback:  boolean
 }
