@@ -64,7 +64,7 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
 
   return (
     <div
-      className="rounded-lg px-3 py-2.5 transition-all"
+      className="group rounded-lg px-3 py-2.5 transition-all"
       style={{
         background: completed ? 'var(--card-done)'        : 'var(--card-base)',
         border:     completed ? '1px solid var(--card-done-border)' : '1px solid var(--border)',
@@ -112,11 +112,11 @@ export default function StrengthRow({ run, isCompleted: initialCompleted, planId
           {duration} min
         </span>
 
-        {/* Edit / swap button */}
+        {/* Swap button — visible on hover / focus only */}
         {onSwapRequest && (
           <button
             onClick={() => onSwapRequest(run)}
-            className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium"
+            className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
             style={{ color: 'var(--accent)', background: 'rgba(var(--accent-rgb),0.08)' }}
           >
             Swap

@@ -119,11 +119,6 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
               >
                 {week.title ?? week.notes}
               </div>
-              {week.title && (
-                <div className="text-[10px] truncate mt-0.5" style={{ color: 'var(--text-dim)' }}>
-                  {week.notes}
-                </div>
-              )}
               <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                 {startLabel} – {endLabel}
               </div>
@@ -249,6 +244,19 @@ export default function WeekCard({ week, actualRuns, isCurrentWeek, isPastWeek, 
 
         {/* Expanded run list — shown for ALL weeks when open */}
         <div className="px-4 pb-4 pt-2 flex flex-col gap-2">
+          {/* Coaching note — shown when expanded */}
+          {week.notes && (
+            <div
+              className="text-xs leading-relaxed px-3 py-2.5 rounded-lg mb-1"
+              style={{
+                background: 'rgba(var(--tint),0.04)',
+                borderLeft: '2px solid rgba(var(--tint),0.12)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {week.notes}
+            </div>
+          )}
           {week.runs.map((run) => {
             if (run.type === 'strength') {
               return (
