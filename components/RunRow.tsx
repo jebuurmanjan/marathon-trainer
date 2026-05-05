@@ -15,22 +15,31 @@ const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
   race:        { bg: 'rgba(243,65,65,0.10)',    color: 'var(--color-error)',   dot: 'var(--color-error)'   },
 }
 
+// Style for bonus runs that weren't in the plan
+const EXTRA_STYLE = { bg: 'rgba(var(--tint),0.08)', color: 'var(--text-secondary)', dot: 'var(--text-secondary)' }
+
 interface RunRowProps {
-  run:     PlannedRun
-  actual?: ActualRun
-  isPast:  boolean
+  run?:         PlannedRun   // undefined when isUnplanned=true
+  actual?:      ActualRun
+  isPast:       boolean
+  isUnplanned?: boolean      // true = Strava run with no matching planned session
 }
 
-export default function RunRow({ run, actual, isPast }: RunRowProps) {
+export default function RunRow({ run, actual, isPast, isUnplanned = false }: RunRowProps) {
   const [expanded, setExpanded] = useState(false)
 
-  const style = TYPE_STYLE[run.type] ?? {
-    bg: 'rgba(var(--tint),0.06)', color: 'var(--text-dim)', dot: 'var(--text-dim)',
-  }
+  const style = isUnplanned
+    ? EXTRA_STYLE
+    : (TYPE_STYLE[run!.type] ?? { bg: 'rgba(var(--tint),0.06)', color: 'var(--text-dim)', dot: 'var(--text-dim)' })
 
-  // Pace comparison
+  // Day abbreviation: for planned runs read from run.dayOfWeek; for unplanned derive from actual date
+  const dayOfWeek = isUnplanned && actual
+    ? new Date(actual.runDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short' }).slice(0, 3).toUpperCase()
+    : (run?.dayOfWeek ?? '').slice(0, 3).toUpperCase()
+
+  // Pace comparison — only meaningful when a target pace exists
   let paceStatus: 'on-target' | 'fast' | 'slow' | null = null
-  if (actual && run.targetPaceMinPerKm) {
+  if (actual && run?.targetPaceMinPerKm) {
     const diff = actual.paceMinPerKm - run.targetPaceMinPerKm
     if (Math.abs(diff) <= 0.25) paceStatus = 'on-target'
     else if (diff < -0.25)      paceStatus = 'fast'
@@ -41,7 +50,8 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
                   : paceStatus === 'fast'       ? 'var(--accent-violet)'
                   :                               'var(--accent)'
 
-  const distanceOk = actual ? actual.distanceKm >= run.targetDistanceKm * 0.9 : false
+  // "Short" flag: only applies to planned runs where we can compare to a target
+  const distanceOk = (actual && run) ? actual.distanceKm >= run.targetDistanceKm * 0.9 : true
 
   return (
     <div
@@ -66,7 +76,7 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
 
         {/* Day abbreviation */}
         <span className="text-[10px] font-semibold min-w-[24px]" style={{ color: 'var(--text-secondary)' }}>
-          {run.dayOfWeek.slice(0, 3).toUpperCase()}
+          {dayOfWeek}
         </span>
 
         {/* Type badge */}
@@ -74,12 +84,12 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
           className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
           style={{ background: style.bg, color: style.color }}
         >
-          {RUN_TYPE_LABELS[run.type]}
+          {isUnplanned ? 'Extra' : RUN_TYPE_LABELS[run!.type]}
         </span>
 
-        {/* Description */}
+        {/* Description — for unplanned runs, show the Strava activity name */}
         <span className="flex-1 text-xs truncate" style={{ color: 'var(--text-primary)' }}>
-          {run.description}
+          {isUnplanned ? (actual?.name ?? 'Unplanned run') : run?.description}
         </span>
 
         {/* Right side: actual stats inline OR planned distance */}
@@ -89,10 +99,10 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
               {actual.distanceKm} km
             </span>
             {actual.paceMinPerKm > 0 && (
-              <span className="font-medium tabular-nums" style={{ color: paceColor }}>
+              <span className="font-medium tabular-nums" style={{ color: isUnplanned ? 'var(--text-secondary)' : paceColor }}>
                 {formatPace(actual.paceMinPerKm)}
-                {paceStatus === 'fast' && <span> ↑</span>}
-                {paceStatus === 'slow' && <span> ↓</span>}
+                {!isUnplanned && paceStatus === 'fast' && <span> ↑</span>}
+                {!isUnplanned && paceStatus === 'slow' && <span> ↓</span>}
               </span>
             )}
             {actual.averageHeartrate && (
@@ -106,7 +116,7 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
             className="text-sm font-semibold shrink-0 tabular-nums"
             style={{ fontFamily: 'Nohemi, Inter, sans-serif', fontWeight: 600, color: 'var(--text-dim)' }}
           >
-            {run.targetDistanceKm} km
+            {run?.targetDistanceKm} km
           </span>
         )}
 
@@ -143,21 +153,23 @@ export default function RunRow({ run, actual, isPast }: RunRowProps) {
           {/* Moving time */}
           <span style={{ color: 'var(--text-dim)' }}>{formatTime(actual.movingTimeSeconds)}</span>
 
-          {/* Target distance for reference */}
-          <span style={{ color: 'var(--text-dim)' }}>
-            target <span className="tabular-nums">{run.targetDistanceKm} km</span>
-            {run.targetPaceMinPerKm
-              ? ` · ${formatPace(run.targetPaceMinPerKm)}/km`
-              : ''}
-          </span>
+          {/* Target distance — only for planned runs */}
+          {run && (
+            <span style={{ color: 'var(--text-dim)' }}>
+              target <span className="tabular-nums">{run.targetDistanceKm} km</span>
+              {run.targetPaceMinPerKm
+                ? ` · ${formatPace(run.targetPaceMinPerKm)}/km`
+                : ''}
+            </span>
+          )}
 
-          {/* Short flag */}
+          {/* Short flag — only when a target distance exists to compare against */}
           {!distanceOk && (
             <span className="font-medium" style={{ color: 'var(--color-warning)' }}>short</span>
           )}
 
-          {/* Strava activity name */}
-          {actual.name && (
+          {/* Strava activity name — for planned runs (unplanned already shows it as description) */}
+          {actual.name && !isUnplanned && (
             <span className="w-full truncate italic" style={{ color: 'var(--text-dim)' }}>
               "{actual.name}"
             </span>

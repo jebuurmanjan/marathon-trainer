@@ -25,8 +25,10 @@ interface WeekCardProps {
 
 /** Hairline divider with a day label centred between two rules */
 function DayDivider({ date, runs }: { date: string; runs: PlannedRun[] }) {
-  // Use dayOfWeek from the first run on this date (already stored on PlannedRun)
-  const dow = runs[0]?.dayOfWeek?.slice(0, 3).toUpperCase() ?? ''
+  // Use dayOfWeek from the first planned run; fall back to deriving from the date
+  // (needed when only unplanned/orphan actuals exist on this date)
+  const dow = runs[0]?.dayOfWeek?.slice(0, 3).toUpperCase()
+    ?? new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short' }).slice(0, 3).toUpperCase()
   const d   = new Date(date + 'T00:00:00')
   const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
   return (
@@ -49,14 +51,6 @@ export default function WeekCard({
 }: WeekCardProps) {
   const today = new Date().toISOString().slice(0, 10)
 
-  function findActual(plannedDate: string): ActualRun | undefined {
-    const planned = new Date(plannedDate).getTime()
-    return actualRuns.find((a) => {
-      const diff = Math.abs(new Date(a.runDate).getTime() - planned)
-      return diff <= 86400000 * 1.5
-    })
-  }
-
   const totalKmActual = actualRuns.reduce((sum, r) => sum + r.distanceKm, 0)
   const pct = Math.min(100, Math.round((totalKmActual / (week.targetKm || 1)) * 100))
 
@@ -74,12 +68,43 @@ export default function WeekCard({
   const showScore = isCurrentWeek || isPastWeek
   const score     = showScore ? calcWeekScore(week, actualRuns, isCurrentWeek) : null
 
-  // Group runs by date for day-separated rendering
+  // Group planned runs by date for day-separated rendering
   const runsByDate = week.runs.reduce<Record<string, PlannedRun[]>>((acc, run) => {
     ;(acc[run.date] ??= []).push(run)
     return acc
   }, {})
   const sortedDates = Object.keys(runsByDate).sort()
+
+  // ── Match actuals to planned runs (one-to-one, ±1.5 day window) ──────────
+  // We track used IDs so the same Strava activity can't satisfy two planned runs
+  // and so we can identify orphan actuals (unplanned bonus runs).
+  const usedActualIds = new Set<number>()
+  const matchMap = new Map<string, ActualRun>() // key = run.date + run.type
+
+  for (const date of sortedDates) {
+    for (const run of runsByDate[date]) {
+      if (run.type === 'strength') continue
+      const plannedMs = new Date(run.date).getTime()
+      const match = actualRuns.find((a) => {
+        if (usedActualIds.has(a.id)) return false
+        return Math.abs(new Date(a.runDate).getTime() - plannedMs) <= 86400000 * 1.5
+      })
+      if (match) {
+        matchMap.set(run.date + run.type, match)
+        usedActualIds.add(match.id)
+      }
+    }
+  }
+
+  // Orphans = Strava runs that didn't match any planned session
+  const orphanActuals = actualRuns.filter((a) => !usedActualIds.has(a.id))
+  const orphansByDate = orphanActuals.reduce<Record<string, ActualRun[]>>((acc, a) => {
+    ;(acc[a.runDate] ??= []).push(a)
+    return acc
+  }, {})
+
+  // Unified sorted date list (planned dates + orphan-only dates)
+  const allDates = [...new Set([...sortedDates, ...Object.keys(orphansByDate)])].sort()
 
   return (
     <div
@@ -263,12 +288,14 @@ export default function WeekCard({
 
           {/* Day-grouped session list */}
           <div className="flex flex-col gap-1 mt-0.5">
-            {sortedDates.map((date) => {
-              const runsOnDay = runsByDate[date]
+            {allDates.map((date) => {
+              const runsOnDay    = runsByDate[date]    ?? []
+              const orphansOnDay = orphansByDate[date] ?? []
               return (
                 <div key={date}>
                   <DayDivider date={date} runs={runsOnDay} />
                   <div className="flex flex-col gap-1.5 mt-1">
+                    {/* Planned sessions for this day */}
                     {runsOnDay.map((run) => {
                       if (run.type === 'strength') {
                         return (
@@ -281,7 +308,7 @@ export default function WeekCard({
                           />
                         )
                       }
-                      const actual    = findActual(run.date)
+                      const actual    = matchMap.get(run.date + run.type)
                       const runIsPast = run.date < today
                       return (
                         <RunRow
@@ -292,6 +319,15 @@ export default function WeekCard({
                         />
                       )
                     })}
+                    {/* Unplanned bonus runs logged on this day */}
+                    {orphansOnDay.map((actual) => (
+                      <RunRow
+                        key={`orphan-${actual.id}`}
+                        actual={actual}
+                        isPast={true}
+                        isUnplanned={true}
+                      />
+                    ))}
                   </div>
                 </div>
               )
