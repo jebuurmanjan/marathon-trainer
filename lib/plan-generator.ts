@@ -894,16 +894,14 @@ export function generatePlan(config: UserPlanConfig): Week[] {
     const isRaceWeek = wk === planWeeks
 
     // Split volume:
-    //  - Marathon / half: long run uses the independent progression value,
-    //    capped at longRunCap and at most (targetKm − min-other) so the
-    //    remaining runs stay meaningful. Other runs absorb what's left.
+    //  - Marathon / half: long run uses the independent progression value, capped
+    //    only at longRunCap. Weekly total may slightly exceed volumes[i] in peak
+    //    weeks for low-base runners — acceptable because the long run is the
+    //    primary session and must reach at least 32 km for marathon.
     //  - All other race types: simple percentage split, cap applied after.
     const split = (() => {
       if (longRunVols) {
-        // Ensure at least 12 km remain for the other sessions combined
-        const minOther = rpw === 3 ? 10 : 12
-        const rawLong  = longRunVols[i]
-        const safeLong = Math.min(longRunCap, rawLong, Math.max(8, targetKm - minOther))
+        const safeLong = Math.min(longRunCap, longRunVols[i])
         return splitVolume(targetKm, rpw, safeLong)
       }
       const s = splitVolume(targetKm, rpw)
