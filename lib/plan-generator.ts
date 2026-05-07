@@ -723,82 +723,125 @@ function buildLongRun(
     `Long run ${km} km — Z2 (RPE 3–4). Easy aerobic effort throughout${paces.easy > 0 ? ` (${fmtPace(paces.easy)})` : ''}. Practise race nutrition every 40 min. Most important run of the week.`, optional)
 }
 
-// ─── Volume splits by run count ───────────────────────────────────────────────
+// ─── Long-run independent progression ────────────────────────────────────────
+//
+// For marathon and half plans the long run must reach race-specific peaks
+// (32–35 km for marathon, 20–22 km for half) regardless of the weekly volume cap.
+// This function grows the long run on its own 9%-per-week curve, mirroring the
+// cutback structure of buildVolumes but targeting LONG_RUN_MAX independently.
 
-/**
- * Split a target weekly km into individual run distances.
- *
- * Rules:
- *  - Each run has a percentage-based value and a sensible minimum.
- *  - If the sum of minimums exceeds targetKm (low-base runners), every value is
- *    scaled down proportionally so the total never overshoots the target.
- *    This prevents week 1 from silently delivering 55%+ more volume than intended.
- */
-function splitVolume(targetKm: number, runs: number) {
-  // Raw splits (percentage-based, no floors yet)
-  let raw: { easy: number; qual: number; ml: number; long: number; extraEasy: number }
+function buildLongRunVolumes(
+  weeklyKm: number,
+  phases:   PhaseBlock[],
+  raceType: RaceType,
+): number[] {
+  const targetMax = LONG_RUN_MAX[raceType]
+  if (targetMax >= 999) {
+    // Ultra: time-based long runs — caller ignores this array
+    return new Array(phases.reduce((s, p) => s + p.weeks, 0)).fill(0)
+  }
+
+  // Starting long run: ~35% of current weekly km, 8–18 km bracket
+  const startLong   = Math.max(8, Math.min(18, Math.round(weeklyKm * 0.35)))
+  const grow        = (from: number) => Math.min(targetMax, Math.round(from * 1.09))
+  const cutbackLong = (peak: number) => Math.max(startLong, Math.round(peak * 0.75))
+
+  const totalWeeks = phases.reduce((s, p) => s + p.weeks, 0)
+  const v: number[] = new Array(totalWeeks).fill(0)
+  let wi = 0, lastPeak = startLong, prevCutback = false
+
+  for (const block of phases) {
+    // ── Taper: long run also tapers, slightly more aggressively than total volume ──
+    if (block.phase === 'taper') {
+      const peak = v.slice(0, wi).reduce((m, x) => Math.max(m, x), lastPeak)
+      if (block.weeks >= 3) {
+        v[wi] = Math.round(peak * 0.65); v[wi+1] = Math.round(peak * 0.48); v[wi+2] = Math.round(peak * 0.28)
+      } else {
+        v[wi] = Math.round(peak * 0.55); v[wi+1] = Math.round(peak * 0.30)
+      }
+      wi += block.weeks
+      continue
+    }
+
+    // Cutback timing is identical to buildVolumes so cutback weeks stay in sync
+    const cutbackAt =
+      block.phase === 'base'  ? block.weeks - 1 :
+      block.phase === 'build' ? Math.round(block.weeks * 0.55) :
+      block.phase === 'peak' && block.weeks >= 4 ? Math.round(block.weeks * 0.6) :
+      block.weeks - 1  // sharpen
+
+    for (let j = 0; j < block.weeks; j++, wi++) {
+      if (wi === 0) {
+        v[wi] = startLong; lastPeak = startLong; prevCutback = false
+      } else if (j === cutbackAt) {
+        v[wi] = cutbackLong(lastPeak); prevCutback = true
+      } else if (prevCutback) {
+        v[wi] = grow(lastPeak)
+        if (v[wi] > lastPeak) lastPeak = v[wi]
+        prevCutback = false
+      } else {
+        v[wi] = grow(v[wi - 1])
+        if (v[wi] > lastPeak) lastPeak = v[wi]
+      }
+    }
+  }
+  return v
+}
+
+// ─── Volume splits by run count ───────────────────────────────────────────────
+//
+// When a fixedLong value is provided (marathon / half plans), the long run is
+// treated as a given and the remaining weekly km is distributed proportionally
+// among the other sessions. This prevents the percentage approach from capping
+// the long run at low values for volume-capped amateur plans.
+
+function splitVolume(targetKm: number, runs: number, fixedLong?: number) {
+  // Long run km — either the independently-grown value or a percentage fallback
+  const long      = fixedLong ?? Math.min(38, Math.max(10, Math.round(targetKm * 0.36)))
+  const remaining = Math.max(0, targetKm - long)
+
+  // Scale the other-run parts so they don't exceed `remaining`.
+  // When minimums sum above remaining (low-base edge case), accept a small
+  // overshoot rather than producing sub-3 km runs.
+  function distribute(parts: { easy: number; qual: number; ml: number; extraEasy: number }) {
+    const sum = parts.easy + parts.qual + parts.ml + parts.extraEasy
+    if (sum <= remaining + 1) return parts        // within 1 km — fine
+    const s = Math.max(0, remaining) / sum
+    return {
+      easy:      Math.max(3, Math.round(parts.easy      * s)),
+      qual:      Math.max(3, Math.round(parts.qual      * s)),
+      ml:        parts.ml > 0 ? Math.max(3, Math.round(parts.ml * s)) : 0,
+      extraEasy: parts.extraEasy > 0 ? Math.max(3, Math.round(parts.extraEasy * s)) : 0,
+    }
+  }
 
   if (runs === 3) {
-    raw = {
-      easy:      Math.round(targetKm * 0.22),
-      qual:      Math.round(targetKm * 0.25),
+    // easy : qual = 22 : 25 (original ratio without long)
+    return { ...distribute({
+      easy:      Math.max(4, Math.round(remaining * 0.47)),
+      qual:      Math.max(4, Math.round(remaining * 0.53)),
       ml:        0,
-      long:      Math.round(targetKm * 0.53),
-      extraEasy: Math.round(targetKm * 0.22),
-    }
-  } else if (runs === 5) {
-    raw = {
-      easy:      Math.round(targetKm * 0.13),
-      qual:      Math.round(targetKm * 0.18),
-      ml:        Math.round(targetKm * 0.22),
-      long:      Math.round(targetKm * 0.36),
-      extraEasy: Math.round(targetKm * 0.11),
-    }
-  } else {
-    // 4 runs (default)
-    raw = {
-      easy:      Math.round(targetKm * 0.17),
-      qual:      Math.round(targetKm * 0.21),
-      ml:        Math.round(targetKm * 0.26),
-      long:      Math.round(targetKm * 0.36),
-      extraEasy: 0,
-    }
+      extraEasy: Math.max(4, Math.round(remaining * 0.47)),  // optional, same size as easy
+    }), long }
   }
 
-  // Absolute minimums per run type (only applied when the raw value is below them)
-  const floors = {
-    easy:      runs === 5 ? 4  : 5,
-    qual:      runs === 3 ? 5  : 6,
-    ml:        runs === 5 ? 6  : 7,
-    long:      runs === 3 ? 10 : 10,  // reduced from 12 — avoids overshoot for low-base runners
-    extraEasy: runs === 3 ? 5  : 4,
+  if (runs === 5) {
+    // easy : qual : ml : extraEasy = 13 : 18 : 22 : 11 (original ratio without long)
+    return { ...distribute({
+      easy:      Math.max(3, Math.round(remaining * 0.20)),
+      qual:      Math.max(4, Math.round(remaining * 0.28)),
+      ml:        Math.max(4, Math.round(remaining * 0.35)),
+      extraEasy: Math.max(3, Math.round(remaining * 0.17)),
+    }), long }
   }
 
-  // Apply floors
-  const floored = {
-    easy:      Math.max(floors.easy,      raw.easy),
-    qual:      Math.max(floors.qual,      raw.qual),
-    ml:        runs === 3 ? 0 : Math.max(floors.ml, raw.ml),
-    long:      Math.max(floors.long,      raw.long),
-    extraEasy: raw.extraEasy > 0 ? Math.max(floors.extraEasy, raw.extraEasy) : 0,
-  }
-
-  // Sum of the runs that actually appear in the schedule
-  // (extraEasy is only added from week 7 for 3-run plans, so exclude from overshoot check)
-  const scheduled = floored.easy + floored.qual + floored.ml + floored.long
-  if (scheduled > targetKm) {
-    // Scale each component down proportionally so the total equals targetKm.
-    // Long run is protected (scaled last and floored at 8 km to keep it meaningful).
-    const scale = targetKm / scheduled
-    floored.easy  = Math.max(3, Math.round(floored.easy  * scale))
-    floored.qual  = Math.max(3, Math.round(floored.qual  * scale))
-    floored.ml    = floored.ml > 0 ? Math.max(4, Math.round(floored.ml * scale)) : 0
-    floored.long  = Math.max(8, Math.round(floored.long  * scale))
-    // Recalculate extraEasy at the same scale (it's optional, just keep it reasonable)
-    if (floored.extraEasy > 0) floored.extraEasy = Math.max(3, Math.round(floored.extraEasy * scale))
-  }
-
-  return floored
+  // 4 runs (default) — easy : qual : ml = 17 : 21 : 26 (original ratio without long)
+  return { ...distribute({
+    easy:      Math.max(4, Math.round(remaining * 0.27)),
+    qual:      Math.max(4, Math.round(remaining * 0.33)),
+    ml:        Math.max(5, Math.round(remaining * 0.40)),
+    extraEasy: 0,
+  }), long }
 }
 
 // ─── Main generator ───────────────────────────────────────────────────────────
@@ -824,9 +867,17 @@ export function generatePlan(config: UserPlanConfig): Week[] {
   const raceDistKm = RACE_DISTANCE_KM[raceType]
   const injuryNotes = config.injuryNotes ?? ''
 
-  const phases     = calcPhases(planWeeks, raceType)
-  const volumes    = buildVolumes(config.weeklyKm, phases)
-  const weekTmpls  = buildWeekTemplates(phases)
+  const phases       = calcPhases(planWeeks, raceType)
+  const volumes      = buildVolumes(config.weeklyKm, phases)
+  const weekTmpls    = buildWeekTemplates(phases)
+
+  // Long runs grow independently for marathon and half so they reach 32–35 km /
+  // 20–22 km regardless of the weekly volume cap. For 5K/10K/ultra the
+  // percentage-based split is sufficient.
+  const longRunVols: number[] | null =
+    (raceType === 'marathon' || raceType === 'half')
+      ? buildLongRunVolumes(config.weeklyKm, phases, raceType)
+      : null
 
   // Plan starts planWeeks weeks before race day, snapped to Monday
   const raceDateObj = new Date(config.raceDate + 'T12:00:00Z')
@@ -842,8 +893,19 @@ export function generatePlan(config: UserPlanConfig): Week[] {
     const targetKm   = volumes[i]
     const isRaceWeek = wk === planWeeks
 
-    // Split volume; cap long run per race type
+    // Split volume:
+    //  - Marathon / half: long run uses the independent progression value,
+    //    capped at longRunCap and at most (targetKm − min-other) so the
+    //    remaining runs stay meaningful. Other runs absorb what's left.
+    //  - All other race types: simple percentage split, cap applied after.
     const split = (() => {
+      if (longRunVols) {
+        // Ensure at least 12 km remain for the other sessions combined
+        const minOther = rpw === 3 ? 10 : 12
+        const rawLong  = longRunVols[i]
+        const safeLong = Math.min(longRunCap, rawLong, Math.max(8, targetKm - minOther))
+        return splitVolume(targetKm, rpw, safeLong)
+      }
       const s = splitVolume(targetKm, rpw)
       return { ...s, long: Math.min(longRunCap, s.long) }
     })()
