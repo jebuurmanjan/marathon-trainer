@@ -1,17 +1,68 @@
-import { Week, PlannedRun, Phase, RunType, WorkoutCategory } from '@/types'
+import { Week, PlannedRun, Phase, RunType, WorkoutCategory, RaceType } from '@/types'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 export type EquipmentType = 'bodyweight' | 'gym' | 'both'
+export type { RaceType }
 
 export interface UserPlanConfig {
-  raceDate:      string        // YYYY-MM-DD
-  goalSeconds:   number        // e.g. 12600 for 3:30:00
-  weeklyKm:      number        // current weekly running load
-  runsPerWeek:   number        // 3, 4, or 5
-  strengthDays:  number        // 0, 1, or 2
-  equipmentType: EquipmentType // 'bodyweight' | 'gym' | 'both'
-  planWeeks:     number        // 12–27
+  raceDate:         string        // YYYY-MM-DD
+  goalSeconds:      number        // e.g. 12600 for 3:30:00
+  weeklyKm:         number        // current weekly running load
+  runsPerWeek:      number        // 3, 4, or 5
+  strengthDays:     number        // 0, 1, or 2
+  equipmentType:    EquipmentType // 'bodyweight' | 'gym' | 'both'
+  planWeeks:        number        // 6–30
+  raceType?:        RaceType      // '5k'|'10k'|'half'|'marathon'|'ultra' (default: 'marathon')
+  injuryNotes?:     string        // free text, e.g. "knee pain, no hills"
+  unavailableDays?: number[]      // 0=Sun…6=Sat days user cannot train
+}
+
+// ─── Race-type constants ──────────────────────────────────────────────────────
+
+/** Race distance in km for each type */
+export const RACE_DISTANCE_KM: Record<RaceType, number> = {
+  '5k':      5,
+  '10k':     10,
+  'half':    21.0975,
+  'marathon':42.195,
+  'ultra':   50,   // representative; plans use time not distance
+}
+
+/** Friendly display label */
+export const RACE_TYPE_LABELS: Record<RaceType, string> = {
+  '5k':      '5K',
+  '10k':     '10K',
+  'half':    'Half Marathon',
+  'marathon':'Marathon',
+  'ultra':   'Ultra Marathon',
+}
+
+/** Short pace label shown in the UI (e.g. "MP", "HMP", "5K pace") */
+export const RACE_PACE_LABEL: Record<RaceType, string> = {
+  '5k':      '5K pace',
+  '10k':     '10K pace',
+  'half':    'HMP',
+  'marathon':'MP',
+  'ultra':   'Easy',
+}
+
+/** Min/max plan weeks per race type */
+export const PLAN_WEEKS_RANGE: Record<RaceType, { min: number; max: number }> = {
+  '5k':      { min: 6,  max: 10 },
+  '10k':     { min: 8,  max: 12 },
+  'half':    { min: 10, max: 16 },
+  'marathon':{ min: 12, max: 27 },
+  'ultra':   { min: 20, max: 30 },
+}
+
+/** Max long run km per race type */
+export const LONG_RUN_MAX: Record<RaceType, number> = {
+  '5k':      16,
+  '10k':     18,
+  'half':    22,
+  'marathon':35,
+  'ultra':   999, // time-capped, not distance-capped
 }
 
 // ─── Paces ────────────────────────────────────────────────────────────────────
@@ -24,14 +75,32 @@ export interface PlanPaces {
   hill:      number
 }
 
-export function calcPaces(goalSeconds: number): PlanPaces {
-  const mp = goalSeconds / 42.195 / 60
-  return {
-    mp:        Math.round(mp * 100) / 100,
-    threshold: Math.round(mp * 0.92 * 100) / 100,
-    interval:  Math.round(mp * 0.85 * 100) / 100,
-    easy:      Math.round((mp + 1.20) * 100) / 100,
-    hill:      Math.round(mp * 0.93 * 100) / 100,
+/** Calculate training paces from goal time and race type.
+ *  Returns all values as decimal min/km (0 = "not applicable"). */
+export function calcPaces(goalSeconds: number, raceType: RaceType = 'marathon'): PlanPaces {
+  const r = (v: number) => Math.round(v * 100) / 100
+
+  switch (raceType) {
+    case '5k': {
+      const p = goalSeconds / 5 / 60
+      return { mp: r(p), threshold: r(p * 1.06), interval: r(p * 0.95), easy: r(p + 1.5), hill: r(p * 1.05) }
+    }
+    case '10k': {
+      const p = goalSeconds / 10 / 60
+      return { mp: r(p), threshold: r(p * 1.05), interval: r(p * 0.92), easy: r(p + 1.3), hill: r(p * 1.04) }
+    }
+    case 'half': {
+      const p = goalSeconds / 21.0975 / 60
+      return { mp: r(p), threshold: r(p * 1.04), interval: r(p * 0.90), easy: r(p + 1.2), hill: r(p * 1.03) }
+    }
+    case 'marathon': {
+      const mp = goalSeconds / 42.195 / 60
+      return { mp: r(mp), threshold: r(mp * 0.92), interval: r(mp * 0.85), easy: r(mp + 1.20), hill: r(mp * 0.93) }
+    }
+    case 'ultra': {
+      // Ultra plans use time on feet — no strict pace targets
+      return { mp: 0, threshold: 0, interval: 0, easy: 0, hill: 0 }
+    }
   }
 }
 
@@ -75,16 +144,27 @@ function mkRun(
 
 interface PhaseBlock { phase: Phase; weeks: number }
 
-export function calcPhases(planWeeks: number): PhaseBlock[] {
-  // Taper: 3 weeks for 20+ week plans, 2 for shorter
-  const taper     = planWeeks >= 20 ? 3 : 2
-  const remaining = planWeeks - taper
+/** Phase proportions per race type (base / build / peak ratios of non-taper weeks) */
+const PHASE_RATIOS: Record<RaceType, { base: number; build: number; peak: number }> = {
+  '5k':      { base: 0.20, build: 0.35, peak: 0.45 },
+  '10k':     { base: 0.20, build: 0.35, peak: 0.45 },
+  'half':    { base: 0.25, build: 0.45, peak: 0.30 },
+  'marathon':{ base: 0.26, build: 0.35, peak: 0.39 }, // peak+sharpen combined
+  'ultra':   { base: 0.25, build: 0.45, peak: 0.30 },
+}
 
-  // ≤ 16 weeks: combine peak+sharpen into one block
-  if (planWeeks <= 16) {
-    const base  = Math.max(3, Math.round(remaining * 0.33))
-    const build = Math.max(3, Math.round(remaining * 0.40))
-    const peak  = Math.max(2, remaining - base - build)
+export function calcPhases(planWeeks: number, raceType: RaceType = 'marathon'): PhaseBlock[] {
+  // Taper length: 1 wk for short (≤10), 2 for medium, 3 for 20+
+  const taper     = planWeeks >= 20 ? 3 : planWeeks <= 10 ? 1 : 2
+  const remaining = planWeeks - taper
+  const r         = PHASE_RATIOS[raceType]
+
+  // Short plans (≤ 12 wk for marathon, ≤ 10 for others): 3 phases only
+  const shortThreshold = raceType === 'marathon' ? 16 : 12
+  if (planWeeks <= shortThreshold) {
+    const base  = Math.max(2, Math.round(remaining * r.base))
+    const build = Math.max(2, Math.round(remaining * r.build))
+    const peak  = Math.max(1, remaining - base - build)
     return [
       { phase: 'base',  weeks: base  },
       { phase: 'build', weeks: build },
@@ -93,17 +173,30 @@ export function calcPhases(planWeeks: number): PhaseBlock[] {
     ]
   }
 
-  // > 16 weeks: four separate phases
-  const base    = Math.max(4, Math.round(remaining * 0.26))
-  const build   = Math.max(4, Math.round(remaining * 0.35))
-  const peak    = Math.max(2, Math.round(remaining * 0.24))
-  const sharpen = Math.max(1, remaining - base - build - peak)
+  // Longer plans: add sharpen sub-phase for marathon (familiar structure)
+  if (raceType === 'marathon') {
+    const base    = Math.max(4, Math.round(remaining * 0.26))
+    const build   = Math.max(4, Math.round(remaining * 0.35))
+    const peak    = Math.max(2, Math.round(remaining * 0.24))
+    const sharpen = Math.max(1, remaining - base - build - peak)
+    return [
+      { phase: 'base',    weeks: base    },
+      { phase: 'build',   weeks: build   },
+      { phase: 'peak',    weeks: peak    },
+      { phase: 'sharpen', weeks: sharpen },
+      { phase: 'taper',   weeks: taper   },
+    ]
+  }
+
+  // Other distances: 3 phases
+  const base  = Math.max(2, Math.round(remaining * r.base))
+  const build = Math.max(2, Math.round(remaining * r.build))
+  const peak  = Math.max(1, remaining - base - build)
   return [
-    { phase: 'base',    weeks: base    },
-    { phase: 'build',   weeks: build   },
-    { phase: 'peak',    weeks: peak    },
-    { phase: 'sharpen', weeks: sharpen },
-    { phase: 'taper',   weeks: taper   },
+    { phase: 'base',  weeks: base  },
+    { phase: 'build', weeks: build },
+    { phase: 'peak',  weeks: peak  },
+    { phase: 'taper', weeks: taper },
   ]
 }
 
@@ -568,46 +661,48 @@ function buildThursdayRun(
   const cd   = wu
   const main = Math.max(1, km - wu - cd)
 
+  const ep = (p: number) => paces.easy > 0 ? ` (${fmtPace(p)})` : ''
+
   switch (quality) {
     case 'none':
       return mkRun(wk, phase, date, 'easy', km, undefined,
-        `Easy ${km} km. Fully conversational (${fmtPace(paces.easy)}), HR under 145 bpm throughout.`, optional)
+        `Easy ${km} km — Z2 (RPE 3–4). Fully conversational${ep(paces.easy)}, HR under 145 bpm throughout.`, optional)
 
     case 'progression': {
-      const ep = Math.round(km * 0.75), fp = km - ep
+      const epKm = Math.round(km * 0.75), fpKm = km - epKm
       return mkRun(wk, phase, date, 'easy', km, undefined,
-        `Progression ${km} km. First ${ep} km fully easy → final ${fp} km at a controlled effort (~${fmtPace(paces.mp)}). Never a hard push.`, optional)
+        `Progression ${km} km — Z2→Z3 (RPE 3→6). First ${epKm} km fully easy${ep(paces.easy)} → final ${fpKm} km at a controlled effort${paces.mp > 0 ? ` (~${fmtPace(paces.mp)})` : ''}. Never a hard push.`, optional)
     }
 
     case 'hills':
-      return mkRun(wk, phase, date, 'interval', km, paces.hill,
-        `Hill workout ${km} km. Easy on flat sections (${fmtPace(paces.easy)}). On uphills, drive knees and run strong — 6–10 climbs of 60–90s each.`, optional)
+      return mkRun(wk, phase, date, 'interval', km, paces.hill > 0 ? paces.hill : undefined,
+        `Hill workout ${km} km — Z3–Z4 (RPE 6–8). Easy on flat sections${ep(paces.easy)}. On uphills, drive knees and run strong — 6–10 climbs of 60–90s each.`, optional)
 
     case 'tempo':
-      return mkRun(wk, phase, date, 'tempo', km, paces.threshold,
-        `Tempo ${km} km. ${wu} km easy warm-up → ${main} km at threshold pace (${fmtPace(paces.threshold)}) — comfortably hard, short phrases only → ${cd} km easy cool-down.`, optional)
+      return mkRun(wk, phase, date, 'tempo', km, paces.threshold > 0 ? paces.threshold : undefined,
+        `Tempo ${km} km — Z4 (RPE 7–8). ${wu} km easy warm-up → ${main} km at threshold pace${paces.threshold > 0 ? ` (${fmtPace(paces.threshold)})` : ''} — comfortably hard, short phrases only → ${cd} km easy cool-down.`, optional)
 
     case 'fartlek':
       return mkRun(wk, phase, date, 'interval', km, undefined,
-        `Fartlek ${km} km. Mostly easy (${fmtPace(paces.easy)}) with 6–10 fast bursts of 60–90s scattered throughout. Pick landmarks, run hard, recover fully. Run by feel.`, optional)
+        `Fartlek ${km} km — Z2/Z4 (RPE 3–8). Mostly easy${ep(paces.easy)} with 6–10 fast bursts of 60–90s scattered throughout. Pick landmarks, run hard, recover fully.`, optional)
 
     case 'mp':
-      return mkRun(wk, phase, date, 'tempo', km, paces.mp,
-        `Marathon pace ${km} km. ${wu} km easy warm-up → ${main} km at marathon pace (${fmtPace(paces.mp)}) → ${cd} km easy cool-down. Should feel like a controlled 7/10 effort.`, optional)
+      return mkRun(wk, phase, date, 'tempo', km, paces.mp > 0 ? paces.mp : undefined,
+        `Race pace ${km} km — Z3–Z4 (RPE 6–8). ${wu} km easy warm-up → ${main} km at race pace${paces.mp > 0 ? ` (${fmtPace(paces.mp)})` : ''} → ${cd} km easy cool-down. Controlled 7/10 effort.`, optional)
 
     case 'race_sim': {
       const mpSec = Math.max(3, Math.round(main * 0.8))
-      return mkRun(wk, phase, date, 'tempo', km, paces.mp,
-        `Race simulation ${km} km. ${wu} km easy → ${mpSec} km at marathon pace (${fmtPace(paces.mp)}) → ${cd} km cool-down. Practise race-day nutrition and gear. Most important workout of the plan.`, optional)
+      return mkRun(wk, phase, date, 'tempo', km, paces.mp > 0 ? paces.mp : undefined,
+        `Race simulation ${km} km — Z4 (RPE 7–8). ${wu} km easy → ${mpSec} km at race pace${paces.mp > 0 ? ` (${fmtPace(paces.mp)})` : ''} → ${cd} km cool-down. Practise race-day nutrition and gear. Most important workout of the plan.`, optional)
     }
 
     case 'dress_rehearsal':
-      return mkRun(wk, phase, date, 'tempo', km, paces.mp,
-        `Dress rehearsal ${km} km. 15 min easy → 20 min at marathon pace (${fmtPace(paces.mp)}) → 15 min easy. Use exact race kit, shoes, and nutrition. Nothing new on race day.`, optional)
+      return mkRun(wk, phase, date, 'tempo', km, paces.mp > 0 ? paces.mp : undefined,
+        `Dress rehearsal ${km} km — Z3–Z4 (RPE 6–8). 15 min easy → 20 min at race pace${paces.mp > 0 ? ` (${fmtPace(paces.mp)})` : ''} → 15 min easy. Use exact race kit and nutrition. Nothing new on race day.`, optional)
 
     case 'tune_up':
       return mkRun(wk, phase, date, 'easy', Math.max(5, Math.round(km * 0.7)), undefined,
-        `Pre-race shakeout. Very easy 30–40 min to loosen up. No effort — just move. Rest up this evening.`, optional)
+        `Pre-race shakeout — Z2 (RPE 3–4). Very easy 30–40 min to loosen up. No effort — just move. Rest up this evening.`, optional)
   }
 }
 
@@ -616,14 +711,14 @@ function buildLongRun(
   km: number, style: LongStyle | undefined, paces: PlanPaces,
   optional = false,
 ): PlannedRun {
-  if (style === 'mp_finish') {
+  if (style === 'mp_finish' && paces.mp > 0) {
     const eKm = Math.max(10, Math.round(km * 0.55))
     const mKm = km - eKm
     return mkRun(wk, phase, date, 'long', km, paces.mp,
-      `Long run ${km} km with marathon-pace finish. First ${eKm} km easy (${fmtPace(paces.easy)}) → final ${mKm} km at marathon pace (${fmtPace(paces.mp)}). Fuel every 40 min.`, optional)
+      `Long run ${km} km with race-pace finish — Z2→Z3 (RPE 3→6). First ${eKm} km easy${paces.easy > 0 ? ` (${fmtPace(paces.easy)})` : ''} → final ${mKm} km at race pace (${fmtPace(paces.mp)}). Fuel every 40 min.`, optional)
   }
   return mkRun(wk, phase, date, 'long', km, undefined,
-    `Long run ${km} km. Easy aerobic effort throughout (${fmtPace(paces.easy)}). Practise race nutrition every 40 min. Most important run of the week.`, optional)
+    `Long run ${km} km — Z2 (RPE 3–4). Easy aerobic effort throughout${paces.easy > 0 ? ` (${fmtPace(paces.easy)})` : ''}. Practise race nutrition every 40 min. Most important run of the week.`, optional)
 }
 
 // ─── Volume splits by run count ───────────────────────────────────────────────
@@ -659,14 +754,28 @@ function splitVolume(targetKm: number, runs: number) {
 
 // ─── Main generator ───────────────────────────────────────────────────────────
 
+/** Returns true if a quality session key should be suppressed due to injury notes */
+function isSafeQuality(quality: QKey, injuryNotes: string): boolean {
+  if (!injuryNotes) return true
+  const lower = injuryNotes.toLowerCase()
+  if (quality === 'hills' && (lower.includes('knee') || lower.includes('hill') || lower.includes('it band'))) return false
+  if (quality === 'race_sim' && lower.includes('speed')) return false
+  if ((quality === 'fartlek' || quality === 'mp') && lower.includes('speed')) return false
+  return true
+}
+
 export function generatePlan(config: UserPlanConfig): Week[] {
-  const paces      = calcPaces(config.goalSeconds)
+  const raceType   = config.raceType ?? 'marathon'
+  const paces      = calcPaces(config.goalSeconds, raceType)
   const planWeeks  = config.planWeeks  ?? 27
   const rpw        = config.runsPerWeek ?? 4
   const eqType     = config.equipmentType ?? 'bodyweight'
   const sOffsets   = strengthOffsets(rpw, config.strengthDays ?? 0)
+  const longRunCap = LONG_RUN_MAX[raceType]
+  const raceDistKm = RACE_DISTANCE_KM[raceType]
+  const injuryNotes = config.injuryNotes ?? ''
 
-  const phases     = calcPhases(planWeeks)
+  const phases     = calcPhases(planWeeks, raceType)
   const volumes    = buildVolumes(config.weeklyKm, phases)
   const weekTmpls  = buildWeekTemplates(phases)
 
@@ -683,22 +792,31 @@ export function generatePlan(config: UserPlanConfig): Week[] {
     const weekEnd    = addDays(weekStart, 6)
     const targetKm   = volumes[i]
     const isRaceWeek = wk === planWeeks
-    const split      = splitVolume(targetKm, rpw)
+
+    // Split volume; cap long run per race type
+    const split = (() => {
+      const s = splitVolume(targetKm, rpw)
+      return { ...s, long: Math.min(longRunCap, s.long) }
+    })()
 
     let runs: PlannedRun[] = []
 
     // ── Race week ─────────────────────────────────────────────────────────────
     if (isRaceWeek) {
-      const eKm = Math.max(4, Math.round(targetKm * 0.28))
+      const eKm      = Math.max(3, Math.round(targetKm * 0.28))
+      const paceDesc = paces.mp > 0 ? ` at ${fmtPace(paces.mp)}` : ''
+      const raceKm   = Math.round(raceDistKm * 100) / 100
       runs = [
         mkRun(wk, tmpl.phase, addDays(weekStart, 1), 'easy', eKm, undefined,
-          `Easy shakeout ${eKm} km. Relaxed and loose — legs only, no effort.`),
+          `Easy shakeout ${eKm} km — Z2 (RPE 3–4). Relaxed and loose, legs only.`),
         mkRun(wk, tmpl.phase, addDays(weekStart, 3), 'easy', eKm, undefined,
-          `Easy shakeout ${eKm} km. Same as Tuesday — stay relaxed.`),
-        mkRun(wk, tmpl.phase, addDays(weekStart, 4), 'easy', eKm, paces.mp,
-          `Pre-race shakeout ${eKm} km. 15 min easy → 10 min at marathon pace (${fmtPace(paces.mp)}) → 10 min easy. Wake the legs up. Sleep well tonight.`),
-        mkRun(wk, tmpl.phase, config.raceDate, 'race', 42, paces.mp,
-          `Race day — 42.195 km at ${fmtPace(paces.mp)}. Conservative first 10 km, trust training in the middle, give everything in the final 10 km. You are ready.`),
+          `Easy shakeout ${eKm} km — Z2 (RPE 3–4). Same as Tuesday, stay relaxed.`),
+        mkRun(wk, tmpl.phase, addDays(weekStart, 4), 'easy', eKm, paces.mp > 0 ? paces.mp : undefined,
+          paces.mp > 0
+            ? `Pre-race shakeout ${eKm} km. 15 min easy → 10 min${paceDesc} → 10 min easy. Wake the legs up.`
+            : `Pre-race shakeout ${eKm} km — very easy. Wake the legs up, sleep well tonight.`),
+        mkRun(wk, tmpl.phase, config.raceDate, 'race', raceKm, paces.mp > 0 ? paces.mp : undefined,
+          `Race day — ${raceKm} km${paceDesc}. Go get it. You are ready.`),
       ]
 
     // ── Tune-up race week ─────────────────────────────────────────────────────
@@ -720,22 +838,24 @@ export function generatePlan(config: UserPlanConfig): Week[] {
     // ── Standard week ─────────────────────────────────────────────────────────
     } else {
       runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 1), 'easy', split.easy, undefined,
-        `Easy ${split.easy} km. Fully conversational (${fmtPace(paces.easy)}). HR under 145 bpm.`))
+        `Easy ${split.easy} km — Z2 (RPE 3–4). Fully conversational${paces.easy > 0 ? ` (${fmtPace(paces.easy)})` : ''}. HR under 145 bpm.`))
 
       if (rpw === 5) {
         runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 2), 'easy', split.extraEasy, undefined,
-          `Easy ${split.extraEasy} km. Second easy run of the week — keep it relaxed and short.`))
+          `Easy ${split.extraEasy} km — Z2 (RPE 3–4). Second easy run of the week — relaxed and short.`))
       }
 
-      runs.push(buildThursdayRun(wk, tmpl.phase, addDays(weekStart, 3), split.qual, tmpl.quality, paces))
+      // Suppress unsafe quality types (injury filter) → replace with easy run
+      const safeQuality = isSafeQuality(tmpl.quality, injuryNotes) ? tmpl.quality : 'none'
+      runs.push(buildThursdayRun(wk, tmpl.phase, addDays(weekStart, 3), split.qual, safeQuality, paces))
 
       if (rpw >= 4) {
         runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 5), 'medium_long', split.ml, undefined,
-          `Medium-long ${split.ml} km. Easy aerobic effort (${fmtPace(paces.easy)}). Comfortable time on feet.`))
+          `Medium-long ${split.ml} km — Z2 (RPE 3–4). Easy aerobic effort${paces.easy > 0 ? ` (${fmtPace(paces.easy)})` : ''}. Comfortable time on feet.`))
       } else if (rpw === 3 && wk >= 7) {
         runs.push(mkRun(wk, tmpl.phase, addDays(weekStart, 5), 'medium_long',
           Math.round(targetKm * 0.22), undefined,
-          `Optional medium-long run. Complete this if you're feeling good — it builds volume without pressure.`,
+          `Optional medium-long run — Z2 (RPE 3–4). Complete this if you're feeling good.`,
           true))
       }
 

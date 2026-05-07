@@ -16,9 +16,13 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
-  const { raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays, equipmentType, planWeeks } = body as {
+  const {
+    raceDate, goalSeconds, weeklyKm, runsPerWeek, strengthDays,
+    equipmentType, planWeeks, raceType, injuryNotes, unavailableDays,
+  } = body as {
     raceDate: string; goalSeconds: number; weeklyKm: number
-    runsPerWeek?: number; strengthDays?: number; equipmentType?: string; planWeeks?: number
+    runsPerWeek?: number; strengthDays?: number; equipmentType?: string
+    planWeeks?: number; raceType?: string; injuryNotes?: string; unavailableDays?: number[]
   }
 
   if (!raceDate || !goalSeconds || !weeklyKm) {
@@ -32,10 +36,11 @@ export async function POST(req: Request) {
   if (isNaN(race.getTime()) || weeksAway < 4) {
     return NextResponse.json({ error: 'Race date must be at least 4 weeks away' }, { status: 400 })
   }
-  if (goalSeconds < 9000 || goalSeconds > 16200) { // 2:30 – 4:30
+  // Validate goal time — relax for short distances (5K can be 600s, ultra can be >86400s)
+  if (goalSeconds < 600 || goalSeconds > 200000) {
     return NextResponse.json({ error: 'Invalid goal time' }, { status: 400 })
   }
-  if (weeklyKm < 10 || weeklyKm > 150) {
+  if (weeklyKm < 10 || weeklyKm > 200) {
     return NextResponse.json({ error: 'Weekly km out of range' }, { status: 400 })
   }
 
@@ -52,16 +57,19 @@ export async function POST(req: Request) {
   const { error } = await db
     .from('training_plans')
     .insert({
-      user_id:        session.userId,
-      name:           generatePlanName(raceDate, Math.round(goalSeconds)),
-      race_date:      raceDate,
-      goal_seconds:   Math.round(goalSeconds),
-      weekly_km:      Math.round(weeklyKm),
-      runs_per_week:  runsPerWeek    ?? 4,
-      strength_days:  strengthDays   ?? 0,
-      equipment_type: equipmentType  ?? 'bodyweight',
-      plan_weeks:     planWeeks      ?? 27,
-      is_active:      true,
+      user_id:          session.userId,
+      name:             generatePlanName(raceDate, Math.round(goalSeconds)),
+      race_date:        raceDate,
+      goal_seconds:     Math.round(goalSeconds),
+      weekly_km:        Math.round(weeklyKm),
+      runs_per_week:    runsPerWeek      ?? 4,
+      strength_days:    strengthDays     ?? 0,
+      equipment_type:   equipmentType    ?? 'bodyweight',
+      plan_weeks:       planWeeks        ?? 27,
+      race_type:        raceType         ?? 'marathon',
+      injury_notes:     injuryNotes      ?? null,
+      unavailable_days: unavailableDays  ?? [],
+      is_active:        true,
     })
 
   if (error) {

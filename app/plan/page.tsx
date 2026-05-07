@@ -9,7 +9,7 @@ import EditGoalModal from '@/components/EditGoalModal'
 import UpcomingWeeksModal from '@/components/UpcomingWeeksModal'
 import WorkoutSwapModal from '@/components/WorkoutSwapModal'
 import { ActualRun, Week, PlannedRun, StrengthWorkout, StrengthOverride } from '@/types'
-import { UserPlanConfig, PlanPaces } from '@/lib/plan-generator'
+import { UserPlanConfig, PlanPaces, RACE_TYPE_LABELS, RACE_PACE_LABEL } from '@/lib/plan-generator'
 import { formatDistance, formatDistanceExact, applyOverrides, applyStrengthOverrides, applyDefaultWorkouts, RunOverride } from '@/lib/training-plan'
 
 type Filter = 'upcoming' | 'all' | 'past'
@@ -227,7 +227,7 @@ export default function PlanPage() {
           <h1
             style={{ fontFamily:'Nohemi, Inter, sans-serif', fontWeight:600, letterSpacing:'-0.03em', color:'var(--text-primary)', fontSize:'1.375rem', lineHeight:1.2 }}
           >
-            Marathon Plan
+            {config ? RACE_TYPE_LABELS[config.raceType ?? 'marathon'] + ' Plan' : 'Training Plan'}
           </h1>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -342,7 +342,9 @@ export default function PlanPage() {
             <>
               <span style={{ color:'var(--border-mid)' }}>·</span>
               <span>
-                <span className="font-medium" style={{ color:'var(--text-primary)' }}>{mpLabel}/km</span>
+                <span className="font-medium" style={{ color:'var(--text-primary)' }}>
+                  {config ? RACE_PACE_LABEL[config.raceType ?? 'marathon'] : 'MP'} {mpLabel}/km
+                </span>
                 {goalLabel && <span> · sub {goalLabel}</span>}
               </span>
             </>

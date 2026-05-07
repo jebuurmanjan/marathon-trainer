@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { PlannedRun, ActualRun } from '@/types'
 import { RUN_TYPE_LABELS } from '@/lib/training-plan'
 import { formatPace, formatTime } from '@/lib/strava'
+import { zoneForType } from '@/lib/zones'
 
 const TYPE_STYLE: Record<string, { bg: string; color: string; dot: string }> = {
   easy:        { bg: 'rgba(47,148,97,0.10)',    color: 'var(--accent-green)',  dot: 'var(--accent-green)'  },
@@ -86,6 +87,16 @@ export default function RunRow({ run, actual, isPast, isUnplanned = false }: Run
         >
           {isUnplanned ? 'Extra' : RUN_TYPE_LABELS[run!.type]}
         </span>
+
+        {/* Zone chip — Z2, Z4, Z5 etc. (planned runs only, not strength or unplanned) */}
+        {!isUnplanned && run && run.type !== 'strength' && zoneForType(run.type) && (
+          <span
+            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 tabular-nums"
+            style={{ background: 'rgba(var(--tint),0.06)', color: 'var(--text-dim)' }}
+          >
+            Z{zoneForType(run.type)}
+          </span>
+        )}
 
         {/* Description — for unplanned runs, show the Strava activity name */}
         <span className="flex-1 text-xs truncate" style={{ color: 'var(--text-primary)' }}>

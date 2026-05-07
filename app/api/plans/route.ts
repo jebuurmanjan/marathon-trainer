@@ -209,9 +209,11 @@ export async function PUT(req: Request) {
   const {
     planId, raceDate, goalSeconds, weeklyKm,
     runsPerWeek, strengthDays, equipmentType, planWeeks,
+    raceType, injuryNotes, unavailableDays,
   } = body as {
     planId: string; raceDate: string; goalSeconds: number; weeklyKm: number
     runsPerWeek?: number; strengthDays?: number; equipmentType?: string; planWeeks?: number
+    raceType?: string; injuryNotes?: string; unavailableDays?: number[]
   }
 
   if (!planId || !raceDate || !goalSeconds || !weeklyKm) {
@@ -224,10 +226,10 @@ export async function PUT(req: Request) {
   if (isNaN(race.getTime()) || weeksAway < 4) {
     return NextResponse.json({ error: 'Race date must be at least 4 weeks away' }, { status: 400 })
   }
-  if (goalSeconds < 9000 || goalSeconds > 16200) {
+  if (goalSeconds < 600 || goalSeconds > 200000) {
     return NextResponse.json({ error: 'Invalid goal time' }, { status: 400 })
   }
-  if (weeklyKm < 10 || weeklyKm > 150) {
+  if (weeklyKm < 10 || weeklyKm > 200) {
     return NextResponse.json({ error: 'Weekly km out of range' }, { status: 400 })
   }
 
@@ -247,15 +249,18 @@ export async function PUT(req: Request) {
   const { error } = await db
     .from('training_plans')
     .update({
-      name:           generatePlanName(raceDate, Math.round(goalSeconds)),
-      race_date:      raceDate,
-      goal_seconds:   Math.round(goalSeconds),
-      weekly_km:      Math.round(weeklyKm),
-      runs_per_week:  runsPerWeek    ?? 4,
-      strength_days:  strengthDays   ?? 0,
-      equipment_type: equipmentType  ?? 'bodyweight',
-      plan_weeks:     planWeeks      ?? 27,
-      updated_at:     new Date().toISOString(),
+      name:             generatePlanName(raceDate, Math.round(goalSeconds)),
+      race_date:        raceDate,
+      goal_seconds:     Math.round(goalSeconds),
+      weekly_km:        Math.round(weeklyKm),
+      runs_per_week:    runsPerWeek      ?? 4,
+      strength_days:    strengthDays     ?? 0,
+      equipment_type:   equipmentType    ?? 'bodyweight',
+      plan_weeks:       planWeeks        ?? 27,
+      race_type:        raceType         ?? 'marathon',
+      injury_notes:     injuryNotes      ?? null,
+      unavailable_days: unavailableDays  ?? [],
+      updated_at:       new Date().toISOString(),
     })
     .eq('id', planId)
 
