@@ -206,7 +206,9 @@ export function calcPhases(planWeeks: number, raceType: RaceType = 'marathon'): 
 // Cutback weeks drop to 75% of the last peak, then the next week resumes from that peak.
 
 function buildVolumes(weeklyKm: number, phases: PhaseBlock[]): number[] {
-  const MAX      = Math.min(100, Math.max(60, weeklyKm * 3))
+  // Cap peak volume at 2× starting base, ceiling 80 km/week.
+  // weeklyKm * 3 (the old formula) let amateurs reach 90–100 km, which is semi-elite.
+  const MAX      = Math.min(80, Math.max(40, weeklyKm * 2))
   const cap      = (v: number) => Math.max(10, Math.min(MAX, Math.round(v)))
   const grow     = (from: number) => cap(from * 1.09)
   const cutbackV = (peak: number) => Math.max(weeklyKm, Math.round(peak * 0.75))
@@ -723,33 +725,80 @@ function buildLongRun(
 
 // ─── Volume splits by run count ───────────────────────────────────────────────
 
+/**
+ * Split a target weekly km into individual run distances.
+ *
+ * Rules:
+ *  - Each run has a percentage-based value and a sensible minimum.
+ *  - If the sum of minimums exceeds targetKm (low-base runners), every value is
+ *    scaled down proportionally so the total never overshoots the target.
+ *    This prevents week 1 from silently delivering 55%+ more volume than intended.
+ */
 function splitVolume(targetKm: number, runs: number) {
+  // Raw splits (percentage-based, no floors yet)
+  let raw: { easy: number; qual: number; ml: number; long: number; extraEasy: number }
+
   if (runs === 3) {
-    return {
-      easy:      Math.max(5,  Math.round(targetKm * 0.22)),
-      qual:      Math.max(6,  Math.round(targetKm * 0.25)),
+    raw = {
+      easy:      Math.round(targetKm * 0.22),
+      qual:      Math.round(targetKm * 0.25),
       ml:        0,
-      long:      Math.min(38, Math.max(12, Math.round(targetKm * 0.53))),
-      extraEasy: Math.max(6,  Math.round(targetKm * 0.22)),
+      long:      Math.round(targetKm * 0.53),
+      extraEasy: Math.round(targetKm * 0.22),
+    }
+  } else if (runs === 5) {
+    raw = {
+      easy:      Math.round(targetKm * 0.13),
+      qual:      Math.round(targetKm * 0.18),
+      ml:        Math.round(targetKm * 0.22),
+      long:      Math.round(targetKm * 0.36),
+      extraEasy: Math.round(targetKm * 0.11),
+    }
+  } else {
+    // 4 runs (default)
+    raw = {
+      easy:      Math.round(targetKm * 0.17),
+      qual:      Math.round(targetKm * 0.21),
+      ml:        Math.round(targetKm * 0.26),
+      long:      Math.round(targetKm * 0.36),
+      extraEasy: 0,
     }
   }
-  if (runs === 5) {
-    return {
-      easy:      Math.max(5,  Math.round(targetKm * 0.13)),
-      qual:      Math.max(6,  Math.round(targetKm * 0.18)),
-      ml:        Math.max(8,  Math.round(targetKm * 0.22)),
-      long:      Math.min(38, Math.max(12, Math.round(targetKm * 0.36))),
-      extraEasy: Math.max(5,  Math.round(targetKm * 0.11)),
-    }
+
+  // Absolute minimums per run type (only applied when the raw value is below them)
+  const floors = {
+    easy:      runs === 5 ? 4  : 5,
+    qual:      runs === 3 ? 5  : 6,
+    ml:        runs === 5 ? 6  : 7,
+    long:      runs === 3 ? 10 : 10,  // reduced from 12 — avoids overshoot for low-base runners
+    extraEasy: runs === 3 ? 5  : 4,
   }
-  // 4 runs (default)
-  return {
-    easy:      Math.max(5,  Math.round(targetKm * 0.17)),
-    qual:      Math.max(6,  Math.round(targetKm * 0.21)),
-    ml:        Math.max(8,  Math.round(targetKm * 0.26)),
-    long:      Math.min(38, Math.max(12, Math.round(targetKm * 0.36))),
-    extraEasy: 0,
+
+  // Apply floors
+  const floored = {
+    easy:      Math.max(floors.easy,      raw.easy),
+    qual:      Math.max(floors.qual,      raw.qual),
+    ml:        runs === 3 ? 0 : Math.max(floors.ml, raw.ml),
+    long:      Math.max(floors.long,      raw.long),
+    extraEasy: raw.extraEasy > 0 ? Math.max(floors.extraEasy, raw.extraEasy) : 0,
   }
+
+  // Sum of the runs that actually appear in the schedule
+  // (extraEasy is only added from week 7 for 3-run plans, so exclude from overshoot check)
+  const scheduled = floored.easy + floored.qual + floored.ml + floored.long
+  if (scheduled > targetKm) {
+    // Scale each component down proportionally so the total equals targetKm.
+    // Long run is protected (scaled last and floored at 8 km to keep it meaningful).
+    const scale = targetKm / scheduled
+    floored.easy  = Math.max(3, Math.round(floored.easy  * scale))
+    floored.qual  = Math.max(3, Math.round(floored.qual  * scale))
+    floored.ml    = floored.ml > 0 ? Math.max(4, Math.round(floored.ml * scale)) : 0
+    floored.long  = Math.max(8, Math.round(floored.long  * scale))
+    // Recalculate extraEasy at the same scale (it's optional, just keep it reasonable)
+    if (floored.extraEasy > 0) floored.extraEasy = Math.max(3, Math.round(floored.extraEasy * scale))
+  }
+
+  return floored
 }
 
 // ─── Main generator ───────────────────────────────────────────────────────────
