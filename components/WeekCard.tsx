@@ -5,11 +5,11 @@ import { PHASE_LABELS, formatDistance, formatDistanceExact } from '@/lib/trainin
 import { calcWeekScore, scoreColor, scoreLabel } from '@/lib/score'
 
 const PHASE_BADGE: Record<string, { bg: string; color: string }> = {
-  base:    { bg: 'rgba(206,210,214,0.40)', color: 'var(--text-dim)' },
+  base:    { bg: 'rgba(var(--tint),0.10)', color: 'var(--text-secondary)' },
   build:   { bg: 'rgba(136,121,225,0.12)', color: 'var(--accent-violet)' },
   peak:    { bg: 'rgba(var(--accent-rgb),0.12)',  color: 'var(--accent)' },
   sharpen: { bg: 'rgba(var(--accent-rgb),0.12)',  color: 'var(--accent)' },
-  taper:   { bg: 'rgba(47,148,97,0.10)',    color: 'var(--text-secondary)' },
+  taper:   { bg: 'rgba(47,148,97,0.10)',    color: 'var(--accent-green)' },
 }
 
 interface WeekCardProps {
