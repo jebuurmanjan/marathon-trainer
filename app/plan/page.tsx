@@ -131,7 +131,7 @@ export default function PlanPage() {
         setSyncMessage(`✓ Synced ${data.synced} run${data.synced !== 1 ? 's' : ''} from Strava`)
         await fetchRuns()
       } else {
-        setSyncMessage('Sync failed. Try again.')
+        setSyncMessage(data.detail ? `Sync failed: ${data.detail}` : 'Sync failed. Try again.')
       }
     } catch {
       setSyncMessage('Sync failed. Try again.')

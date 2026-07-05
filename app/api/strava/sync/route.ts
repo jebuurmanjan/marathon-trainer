@@ -16,7 +16,8 @@ export async function POST() {
     const count = await syncActivities(session.userId, yearStart)
     return NextResponse.json({ ok: true, synced: count })
   } catch (err) {
-    console.error('Sync error:', err)
-    return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('Sync error:', message)
+    return NextResponse.json({ error: 'Sync failed', detail: message }, { status: 500 })
   }
 }

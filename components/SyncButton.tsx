@@ -18,7 +18,7 @@ export default function SyncButton() {
         setMsg(`✓ Synced ${data.synced} run${data.synced !== 1 ? 's' : ''}`)
         router.refresh()           // re-fetch server component data
       } else {
-        setMsg('Sync failed. Try again.')
+        setMsg(data.detail ? `Sync failed: ${data.detail}` : 'Sync failed. Try again.')
       }
     } catch {
       setMsg('Sync failed. Try again.')

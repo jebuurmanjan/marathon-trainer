@@ -110,12 +110,18 @@ export async function syncActivities(userId: string, afterDate?: Date): Promise<
     if (!activities.length) break
 
     for (const activity of activities) {
-      if (activity.type !== 'Run') continue
+      // Strava deprecated `type` in 2023 in favour of `sport_type`.
+      // Accept either field so old and new activities both pass through.
+      const activityType = activity.sport_type ?? activity.type
+      if (activityType !== 'Run') continue
 
       const distanceKm = activity.distance / 1000
+      // Guard against zero-distance activities (would produce Infinity pace)
+      if (distanceKm <= 0) continue
+
       const paceMinPerKm = activity.moving_time / 60 / distanceKm
 
-      await db
+      const { error: upsertError } = await db
         .from('actual_runs')
         .upsert(
           {
@@ -131,6 +137,10 @@ export async function syncActivities(userId: string, afterDate?: Date): Promise<
           },
           { onConflict: 'strava_activity_id' }
         )
+      if (upsertError) {
+        console.error('Failed to upsert activity', activity.id, upsertError)
+        throw new Error(`DB upsert failed for activity ${activity.id}: ${upsertError.message}`)
+      }
       synced++
     }
 
@@ -152,9 +162,11 @@ export async function syncSingleActivity(userId: string, activityId: number): Pr
   if (!res.ok) return
 
   const activity = await res.json()
-  if (activity.type !== 'Run') return
+  const activityType = activity.sport_type ?? activity.type
+  if (activityType !== 'Run') return
 
   const distanceKm = activity.distance / 1000
+  if (distanceKm <= 0) return
   const paceMinPerKm = activity.moving_time / 60 / distanceKm
 
   await db.from('actual_runs').upsert(
