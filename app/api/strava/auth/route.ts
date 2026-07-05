@@ -9,11 +9,15 @@ export async function GET(req: NextRequest) {
   const protocol    = host.startsWith('localhost') ? 'http' : 'https'
   const redirectUri = `${protocol}://${host}/api/strava/callback`
 
+  // Use 'force' when the user explicitly clicks "Reconnect" so Strava always
+  // shows the consent screen and re-issues a token with all requested scopes.
+  const force = req.nextUrl.searchParams.get('force') === '1'
+
   const params = new URLSearchParams({
     client_id:       clientId!,
     redirect_uri:    redirectUri,
     response_type:   'code',
-    approval_prompt: 'auto',
+    approval_prompt: force ? 'force' : 'auto',
     scope:           'read,activity:read_all',
   })
 

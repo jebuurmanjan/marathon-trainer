@@ -139,7 +139,8 @@ export default function PlanPage() {
       setSyncMessage('Sync failed. Try again.')
     } finally {
       setSyncing(false)
-      setTimeout(() => setSyncMessage(null), 4000)
+      // Keep reauth prompt visible until clicked; clear other messages after 5s
+      setTimeout(() => setSyncMessage((m) => m === '__reauth__' ? m : null), 5000)
     }
   }
 
@@ -236,7 +237,7 @@ export default function PlanPage() {
             {/* Sync feedback message */}
             {syncMessage === '__reauth__' ? (
               <a
-                href="/api/strava/auth"
+                href="/api/strava/auth?force=1"
                 className="text-sm font-medium hidden sm:flex items-center gap-1"
                 style={{ color: 'var(--color-error)' }}
               >

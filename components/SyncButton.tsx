@@ -34,7 +34,7 @@ export default function SyncButton() {
     <div className="flex items-center gap-3">
       {msg === '__reauth__' ? (
         <a
-          href="/api/strava/auth"
+          href="/api/strava/auth?force=1"
           className="text-sm font-medium"
           style={{ color: 'var(--color-error)' }}
         >
