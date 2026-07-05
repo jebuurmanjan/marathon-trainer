@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
 
   const host        = req.headers.get('host') ?? 'localhost:3000'
   const protocol    = host.startsWith('localhost') ? 'http' : 'https'
-  const redirectUri = `${protocol}://${host}/api/strava/callback`
+  const baseUrl     = process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`
+  const redirectUri = `${baseUrl}/api/strava/callback`
 
   // Use 'force' when the user explicitly clicks "Reconnect" so Strava always
   // shows the consent screen and re-issues a token with all requested scopes.
