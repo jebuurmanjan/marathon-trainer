@@ -130,6 +130,8 @@ export default function PlanPage() {
       if (res.ok) {
         setSyncMessage(`✓ Synced ${data.synced} run${data.synced !== 1 ? 's' : ''} from Strava`)
         await fetchRuns()
+      } else if (res.status === 403 && data.error === 'reauth_required') {
+        setSyncMessage('__reauth__')
       } else {
         setSyncMessage(data.detail ? `Sync failed: ${data.detail}` : 'Sync failed. Try again.')
       }
@@ -232,7 +234,15 @@ export default function PlanPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             {/* Sync feedback message */}
-            {syncMessage && (
+            {syncMessage === '__reauth__' ? (
+              <a
+                href="/api/strava/auth"
+                className="text-sm font-medium hidden sm:flex items-center gap-1"
+                style={{ color: 'var(--color-error)' }}
+              >
+                Reconnect Strava to sync
+              </a>
+            ) : syncMessage && (
               <span className="text-sm font-medium hidden sm:block" style={{ color: syncMessage.startsWith('✓') ? 'var(--accent-green)' : 'var(--color-error)' }}>
                 {syncMessage}
               </span>

@@ -17,6 +17,8 @@ export default function SyncButton() {
       if (res.ok) {
         setMsg(`✓ Synced ${data.synced} run${data.synced !== 1 ? 's' : ''}`)
         router.refresh()           // re-fetch server component data
+      } else if (res.status === 403 && data.error === 'reauth_required') {
+        setMsg('__reauth__')
       } else {
         setMsg(data.detail ? `Sync failed: ${data.detail}` : 'Sync failed. Try again.')
       }
@@ -30,7 +32,15 @@ export default function SyncButton() {
 
   return (
     <div className="flex items-center gap-3">
-      {msg && (
+      {msg === '__reauth__' ? (
+        <a
+          href="/api/strava/auth"
+          className="text-sm font-medium"
+          style={{ color: 'var(--color-error)' }}
+        >
+          Reconnect Strava to sync
+        </a>
+      ) : msg && (
         <span
           className="text-sm font-medium"
           style={{ color: msg.startsWith('✓') ? 'var(--text-secondary)' : 'var(--accent)' }}

@@ -18,6 +18,9 @@ export async function POST() {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('Sync error:', message)
+    if (message.startsWith('STRAVA_REAUTH:')) {
+      return NextResponse.json({ error: 'reauth_required' }, { status: 403 })
+    }
     return NextResponse.json({ error: 'Sync failed', detail: message }, { status: 500 })
   }
 }

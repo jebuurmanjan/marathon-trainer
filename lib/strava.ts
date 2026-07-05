@@ -105,6 +105,9 @@ export async function syncActivities(userId: string, afterDate?: Date): Promise<
       `${STRAVA_API}/athlete/activities?after=${after}&per_page=50&page=${page}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     )
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`STRAVA_REAUTH:${res.status}`)
+    }
     if (!res.ok) throw new Error(`Strava activities fetch failed: ${res.status}`)
     const activities = await res.json()
     if (!activities.length) break
