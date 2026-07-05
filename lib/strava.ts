@@ -69,11 +69,14 @@ export async function getValidAccessToken(userId: string): Promise<string> {
 
   const now = Math.floor(Date.now() / 1000)
   const expiresAt = Math.floor(new Date(user.strava_token_expires_at).getTime() / 1000)
+  console.log(`Token expires at ${expiresAt}, now ${now}, diff ${expiresAt - now}s`)
   if (expiresAt > now + 300) {
+    console.log('Using existing access token')
     return user.strava_access_token
   }
 
   // Token expired — refresh it
+  console.log('Token expired, refreshing...')
   const tokens = await refreshToken(user.strava_refresh_token)
   await db
     .from('users')
@@ -106,6 +109,8 @@ export async function syncActivities(userId: string, afterDate?: Date): Promise<
       { headers: { Authorization: `Bearer ${accessToken}` } }
     )
     if (res.status === 401 || res.status === 403) {
+      const body = await res.text().catch(() => '')
+      console.error(`Strava ${res.status} on activities fetch. Body: ${body}`)
       throw new Error(`STRAVA_REAUTH:${res.status}`)
     }
     if (!res.ok) throw new Error(`Strava activities fetch failed: ${res.status}`)
